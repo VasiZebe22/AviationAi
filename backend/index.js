@@ -3,14 +3,16 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const pdfParse = require("pdf-parse");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Ensure uploads directory exists
+// Ensure uploads and processed directories exist
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
+}
+if (!fs.existsSync("processed")) {
+  fs.mkdirSync("processed");
 }
 
 // Middleware Configuration
@@ -30,39 +32,47 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== "application/pdf") {
-      return cb(new Error("Only PDF files are allowed"));
+    if (file.mimetype !== "text/plain") {
+      return cb(new Error("Only plain text files are allowed"));
     }
     cb(null, true);
   },
 });
 
 // ROUTES //
+// Homepage Route
 app.get("/", (req, res) => {
   res.send("Aviation AI Backend is running!");
 });
 
-app.post("/upload", upload.single("pdf"), (req, res) => {
+// File Upload Route
+app.post("/upload", upload.single("txt"), (req, res) => {
   if (!req.file) {
     return res.status(400).send({ message: "No file uploaded" });
   }
   res.send({ message: "File uploaded successfully", filePath: req.file.path });
 });
 
-app.post("/parse", async (req, res) => {
+// Preprocess Route for Plain Text Files
+app.post("/preprocess", (req, res) => {
   const filePath = path.join(__dirname, "uploads", path.basename(req.body.fileName));
+  const outputPath = path.join(__dirname, "processed", `${path.basename(req.body.fileName, ".txt")}.json`);
 
+  // Check if the file exists
   if (!fs.existsSync(filePath)) {
     return res.status(404).send({ message: "File not found" });
   }
 
   try {
-    const fileBuffer = fs.readFileSync(filePath);
-    const data = await pdfParse(fileBuffer);
-    res.send({ content: data.text });
+    const content = fs.readFileSync(filePath, "utf8");
+    const lines = content.split("\n").map((line, index) => ({ line: index + 1, text: line.trim() }));
+
+    // Write to JSON file
+    fs.writeFileSync(outputPath, JSON.stringify(lines, null, 2));
+    res.send({ message: "Preprocessing complete", outputFilePath: outputPath });
   } catch (error) {
-    console.error("Error parsing PDF:", error);
-    res.status(500).send({ message: "Failed to parse PDF", error: error.message });
+    console.error("Error preprocessing text file:", error);
+    res.status(500).send({ message: "Failed to preprocess text file", error: error.message });
   }
 });
 
