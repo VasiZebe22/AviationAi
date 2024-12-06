@@ -1,8 +1,11 @@
+require("dotenv").config();
+console.log("Environment Variables Loaded:", process.env.OPENAI_API_KEY);
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const OpenAI = require("openai");  // Updated import
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +17,14 @@ if (!fs.existsSync("uploads")) {
 if (!fs.existsSync("processed")) {
   fs.mkdirSync("processed");
 }
+
+// Initialize OpenAI API with the API key
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Debug log to confirm API key is loaded
+console.log("Loaded API Key:", process.env.OPENAI_API_KEY);
 
 // Middleware Configuration
 app.use(cors());
@@ -54,9 +65,9 @@ app.post("/upload", upload.single("txt"), (req, res) => {
 });
 
 // Preprocess Route for Plain Text Files
-app.post("/preprocess", (req, res) => {
-  const filePath = path.join(__dirname, "uploads", path.basename(req.body.fileName));
-  const outputPath = path.join(__dirname, "processed", `${path.basename(req.body.fileName, ".txt")}.json`);
+app.post("/preprocess", async (req, res) => {
+  const filePath = path.resolve(__dirname, "uploads", path.basename(req.body.fileName));
+  const outputPath = path.resolve(__dirname, "processed", `${path.basename(req.body.fileName, ".txt")}.json`);
 
   // Check if the file exists
   if (!fs.existsSync(filePath)) {
@@ -64,15 +75,26 @@ app.post("/preprocess", (req, res) => {
   }
 
   try {
-    const content = fs.readFileSync(filePath, "utf8");
+    const content = await fs.promises.readFile(filePath, "utf8");
     const lines = content.split("\n").map((line, index) => ({ line: index + 1, text: line.trim() }));
 
     // Write to JSON file
-    fs.writeFileSync(outputPath, JSON.stringify(lines, null, 2));
+    await fs.promises.writeFile(outputPath, JSON.stringify(lines, null, 2));
     res.send({ message: "Preprocessing complete", outputFilePath: outputPath });
   } catch (error) {
     console.error("Error preprocessing text file:", error);
     res.status(500).send({ message: "Failed to preprocess text file", error: error.message });
+  }
+});
+
+// Test OpenAI API Route
+app.get("/test-openai", async (req, res) => {
+  try {
+    const models = await openai.models.list(); // Updated method call
+    res.send({ models: models.data });
+  } catch (error) {
+    console.error("OpenAI API error:", error);
+    res.status(500).send({ message: "OpenAI API test failed", error: error.message });
   }
 });
 
