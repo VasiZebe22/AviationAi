@@ -1,5 +1,5 @@
 # Ignore large files in the "data" folder
 .env
 node_modules
-backend/FireBase/
-backend/FireBase/*.json
+# Firebase credentials
+FireBase/*.json
