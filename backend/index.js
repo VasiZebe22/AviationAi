@@ -1,11 +1,34 @@
 require("dotenv").config();
-console.log("Environment Variables Loaded:", process.env.OPENAI_API_KEY);
 const express = require("express");
 const cors = require("cors");
 const OpenAI = require("openai");
 const admin = require("firebase-admin");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const { auth } = require("./firebase");
+const rateLimit = require('express-rate-limit');
+const winston = require('winston');
+
+// Configure winston logger
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+    ),
+    transports: [
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' })
+    ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.simple()
+    }));
+}
+
+logger.info("Environment Variables Loading...");
+logger.info("OpenAI API Key Status:", { hasKey: !!process.env.OPENAI_API_KEY });
 
 admin.initializeApp({
   credential: admin.credential.cert({
@@ -15,7 +38,7 @@ admin.initializeApp({
   })
 });
 
-console.log("Firebase Admin initialized");
+logger.info("Firebase Admin initialized");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,21 +54,55 @@ const openai = new OpenAI({
 });
 
 // Middleware Configuration
-app.use(cors());
+
+// Define allowed origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173', // Vite default port
+  'https://your-frontend-domain.com'
+];
+
+// Configure CORS options
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn('Blocked request from unauthorized origin:', { origin });
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Apply CORS configuration
+app.use(cors(corsOptions));
+
 app.use(express.json());
+
+// Create rate limiter middleware
+const queryRateLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
+});
 
 // Authentication Middleware
 const authenticate = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
+    logger.warn('Authentication attempt without token');
     return res.status(401).send({ error: 'Unauthorized' });
   }
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
+    logger.info('User authenticated successfully', { uid: decodedToken.uid });
     req.user = decodedToken;
     next();
   } catch (error) {
-    console.error('Authentication Error:', error);
+    logger.error('Authentication Error:', { error: error.message });
     res.status(403).send({ error: 'Invalid token' });
   }
 };
@@ -61,7 +118,7 @@ app.get('/test-firebase', async (req, res) => {
         const message = 'Firebase is configured correctly!';
         res.status(200).send({ message });
     } catch (error) {
-        console.error('Firebase Test Error:', error);
+        logger.error('Firebase Test Error:', { error: error.message });
         res.status(500).send({ error: 'Failed to connect to Firebase' });
     }
 });
@@ -75,7 +132,7 @@ app.post('/register', async (req, res) => {
         });
         res.status(201).send({ message: 'User registered successfully', user });
     } catch (error) {
-        console.error('User Registration Error:', error);
+        logger.error('User Registration Error:', { error: error.message });
         res.status(500).send({ error: 'Failed to register user' });
     }
 });
@@ -87,35 +144,72 @@ app.post('/login', async (req, res) => {
         return res.status(400).send({ error: "Email and password are required" });
     }
 
+    // Debug logging
+    logger.info('Login attempt initiated', {
+        emailProvided: !!email,
+        passwordLength: password?.length,
+        authState: {
+            isInitialized: !!auth,
+            hasCurrentUser: !!auth?.currentUser
+        }
+    });
+
     try {
-        // Attempt to sign in with email and password using Firebase Auth
+        if (!auth) {
+            throw new Error('Firebase Auth not initialized');
+        }
+
+        // Attempt sign in
+        logger.info('Attempting sign in for email:', { email });
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        
+        if (!userCredential?.user) {
+            throw new Error('No user returned after successful login');
+        }
 
-        // Get the ID token
-        const idToken = await user.getIdToken();
+        logger.info('Sign in successful', {
+            uid: userCredential.user.uid,
+            emailVerified: userCredential.user.emailVerified
+        });
 
-        res.send({
+        const idToken = await userCredential.user.getIdToken(true); // Force token refresh
+
+        res.status(200).send({
+            success: true,
             message: "Login successful",
             token: idToken,
             user: {
-                uid: user.uid,
-                email: user.email,
-                emailVerified: user.emailVerified,
-            },
+                uid: userCredential.user.uid,
+                email: userCredential.user.email,
+                emailVerified: userCredential.user.emailVerified
+            }
         });
+
     } catch (error) {
-        console.error("Login error:", error);
-        // Send more specific error messages based on the error code
+        logger.error('Login error details', {
+            code: error.code,
+            message: error.message,
+            type: error.constructor.name
+        });
+
+        // More specific error handling
         switch (error.code) {
+            case 'auth/invalid-credential':
             case 'auth/wrong-password':
-                return res.status(401).send({ error: "Incorrect password" });
             case 'auth/user-not-found':
-                return res.status(401).send({ error: "User not found" });
+                return res.status(401).send({ 
+                    error: "Invalid email or password",
+                    details: error.code
+                });
             case 'auth/invalid-email':
                 return res.status(400).send({ error: "Invalid email format" });
+            case 'auth/network-request-failed':
+                return res.status(503).send({ error: "Network error - please try again" });
             default:
-                return res.status(401).send({ error: "Invalid email or password" });
+                return res.status(500).send({ 
+                    error: "Authentication failed",
+                    details: error.message
+                });
         }
     }
 });
@@ -141,22 +235,26 @@ app.post("/query", authenticate, async (req, res) => {
       response: completion.choices[0].message.content
     });
   } catch (error) {
-    console.error("Error processing query:", error);
+    logger.error("Error processing query:", { error: error.message });
     res.status(500).send({ message: "Error processing query", error: error.message });
   }
 });
 
 // Assistant Query Route
-app.post("/assistant-query", authenticate, async (req, res) => {
+app.post("/assistant-query", queryRateLimiter, authenticate, async (req, res) => {
   const { query } = req.body;
+  const userId = req.user.uid;
 
   if (!query) {
+    logger.warn('Empty query received', { userId });
     return res.status(400).send({ message: "No query provided" });
   }
 
   try {
+    logger.info('Processing assistant query', { userId, queryLength: query.length });
     const thread = await openai.beta.threads.create();
     
+    logger.debug('Thread created', { threadId: thread.id });
     await openai.beta.threads.messages.create(thread.id, {
       role: "user",
       content: query
@@ -169,6 +267,7 @@ app.post("/assistant-query", authenticate, async (req, res) => {
     // Poll for completion
     let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
     while (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
+      logger.debug('Run status', { status: runStatus.status, runId: run.id });
       await new Promise(resolve => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
     }
@@ -176,15 +275,22 @@ app.post("/assistant-query", authenticate, async (req, res) => {
     if (runStatus.status === 'completed') {
       const messages = await openai.beta.threads.messages.list(thread.id);
       const assistantResponse = messages.data[0].content[0].text.value;
-
-      res.send({
-        response: assistantResponse
+      logger.info('Query processed successfully', { 
+        userId,
+        threadId: thread.id,
+        runId: run.id
       });
+
+      res.send({ response: assistantResponse });
     } else {
       throw new Error(`Run ended with status: ${runStatus.status}`);
     }
   } catch (error) {
-    console.error("Error interacting with the Assistant:", error);
+    logger.error('Assistant query error', {
+      userId,
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).send({ 
       message: "Failed to process query", 
       error: error.message 
@@ -193,5 +299,5 @@ app.post("/assistant-query", authenticate, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  logger.info(`Server is running on http://localhost:${PORT}`);
 });
