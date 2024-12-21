@@ -5,4 +5,40 @@
 !package-lock.json
 node_modules/
 # Firebase credentials
-FireBase/*.json
+backend/FireBase/*.json
+
+# Additional security measures
+# Local configuration files
+config.local.js
+*.config.local.js
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Private keys and certificates
+*.pem
+*.key
+*.cert
+*.crt
+
+# Environment files for all cases
+.env*
+.env.local
+.env.*.local
