@@ -4,12 +4,15 @@ const express = require("express");
 const cors = require("cors");
 const OpenAI = require("openai");
 const admin = require("firebase-admin");
-const serviceAccount = require("C:/Users/vasiz/Desktop/AviationAi/backend/FireBase/aviationai-c5a89-firebase-adminsdk-25nr2-fac34c2162.json");
 const { signInWithEmailAndPassword } = require("firebase/auth");
 const { auth } = require("./firebase");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert({
+    "project_id": process.env.FIREBASE_PROJECT_ID,
+    "private_key": process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    "client_email": process.env.FIREBASE_CLIENT_EMAIL
+  })
 });
 
 console.log("Firebase Admin initialized");
