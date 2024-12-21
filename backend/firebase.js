@@ -1,13 +1,14 @@
 const { initializeApp } = require("firebase/app");
 const { getAuth } = require("firebase/auth");
+require('dotenv').config();
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAXW3OEd_aa1brTr8O0ihqoWloyep4uXyI",
-    authDomain: "aviationai-c5a89.firebaseapp.com",
-    projectId: "aviationai-c5a89",
-    storageBucket: "aviationai-c5a89.appspot.com",
-    messagingSenderId: "387996596688",
-    appId: "1:387996596688:web:YOUR_APP_ID" // You'll need to get this from Firebase Console
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID
 };
 
 const clientApp = initializeApp(firebaseConfig);
