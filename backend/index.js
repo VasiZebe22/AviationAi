@@ -1,3 +1,6 @@
+//------------------------------------------------------------------------------
+// INITIALIZATION AND IMPORTS
+//------------------------------------------------------------------------------
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -8,7 +11,11 @@ const { auth } = require("./firebase");
 const rateLimit = require('express-rate-limit');
 const winston = require('winston');
 
-// Configure winston logger
+//------------------------------------------------------------------------------
+// LOGGING CONFIGURATION
+//------------------------------------------------------------------------------
+// Configure Winston logger for both file and console logging
+// Error logs go to error.log, combined logs go to combined.log
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
@@ -30,6 +37,10 @@ if (process.env.NODE_ENV !== 'production') {
 logger.info("Environment Variables Loading...");
 logger.info("OpenAI API Key Status:", { hasKey: !!process.env.OPENAI_API_KEY });
 
+//------------------------------------------------------------------------------
+// FIREBASE ADMIN SETUP
+//------------------------------------------------------------------------------
+// Initialize Firebase Admin with service account credentials
 admin.initializeApp({
   credential: admin.credential.cert({
     "project_id": process.env.FIREBASE_PROJECT_ID,
@@ -40,10 +51,14 @@ admin.initializeApp({
 
 logger.info("Firebase Admin initialized");
 
+//------------------------------------------------------------------------------
+// EXPRESS SERVER CONFIGURATION
+//------------------------------------------------------------------------------
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow requests only from the frontend origin
+// CORS Configuration
+// Restrict API access to specific origins for security
 const allowedOrigins = ['http://localhost:3001'];
 
 const corsOptions = {
@@ -75,14 +90,20 @@ const openai = new OpenAI({
 
 app.use(express.json());
 
-// Create rate limiter middleware
+//------------------------------------------------------------------------------
+// API SECURITY AND RATE LIMITING
+//------------------------------------------------------------------------------
+// Rate limiter: 5 requests per minute per IP
 const queryRateLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 5, // Limit each IP to 5 requests per windowMs
     message: "Too many requests from this IP, please try again later.",
 });
 
-// Authentication Middleware
+//------------------------------------------------------------------------------
+// AUTHENTICATION MIDDLEWARE
+//------------------------------------------------------------------------------
+// Verify Firebase JWT tokens and attach user data to request
 const authenticate = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
@@ -100,12 +121,15 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// ROUTES //
-
+//------------------------------------------------------------------------------
+// BASIC ROUTES
+//------------------------------------------------------------------------------
+// Health check endpoint
 app.get("/", (req, res) => {
   res.send("Aviation AI Backend is running!");
 });
 
+// Firebase connection test endpoint
 app.get('/test-firebase', async (req, res) => {
     try {
         const message = 'Firebase is configured correctly!';
@@ -116,6 +140,11 @@ app.get('/test-firebase', async (req, res) => {
     }
 });
 
+//------------------------------------------------------------------------------
+// AUTHENTICATION ROUTES
+//------------------------------------------------------------------------------
+// User registration endpoint
+// Creates new user in Firebase Authentication
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -130,6 +159,8 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// User login endpoint
+// Authenticates user and returns JWT token
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -207,7 +238,11 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Query Route for OpenAI Assistant
+//------------------------------------------------------------------------------
+// AI QUERY ROUTES
+//------------------------------------------------------------------------------
+// Basic GPT-4 query endpoint
+// Uses chat completion API for simple Q&A
 app.post("/query", authenticate, async (req, res) => {
   const { query } = req.body;
 
@@ -233,7 +268,9 @@ app.post("/query", authenticate, async (req, res) => {
   }
 });
 
-// Assistant Query Route
+// Advanced Assistant API endpoint
+// Uses OpenAI's Thread and Assistant APIs for more complex interactions
+// Includes rate limiting and authentication
 app.post("/assistant-query", queryRateLimiter, authenticate, async (req, res) => {
   const { query } = req.body;
   const userId = req.user.uid;
@@ -291,6 +328,10 @@ app.post("/assistant-query", queryRateLimiter, authenticate, async (req, res) =>
   }
 });
 
+//------------------------------------------------------------------------------
+// SERVER STARTUP
+//------------------------------------------------------------------------------
+// Start the Express server and log the port
 app.listen(PORT, () => {
   logger.info(`Server is running on http://localhost:${PORT}`);
 });
