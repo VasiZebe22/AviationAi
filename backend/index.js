@@ -43,6 +43,24 @@ logger.info("Firebase Admin initialized");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Allow requests only from the frontend origin
+const allowedOrigins = ['http://localhost:3001'];
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true); // Allow request
+        } else {
+            console.warn('Blocked request from unauthorized origin:', origin);
+            callback(new Error('Not allowed by CORS')); // Reject request
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // HTTP methods to allow
+    credentials: true, // Include cookies or authorization headers
+};
+
+app.use(cors(corsOptions));
+
 // Initialize OpenAI API with the API key and updated configuration
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -54,31 +72,6 @@ const openai = new OpenAI({
 });
 
 // Middleware Configuration
-
-// Define allowed origins
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173', // Vite default port
-  'https://your-frontend-domain.com'
-];
-
-// Configure CORS options
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.warn('Blocked request from unauthorized origin:', { origin });
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-// Apply CORS configuration
-app.use(cors(corsOptions));
 
 app.use(express.json());
 
