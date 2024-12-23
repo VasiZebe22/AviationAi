@@ -1,0 +1,35 @@
+:root {
+  /* Main page and section backgrounds */
+  --background-color: rgba(255, 255, 255, 0.1); /*Hero section background color*/
+  --section-bg-color: rgba(255, 255, 255, 0.1); /* used by about us and intro*/
+  --card-bg-color: rgba(255, 255, 255, 0.1);
+
+  /* Navbar specific */
+  --navbar-bg-default: rgba(13, 13, 74, 0.8);    /* Default transparent navbar background */
+  --navbar-bg-scrolled: rgba(14, 14, 16, 0.9);  /* Darker navbar background when scrolled */
+  --navbar-shadow-color: rgba(0, 0, 0, 0.15);    /* Subtle navbar shadow */
+
+  /* Brand and accent colors */
+  --primary-color: #3e4972;
+  --secondary-color: #9158f8;
+  --primary-btn-color: #FF5722;
+  --secondary-btn-color: #0C1F60;
+  
+  /* Text colors */
+  --text-color: #ffffff;
+  --text-muted-color: #b0b0b0;
+  --navbar-text-color: #ffffff;
+
+  /* Interactive states */
+  --button-hover-color: #ff4081;
+
+  /* Gradients */
+  --button-bg-gradient: linear-gradient(90deg, #2a57fc, #9158f8);
+  --button-bg-gradient-reverse: linear-gradient(90deg, #9158f8, #2a57fc);
+  --section-gradient: linear-gradient(90deg, #0e0e10, #090c6e);
+
+  /* Shadows and overlays */
+  --card-shadow-color: rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: rgba(0, 0, 0, 0.5);
+  --border-transparent: rgba(255, 255, 255, 0.2);
+}

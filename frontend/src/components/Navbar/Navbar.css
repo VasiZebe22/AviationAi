@@ -1,0 +1,151 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px; /* Change padding to left/right only */
+    background: var(--navbar-bg-default);
+    backdrop-filter: blur(var(--navbar-blur, 16px));
+    -webkit-backdrop-filter: blur(var(--navbar-blur, 16px));
+    color: var(--text-color);
+    position: fixed;
+    width: 100%;
+    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 20px var(--navbar-shadow-color);
+    border-bottom: 1px solid var(--border-transparent);
+}
+
+/* Add a background color only on scroll if needed */
+.navbar.scrolled {
+    background: var(--navbar-bg-scrolled);
+}
+
+/* Inner container to limit content width */
+.navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.bubble-menu {
+    display: flex;
+    gap: 30px;
+    background: var(--card-bg-color);
+    border-radius: 30px;
+    padding: 10px 20px;
+    box-shadow: 0 4px 8px var(--card-shadow-color);
+}
+
+.bubble-menu a {
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-color);
+    position: relative;
+    padding: 5px 0;
+}
+
+.bubble-menu a::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--button-bg-gradient);
+    transition: width 0.3s ease-out;
+}
+
+.bubble-menu a:hover {
+    background: var(--button-bg-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.bubble-menu a:hover::before {
+    width: 100%;
+}
+
+.btn.get-started {
+    background: var(--button-bg-gradient);
+    color: var(--text-color);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 8px var(--card-shadow-color);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn.get-started:hover {
+    background: var(--button-bg-gradient-reverse);
+    transform: translateY(-2px);
+}
+
+/* Add padding to body to prevent content from hiding under navbar */
+body {
+    padding-top: 84px; /* Matches navbar height (64px) + padding (20px) */
+}
+
+/* Mobile-Friendly Navbar */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    .navbar-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .bubble-menu {
+        flex-wrap: wrap;
+        gap: 25px;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 25px;
+    }
+
+    .btn.get-started {
+        margin-top: 10px;
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .bubble-menu {
+        padding: 10px 20px;
+        gap: 20px;
+        font-size: 0.9rem;
+    }
+
+    .bubble-menu a {
+        font-size: 1rem;
+    }
+}
+
+main, .homepage {
+    padding-top: 84px; /* Height of navbar */
+    min-height: 100vh;
+    background: var(--section-gradient);
+    margin: 0;
+}
