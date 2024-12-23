@@ -1,14 +1,18 @@
 @import './variables.css';
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
   color: var(--text-color);
-  background: var(--section-gradient); /* Changed from background-color to use gradient */
+  background: var(--section-gradient); /* Keep only here */
   line-height: 1.6;
   margin: 0;
   padding: 0; /* Remove default padding */
-  padding-top: 84px; /* Added for navbar spacing */
+  /* padding-top: 84px; */
   min-height: 100vh;
 }
 
@@ -65,6 +69,12 @@ a:hover {
 
 .App-link {
   color: var(--primary-color);
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 @keyframes App-logo-spin {

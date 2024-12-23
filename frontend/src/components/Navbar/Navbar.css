@@ -4,7 +4,7 @@
     align-items: center;
     padding: 20px 40px; /* Change padding to left/right only */
     background: var(--navbar-bg-default);
-    backdrop-filter: blur(var(--navbar-blur, 16px));
+    backdrop-filter: blur(10px); /* Ensure backdrop filter works with global gradient */
     -webkit-backdrop-filter: blur(var(--navbar-blur, 16px));
     color: var(--text-color);
     position: fixed;
@@ -12,7 +12,7 @@
     box-sizing: border-box;
     top: 0;
     left: 0;
-    z-index: 1000;
+    z-index: 1000; /* Ensure navbar is above other elements */
     box-shadow: 0 4px 20px var(--navbar-shadow-color);
     border-bottom: 1px solid var(--border-transparent);
 }
@@ -97,9 +97,6 @@
 }
 
 /* Add padding to body to prevent content from hiding under navbar */
-body {
-    padding-top: 84px; /* Matches navbar height (64px) + padding (20px) */
-}
 
 /* Mobile-Friendly Navbar */
 @media (max-width: 768px) {
