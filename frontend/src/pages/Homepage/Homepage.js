@@ -7,11 +7,29 @@
  * - About: Company information
  */
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Homepage.css";
 import Navbar from "../../components/Navbar/Navbar";
 import Button from "../../components/Button/Button";
 
 const Homepage = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    React.useEffect(() => {
+        // Check if we have a section to scroll to
+        if (location.state?.scrollTo) {
+            const element = document.getElementById(location.state.scrollTo);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [location]);
+
+    const handleNavigateToLogin = () => {
+        navigate('/login');
+    };
+
     return (
         <div className="homepage">
             <Navbar />
@@ -27,7 +45,7 @@ const Homepage = () => {
                     <h1>Revolutionize Aviation Learning with AI</h1>
                     <p>Your personal AI-powered pilot instructor.</p>
                     <div className="hero-buttons">
-                        <Button className="custom-button--primary">Sign Up</Button>
+                        <Button className="custom-button--primary" onClick={handleNavigateToLogin}>Sign Up</Button>
                         <Button className="custom-button--secondary">Learn More</Button>
                     </div>
                 </div>
@@ -80,7 +98,7 @@ const Homepage = () => {
                                 <li>Basic AI Analysis</li>
                                 <li>No Real-Time Support</li>
                             </ul>
-                            <Button className="custom-button--primary">Get Started</Button>
+                            <Button className="custom-button--primary" onClick={handleNavigateToLogin}>Get Started</Button>
                         </div>
                         <div className="pricing-card">
                             <h3>Premium</h3>

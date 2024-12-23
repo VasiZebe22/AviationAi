@@ -36,6 +36,12 @@
     font-size: 1.8rem;
     font-weight: bold;
     color: var(--text-color);
+    transition: opacity 0.3s ease;
+}
+
+.logo:hover {
+    opacity: 0.8;
+    text-decoration: none;
 }
 
 .bubble-menu {
@@ -47,6 +53,41 @@
     box-shadow: 0 4px 8px var(--card-shadow-color);
 }
 
+.nav-link {
+    background: none;
+    border: none;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-color);
+    position: relative;
+    padding: 5px 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--button-bg-gradient);
+    transition: width 0.3s ease-out;
+}
+
+.nav-link:hover {
+    background: var(--button-bg-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.nav-link:hover::before {
+    width: 100%;
+}
+
 .bubble-menu a {
     text-decoration: none;
     font-weight: 500;
@@ -54,6 +95,7 @@
     color: var(--text-color);
     position: relative;
     padding: 5px 0;
+    cursor: pointer; /* Add this line */
 }
 
 .bubble-menu a::before {

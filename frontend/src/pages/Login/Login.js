@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+import "./Login.css";
+import Navbar from "../../components/Navbar/Navbar";
+import Button from "../../components/Button/Button";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,49 +13,72 @@ const Login = () => {
     const endpoint = isLogin ? "/login" : "/register";
 
     try {
-      const response = await axios.post(
+      const response = await fetch(
         `${process.env.REACT_APP_BACKEND_URL}${endpoint}`,
         {
-          email,
-          password,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
         }
       );
-      alert(response.data.message); // Show success message
+      const data = await response.json();
+      alert(data.message);
     } catch (error) {
-      alert(error.response?.data?.message || "Something went wrong."); // Show error
+      alert(error.response?.data?.message || "Something went wrong.");
     }
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "400px", margin: "auto" }}>
-      <h2>{isLogin ? "Login" : "Register"}</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ width: "100%", margin: "10px 0", padding: "8px" }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ width: "100%", margin: "10px 0", padding: "8px" }}
-        />
-        <button type="submit" style={{ width: "100%", padding: "10px" }}>
-          {isLogin ? "Login" : "Register"}
-        </button>
-      </form>
-      <button
-        onClick={() => setIsLogin(!isLogin)}
-        style={{ marginTop: "10px", width: "100%", padding: "10px" }}
-      >
-        Switch to {isLogin ? "Register" : "Login"}
-      </button>
+    <div className="login-page">
+      <Navbar />
+      <div className="login-container">
+        <div className="login-card">
+          <h2>{isLogin ? "Welcome Back" : "Create Account"}</h2>
+          <p className="login-subtitle">
+            {isLogin 
+              ? "Enter your credentials to access your account" 
+              : "Fill in your details to create your account"}
+          </p>
+          
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" variant="primary">
+              {isLogin ? "Sign In" : "Sign Up"}
+            </Button>
+          </form>
+
+          <div className="login-footer">
+            <p>
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <button 
+                className="switch-mode-btn"
+                onClick={() => setIsLogin(!isLogin)}
+              >
+                {isLogin ? "Sign Up" : "Sign In"}
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
