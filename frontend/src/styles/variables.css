@@ -1,36 +1,134 @@
 :root {
   /* Main page and section backgrounds */
-  --background-color: rgba(255, 255, 255, 0.1); /*Hero section background color*/
-  --section-bg-color: rgba(255, 255, 255, 0.1); /* used by about us and intro*/
+  --background-color: rgba(255, 255, 255, 0.1); 
+  /* Used in:
+   * - global.css: .App-header background
+   * - Homepage.js: hero section background
+   */
+
+  --section-bg-color: rgba(255, 255, 255, 0.1); 
+  /* Used in:
+   * - Homepage.css: section backgrounds
+   * - global.css: body background
+   * - Dashboard.css: about section background
+   */
+
   --card-bg-color: rgba(255, 255, 255, 0.1);
+  /* Used in:
+   * - Dashboard.css: dashboard-card background
+   * - Login.css: login-card background
+   * - Navbar.css: bubble-menu background
+   * - Homepage.css: pricing-card background
+   */
 
   /* Navbar specific */
-  --navbar-bg-default: rgba(13, 13, 74, 0.1);    /* Default transparent navbar background */
-  --navbar-bg-scrolled: rgba(14, 14, 16, 0.9);  /* Darker navbar background when scrolled */
-  --navbar-shadow-color: rgba(0, 0, 0, 0.15);    /* Subtle navbar shadow */
-  --navbar-height: 84px; /* Consolidate navbar height variable */
+  --navbar-bg-default: rgba(13, 13, 74, 0.1);    
+  /* Used in:
+   * - Navbar.css: default navbar background
+   */
+
+  --navbar-bg-scrolled: rgba(14, 14, 16, 0.9);  
+  /* Used in:
+   * - Navbar.css: navbar background when scrolled
+   */
+
+  --navbar-shadow-color: rgba(0, 0, 0, 0.15);    
+  /* Used in:
+   * - Navbar.css: navbar box-shadow
+   */
+
+  --navbar-height: 84px; 
+  /* Used in:
+   * - Login.css: padding-top for login-page
+   * - Dashboard.css: padding-top for dashboard
+   * - Navbar.css: main padding calculation
+   */
 
   /* Brand and accent colors */
   --primary-color: #3e4972;
+  /* Used in:
+   * - global.css: link colors
+   */
+
   --secondary-color: #9158f8;
+  /* Used in:
+   * - Homepage.css: gradient backgrounds
+   */
+
   --primary-btn-color: #FF5722;
+  /* Used in:
+   * - Button.css: primary button background
+   * - Dashboard.css: stat-value color
+   */
+
   --secondary-btn-color: #0C1F60;
+  /* Used in:
+   * - Button.css: secondary button color
+   */
   
   /* Text colors */
   --text-color: #ffffff;
+  /* Used in:
+   * - global.css: body text
+   * - Dashboard.css: card text
+   * - Login.css: form text
+   * - Navbar.css: navigation text
+   * - Homepage.css: all text content
+   */
+
   --text-muted-color: #b0b0b0;
-  --navbar-text-color: #ffffff;
+  /* Used in:
+   * - Dashboard.css: stat labels
+   * - Login.css: subtitles
+   */
+
+  --navbar-text-color: var(--text-color);
 
   /* Interactive states */
   --button-hover-color: #ff4081;
+  /* Used in:
+   * - Button hover effects
+   */
 
   /* Gradients */
   --button-bg-gradient: linear-gradient(90deg, #2a57fc, #9158f8);
+  /* Used in:
+   * - Navbar.css: nav-link hover effects
+   * - Homepage.css: button backgrounds
+   */
+
   --button-bg-gradient-reverse: linear-gradient(90deg, #9158f8, #2a57fc);
+  /* Used in:
+   * - Navbar.css: get-started button hover
+   */
+
   --section-gradient: linear-gradient(90deg, #000000, #0e385b);
+  /* Used in:
+   * - Login.css: page background
+   * - Dashboard.css: page background
+   * - Homepage.css: section backgrounds
+   */
 
   /* Shadows and overlays */
   --card-shadow-color: rgba(0, 0, 0, 0.2);
+  /* Used in:
+   * - Dashboard.css: card shadows
+   * - Login.css: card shadows
+   * - Navbar.css: menu shadows
+   * - Homepage.css: feature card shadows
+   */
+
   --card-shadow-hover: rgba(0, 0, 0, 0.5);
+  /* Used in:
+   * - Dashboard.css: card hover shadows
+   * - Homepage.css: pricing card hover shadows
+   */
+
   --border-transparent: rgba(255, 255, 255, 0.2);
+  /* Used in:
+   * - Dashboard.css: card borders
+   * - Login.css: form borders
+   * - Navbar.css: navbar bottom border
+   * - Homepage.css: section borders
+   */
 }
