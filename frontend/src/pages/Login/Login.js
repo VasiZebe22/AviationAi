@@ -13,20 +13,28 @@ const Login = () => {
     const endpoint = isLogin ? "/login" : "/register";
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}${endpoint}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include', // Required for CORS
+        body: JSON.stringify({ email, password })
+      });
+
       const data = await response.json();
-      alert(data.message);
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token); // Store the JWT token
+        // Redirect to dashboard on success
+        window.location.href = '/dashboard';
+      } else {
+        alert(data.error || 'Login failed');
+      }
     } catch (error) {
-      alert(error.response?.data?.message || "Something went wrong.");
+      console.error('Login error:', error);
+      alert('Failed to connect to the server');
     }
   };
 

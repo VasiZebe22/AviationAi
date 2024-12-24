@@ -5,21 +5,20 @@ import "./Navbar.css";
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const isAuthenticated = !!localStorage.getItem("token");
 
-    const handleNavigateToLogin = () => {
-        navigate('/login');
-    };
-
-    const handleNavigateToHome = () => {
-        navigate('/');
+    const handleButtonClick = () => {
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        } else {
+            navigate('/login');
+        }
     };
 
     const handleNavigation = (sectionId) => {
         if (location.pathname !== '/') {
-            // If not on homepage, first navigate to homepage
             navigate('/', { state: { scrollTo: sectionId } });
         } else {
-            // If already on homepage, scroll to section
             const element = document.getElementById(sectionId);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth' });
@@ -30,7 +29,7 @@ const Navbar = () => {
     return (
         <header className="navbar">
             <div className="navbar-content">
-                <div className="logo" onClick={handleNavigateToHome} style={{ cursor: 'pointer' }}>
+                <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
                     Aviation AI
                 </div>
                 <div className="bubble-menu">
@@ -39,7 +38,9 @@ const Navbar = () => {
                     <button className="nav-link" onClick={() => handleNavigation('faq')}>FAQ</button>
                     <button className="nav-link" onClick={() => handleNavigation('about')}>About Us</button>
                 </div>
-                <button className="btn get-started" onClick={handleNavigateToLogin}>Get Started</button>
+                <button className="btn get-started" onClick={handleButtonClick}>
+                    {isAuthenticated ? "Dashboard" : "Get Started"}
+                </button>
             </div>
         </header>
     );

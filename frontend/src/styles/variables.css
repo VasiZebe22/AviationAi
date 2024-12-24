@@ -27,7 +27,7 @@
   /* Gradients */
   --button-bg-gradient: linear-gradient(90deg, #2a57fc, #9158f8);
   --button-bg-gradient-reverse: linear-gradient(90deg, #9158f8, #2a57fc);
-  --section-gradient: linear-gradient(90deg, #0e0e10, #090c6e);
+  --section-gradient: linear-gradient(90deg, #000000, #0e385b);
 
   /* Shadows and overlays */
   --card-shadow-color: rgba(0, 0, 0, 0.2);

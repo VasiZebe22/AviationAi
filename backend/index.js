@@ -59,19 +59,13 @@ const PORT = process.env.PORT || 3000;
 
 // CORS Configuration
 // Restrict API access to specific origins for security
-const allowedOrigins = ['http://localhost:3001'];
+const allowedOrigins = ['http://localhost:3001', 'http://localhost:3000'];
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true); // Allow request
-        } else {
-            console.warn('Blocked request from unauthorized origin:', origin);
-            callback(new Error('Not allowed by CORS')); // Reject request
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // HTTP methods to allow
-    credentials: true, // Include cookies or authorization headers
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
