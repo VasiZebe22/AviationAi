@@ -18,7 +18,7 @@
   --link-hover-color: #2a57fc;
 
   /* Background Colors */
-  --background-color: #000000;
+  --background-color: rgba(255, 255, 255, 0.1);
   --section-bg-color: rgba(255, 255, 255, 0.1);
   --card-bg-color: rgba(255, 255, 255, 0.1);
   --navbar-bg-default: rgba(13, 13, 74, 0.1);
