@@ -1,0 +1,87 @@
+:root {
+  /* Color Palette */
+  --primary-color: #3e4972;
+  --secondary-color: #9158f8;
+  --accent-color: #007bff;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --light-color: #f8f9fa;
+  --dark-color: #0e385b;
+
+  /* Text Colors */
+  --text-color: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --text-light: #f8f9fa;
+  --text-dark: #343a40;
+  --link-color: #9158f8;
+  --link-hover-color: #2a57fc;
+
+  /* Background Colors */
+  --background-color: #000000;
+  --section-bg-color: rgba(255, 255, 255, 0.1);
+  --card-bg-color: rgba(255, 255, 255, 0.1);
+  --navbar-bg-default: rgba(13, 13, 74, 0.1);
+  --navbar-bg-scrolled: rgba(14, 14, 16, 0.9);
+  
+  /* Gradients */
+  --page-gradient: linear-gradient(90deg, #000000, #0e385b);
+  --button-gradient: linear-gradient(90deg, #2a57fc, #9158f8);
+  --button-gradient-reverse: linear-gradient(90deg, #9158f8, #2a57fc);
+  --section-gradient: linear-gradient(90deg, rgba(0, 0, 0, 0.8), rgba(14, 56, 91, 0.8));
+  
+  /* Shadows */
+  --card-shadow-color: rgba(0, 0, 0, 0.2);
+  --navbar-shadow-color: rgba(0, 0, 0, 0.15);
+  --button-shadow-color: rgba(0, 0, 0, 0.3);
+  
+  /* Spacing */
+  --navbar-height: 84px;
+  --section-padding: 80px;
+  --card-padding: 24px;
+  --content-max-width: 1200px;
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+  
+  /* Transitions */
+  --transition-speed: 0.3s;
+  --transition-timing: ease-in-out;
+  
+  /* Z-index Layers */
+  --z-index-navbar: 1000;
+  --z-index-dropdown: 1010;
+  --z-index-modal: 1020;
+  --z-index-tooltip: 1030;
+  
+  /* Button Styles */
+  --button-primary-bg: var(--button-gradient);
+  --button-primary-text: var(--text-light);
+  --button-secondary-bg: transparent;
+  --button-secondary-text: var(--text-light);
+  
+  /* Form Elements */
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --input-border: rgba(255, 255, 255, 0.2);
+  --input-focus-border: var(--secondary-color);
+  --input-placeholder: rgba(255, 255, 255, 0.5);
+  
+  /* Card Styles */
+  --card-border-color: rgba(255, 255, 255, 0.2);
+  --card-hover-transform: translateY(-2px);
+  
+  /* Animation */
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 300ms;
+  --animation-duration-slow: 500ms;
+
+  /* Chat bubble specific */
+  --chat-user-bubble-color: #4a90e2;
+  --chat-ai-bubble-color: rgba(255, 255, 255, 0.1);
+  --chat-bubble-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --chat-container-height: 70vh;
+  --chat-input-height: 100px;
+  --timestamp-color: #888888;
+}

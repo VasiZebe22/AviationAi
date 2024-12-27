@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.5.0",
+    "firebase": "^11.1.0",
+    "firebase-admin": "^13.0.2",
+    "helmet": "^7.1.0",
+    "openai": "^4.77.0",
+    "web-vitals": "^4.2.4",
+    "winston": "^3.17.0",
+    "express-validator": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.0"
+  }
+}

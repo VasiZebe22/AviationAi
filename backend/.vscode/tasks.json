@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "npm install",
+			"command": "npm",
+			"args": [
+				"install",
+				"openai"
+			],
+			"presentation": {
+				"reveal": "silent"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "npm install web-vitals",
+			"command": "npm",
+			"args": [
+				"install",
+				"web-vitals"
+			],
+			"presentation": {
+				"reveal": "silent"
+			}
+		}
+	]
+}

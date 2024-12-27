@@ -1,0 +1,80 @@
+.custom-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-speed) var(--transition-timing);
+    box-shadow: 0 2px 4px var(--button-shadow-color);
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+}
+
+.custom-button--primary {
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+
+.custom-button--secondary {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+}
+
+.custom-button:hover {
+    transform: var(--card-hover-transform);
+    box-shadow: 0 4px 8px var(--button-shadow-color);
+}
+
+.custom-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px var(--button-shadow-color);
+}
+
+.custom-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Size variants */
+.custom-button--small {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    min-width: 100px;
+}
+
+.custom-button--large {
+    padding: 16px 32px;
+    font-size: 1.125rem;
+    min-width: 140px;
+}
+
+/* Additional variants */
+.custom-button--outline {
+    background-color: transparent;
+    border: 2px solid var(--button-primary-bg);
+    color: var(--button-primary-bg);
+}
+
+.custom-button--outline:hover {
+    background-color: var(--button-primary-bg);
+    color: var(--button-primary-text);
+}
+
+.custom-button--text {
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--button-primary-bg);
+    padding: 8px 16px;
+}
+
+.custom-button--text:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    transform: none;
+}

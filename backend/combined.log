@@ -1,0 +1,16 @@
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T00:36:40.145Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T00:36:40.147Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T00:36:40.316Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T00:36:40.323Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T00:42:08.880Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T00:42:08.882Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T00:42:09.045Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T00:42:09.050Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T00:46:56.912Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T00:46:56.914Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T00:46:57.083Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T00:46:57.090Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T00:51:36.307Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T00:51:36.309Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T00:51:36.476Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T00:51:36.482Z"}
