@@ -14,3 +14,7 @@
 {"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T00:51:36.309Z"}
 {"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T00:51:36.476Z"}
 {"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T00:51:36.482Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T11:20:54.662Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T11:20:54.664Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T11:20:54.936Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T11:20:54.945Z"}

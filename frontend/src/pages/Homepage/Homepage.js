@@ -26,8 +26,8 @@ const Homepage = () => {
         }
     }, [location]);
 
-    const handleNavigateToLogin = () => {
-        navigate('/login');
+    const handleNavigateToSignup = () => {
+        navigate('/signup');
     };
 
     return (
@@ -45,7 +45,7 @@ const Homepage = () => {
                     <h1>Revolutionize Aviation Learning with AI</h1>
                     <p>Your personal AI-powered pilot instructor.</p>
                     <div className="hero-buttons">
-                        <Button className="custom-button--primary" onClick={handleNavigateToLogin}>Sign Up</Button>
+                        <Button className="custom-button--primary" onClick={handleNavigateToSignup}>Sign Up</Button>
                         <Button className="custom-button--secondary">Learn More</Button>
                     </div>
                 </div>
@@ -98,7 +98,7 @@ const Homepage = () => {
                                 <li>Basic AI Analysis</li>
                                 <li>No Real-Time Support</li>
                             </ul>
-                            <Button className="custom-button--primary" onClick={handleNavigateToLogin}>Get Started</Button>
+                            <Button className="custom-button--primary" onClick={handleNavigateToSignup}>Get Started</Button>
                         </div>
                         <div className="pricing-card">
                             <h3>Premium</h3>

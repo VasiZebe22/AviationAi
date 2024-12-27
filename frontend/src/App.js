@@ -10,6 +10,7 @@ import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 // Lazy load components
 const Homepage = React.lazy(() => import("./pages/Homepage/Homepage"));
 const Login = React.lazy(() => import("./pages/Login/Login"));
+const Signup = React.lazy(() => import("./pages/Signup/SignupPage"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard/Dashboard"));
 const AiChat = React.lazy(() => import("./components/AiChat/AiChat"));
 const ProfileEdit = React.lazy(() => import("./components/Profile/ProfileEdit"));
@@ -47,6 +48,18 @@ function AppRoutes() {
                     ) : (
                         <Suspense fallback={<LoadingSpinner />}>
                             <Login />
+                        </Suspense>
+                    )
+                } 
+            />
+            <Route 
+                path="/signup" 
+                element={
+                    currentUser ? (
+                        <Navigate to="/dashboard" />
+                    ) : (
+                        <Suspense fallback={<LoadingSpinner />}>
+                            <Signup />
                         </Suspense>
                     )
                 } 

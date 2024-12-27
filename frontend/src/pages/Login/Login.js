@@ -10,7 +10,7 @@ const Login = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,9 +64,9 @@ const Login = () => {
               {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button 
                 className="switch-mode-btn"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => navigate('/signup')}
               >
-                {isLogin ? "Sign Up" : "Sign In"}
+                Sign Up
               </button>
             </p>
           </div>
