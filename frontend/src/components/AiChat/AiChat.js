@@ -1,33 +1,106 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { getAssistantResponse } from '../../api/assistant';
+import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
 const AiChat = () => {
   const { currentUser } = useAuth();
-  const [history, setHistory] = useState([]);
   const [messageInput, setMessageInput] = useState('');
+  const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [savedChats, setSavedChats] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showThinking, setShowThinking] = useState(false);
   const historyRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
-  const formatTimestamp = () => {
-    return new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
+  // Wrap loadSavedChats in useCallback to prevent infinite re-renders
+  const loadSavedChats = useCallback(async () => {
+    if (!currentUser?.user) {
+      console.log('No user logged in, skipping chat load');
+      return;
+    }
+    
+    try {
+      console.log('Loading chats for user:', currentUser.user.uid);
+      const chatsRef = collection(db, 'chats');
+      const q = query(
+        chatsRef,
+        where('userId', '==', currentUser.user.uid),
+        orderBy('createdAt', 'desc')
+      );
+      
+      console.log('Executing Firestore query...');
+      const querySnapshot = await getDocs(q);
+      console.log('Query returned:', querySnapshot.size, 'chats');
+      
+      const chats = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Chat data:', { id: doc.id, ...data });
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
+      
+      console.log('Setting saved chats:', chats.length, 'chats found');
+      setSavedChats(chats);
+    } catch (error) {
+      console.error('Error loading chats:', error);
+      setError({ type: 'error', message: `Failed to load chats: ${error.message}` });
+    }
+  }, [currentUser?.user]); // Only recreate when user changes
+
+  // Load saved chats when user changes
+  useEffect(() => {
+    if (currentUser?.user?.uid) {
+      console.log('User changed, reloading chats for:', currentUser.user.uid);
+      loadSavedChats();
+    } else {
+      console.log('No user, clearing saved chats');
+      setSavedChats([]);
+    }
+  }, [currentUser?.user?.uid, loadSavedChats]);
 
   const scrollToBottom = () => {
     if (historyRef.current) {
-      historyRef.current.scrollTop = historyRef.current.scrollHeight;
+      historyRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [history]);
+
+  const formatTimestamp = () => {
+    return new Date().toLocaleString();
+  };
+
+  const addMessage = (content, type = 'user') => {
+    const newMessage = {
+      type,
+      content,
+      timestamp: formatTimestamp(),
+      isTyping: type === 'ai'
+    };
+    setHistory(prev => [...prev, newMessage]);
+    
+    if (type === 'ai') {
+      // Remove typing animation after a brief delay
+      setTimeout(() => {
+        setHistory(prev => 
+          prev.map(msg => 
+            msg.type === 'ai' && msg.timestamp === newMessage.timestamp
+              ? { ...msg, isTyping: false }
+              : msg
+          )
+        );
+      }, 500); // Match the animation duration
     }
   };
 
@@ -35,72 +108,47 @@ const AiChat = () => {
     e.preventDefault();
     if (!messageInput.trim()) return;
 
-    // Add user message
-    setHistory(prev => [...prev, {
-      type: 'user',
-      content: messageInput,
-      timestamp: formatTimestamp()
-    }]);
-
-    // Add temporary AI message with "Thinking..." state
-    setHistory(prev => [...prev, {
-      type: 'ai',
-      content: 'Thinking...',
-      timestamp: formatTimestamp(),
-      isThinking: true
-    }]);
-
+    addMessage(messageInput, 'user');
     setMessageInput('');
     setIsLoading(true);
     setError(null);
+    setShowThinking(true);
 
     try {
       if (!currentUser?.token) {
-        throw new Error('No auth token found');
+        throw new Error('Not authenticated');
       }
 
-      const response = await fetch('http://localhost:5000/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentUser.token}`
-        },
-        body: JSON.stringify({ message: messageInput }),
+      // Add typing indicator
+      addMessage('...', 'ai');
+
+      const responseData = await getAssistantResponse(messageInput, currentUser.token);
+      
+      // Remove typing indicator and add AI response
+      setHistory(prev => {
+        const newHistory = prev.filter(msg => msg.type !== 'ai' || !msg.isTyping);
+        return [...newHistory, {
+          type: 'ai',
+          content: responseData.response,
+          timestamp: formatTimestamp(),
+          isTyping: true
+        }];
       });
 
-      const responseData = await response.json();
-
-      // Replace the "Thinking..." message with the actual response
-      setHistory(prev => prev.map((msg, index) => {
-        if (index === prev.length - 1 && msg.isThinking) {
-          return {
-            type: 'ai',
-            content: responseData.response,
-            timestamp: formatTimestamp(),
-            isTyping: true
-          };
-        }
-        return msg;
-      }));
-
-      // After a delay, remove the typing animation
+      // After a short delay, remove the typing animation
       setTimeout(() => {
-        setHistory(prev => prev.map((msg, index) => {
-          if (index === prev.length - 1) {
-            return { ...msg, isTyping: false };
-          }
-          return msg;
-        }));
-        scrollToBottom();
+        setHistory(prev => prev.map((msg, i) => 
+          i === prev.length - 1 ? { ...msg, isTyping: false } : msg
+        ));
       }, 500);
 
     } catch (err) {
       console.error('Chat Error:', err);
       setError('Failed to get response from AI');
-      // Remove the "Thinking..." message on error
-      setHistory(prev => prev.filter(msg => !msg.isThinking));
+      setHistory(prev => prev.filter(msg => msg.type !== 'ai' || !msg.isTyping));
     } finally {
       setIsLoading(false);
+      setShowThinking(false);
     }
   };
 
@@ -392,6 +440,16 @@ const AiChat = () => {
         </button>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-6" ref={historyRef}>
+          {showThinking && (
+            <div className="flex items-start mb-4">
+              <div className="flex-shrink-0 w-8 h-8">
+                <img src="/ai-avatar.png" alt="AI" className="w-full h-full rounded-full" />
+              </div>
+              <div className="ml-3 text-sm text-gray-400">
+                Thinking...
+              </div>
+            </div>
+          )}
           {history.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
@@ -402,29 +460,26 @@ const AiChat = () => {
               {history.map((message, index) => (
                 <div
                   key={index}
-                  className={`flex items-start mb-4 ${message.type === 'user' ? 'justify-end' : ''}`}
+                  className={`flex ${
+                    message.type === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
                 >
-                  {message.type === 'ai' && (
-                    <div className="flex-shrink-0 w-8 h-8">
-                      <img src="/ai-avatar.png" alt="AI" className="w-full h-full rounded-full" />
-                    </div>
-                  )}
-                  <div className={`ml-3 ${message.type === 'user' ? 'order-first mr-3' : ''}`}>
+                  <div
+                    className={`max-w-[80%] rounded-lg p-4 ${
+                      message.type === 'user'
+                        ? 'bg-accent-lilac text-white'
+                        : 'bg-surface-DEFAULT text-gray-100'
+                    }`}
+                  >
                     {message.type === 'ai' ? (
-                      message.isThinking ? (
-                        <div className="text-sm text-gray-400">
-                          Thinking...
-                        </div>
-                      ) : (
-                        <div className={`prose prose-invert max-w-none ${message.isTyping ? 'typing-animation' : ''}`}>
-                          {formatMessage(message.content)}
-                        </div>
-                      )
+                      <div className={`prose prose-invert max-w-none ${message.isTyping ? 'typing-animation' : ''}`}>
+                        {formatMessage(message.content)}
+                      </div>
                     ) : (
                       <p className="text-sm">{message.content}</p>
                     )}
-                    <div className="text-xs text-gray-500 mt-1">
-                      {message.timestamp}
+                    <div className="text-xs text-gray-400 mt-2">
+                      {formatTimestamp(message.timestamp)}
                     </div>
                   </div>
                 </div>

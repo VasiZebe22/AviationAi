@@ -80,3 +80,37 @@
 {"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T18:51:22.160Z"}
 {"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-27T19:07:34.178Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
 {"level":"info","message":"Query processed successfully","runId":"run_OXHrqx6H8KhqFpbFi677QLN2","threadId":"thread_sfqOsgKY7euS0XMIizuG1aXN","timestamp":"2024-12-27T19:07:44.140Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T19:10:58.830Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T19:10:58.831Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T19:10:58.998Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T19:10:59.004Z"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-27T19:11:47.995Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_vy0FCJSdCOPi7hjcNStAxgfT","threadId":"thread_ciHaNN6d3JsPUHwM8uF49k1D","timestamp":"2024-12-27T19:12:13.247Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-27T19:14:08.261Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_gdIR63r1ZVq8enj0uGlDPUqX","threadId":"thread_9T8tIuaMYvQ0N8XdBv5IqSN3","timestamp":"2024-12-27T19:14:21.022Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-27T19:17:22.999Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_KZ2SwxjED91nWSglne2t1Cl9","threadId":"thread_x66BxS7THAMSgLd3ufq1puHJ","timestamp":"2024-12-27T19:17:34.828Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:19:52.543Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_WKpzwLuoAc1FPbnRT227M0BO","threadId":"thread_Xd9g8gdM8ORPzg9O5cXmzyQZ","timestamp":"2024-12-27T19:20:02.813Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:23:03.687Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_03wMzSyp4PXD3q8oRyQLoHMI","threadId":"thread_YhmX7a3KrWIIaDqOWqKwPCMX","timestamp":"2024-12-27T19:23:14.612Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:25:54.119Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_8nUyvdQgVnAwarneFHkvgnue","threadId":"thread_mKCHXu2NcAqQQPXPLxh7fIEQ","timestamp":"2024-12-27T19:26:07.119Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:27:34.225Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_nBYEgDmuFHn7EEDDIn2ONmOS","threadId":"thread_wMOJ6bIWn2dpfhemoH5ea41f","timestamp":"2024-12-27T19:27:46.579Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:35:10.123Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_6echIEsjGAqnKYuddvaaqREm","threadId":"thread_FdRtw9gmg62FeiireRWpiD5G","timestamp":"2024-12-27T19:35:21.040Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:35:59.760Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_LetWoRfkwpvixKMJvxgUWGZG","threadId":"thread_3zPwlUJr1D1sTWasqDinmYE6","timestamp":"2024-12-27T19:36:13.440Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:43:24.147Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_UO3TJSdUV1bKvNzRdW7PBV0G","threadId":"thread_G6mURUr4sDiAk8zX4IJe56kW","timestamp":"2024-12-27T19:43:35.279Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":21,"timestamp":"2024-12-27T19:43:48.422Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_Np4Z38HK4hdiekXXSthAcmUl","threadId":"thread_FVgHQHGntxuFM4m41Ddxb5ym","timestamp":"2024-12-27T19:43:57.688Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:45:51.603Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_JEFjxZ3Ow4CmT5z69EyDM8qB","threadId":"thread_cUwIRMkg5I8ktqOaYTUEpSRp","timestamp":"2024-12-27T19:46:06.246Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-27T19:47:17.644Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_iRBL9OWHkWkqkASxbRMxz57n","threadId":"thread_EYqqx7ko08pVy1ibgGKO8Je8","timestamp":"2024-12-27T19:47:30.400Z","userId":"8fDNeBqcOGMOtZutnnW7nqFxPYw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T20:01:39.387Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T20:01:39.389Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T20:01:39.577Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T20:01:39.583Z"}
