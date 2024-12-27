@@ -4,7 +4,6 @@ import './styles/global.css';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
-import Background from './components/Background/Background';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
 
 // Lazy load components
@@ -104,7 +103,6 @@ const App = () => {
             <ToastProvider>
                 <AuthProvider>
                     <Router>
-                        <Background />
                         <AppRoutes />
                     </Router>
                 </AuthProvider>
