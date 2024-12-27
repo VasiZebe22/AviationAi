@@ -15,6 +15,8 @@ const AiChat = () => {
   const [currentChat, setCurrentChat] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showThinking, setShowThinking] = useState(false);
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const historyRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
@@ -104,6 +106,24 @@ const AiChat = () => {
     }
   };
 
+  const typeMessage = (message) => {
+    setIsTyping(true);
+    let currentIndex = 0;
+    setDisplayedContent('');
+    
+    const typeChar = () => {
+      if (currentIndex < message.length) {
+        setDisplayedContent(message.substring(0, currentIndex + 1)); // Use substring instead of concatenation
+        currentIndex++;
+        setTimeout(typeChar, Math.random() * 5 + 3);
+      } else {
+        setIsTyping(false);
+      }
+    };
+    
+    typeChar();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
@@ -119,33 +139,22 @@ const AiChat = () => {
         throw new Error('Not authenticated');
       }
 
-      // Add typing indicator
-      addMessage('...', 'ai');
-
       const responseData = await getAssistantResponse(messageInput, currentUser.token);
       
-      // Remove typing indicator and add AI response
-      setHistory(prev => {
-        const newHistory = prev.filter(msg => msg.type !== 'ai' || !msg.isTyping);
-        return [...newHistory, {
-          type: 'ai',
-          content: responseData.response,
-          timestamp: formatTimestamp(),
-          isTyping: true
-        }];
-      });
-
-      // After a short delay, remove the typing animation
-      setTimeout(() => {
-        setHistory(prev => prev.map((msg, i) => 
-          i === prev.length - 1 ? { ...msg, isTyping: false } : msg
-        ));
-      }, 500);
+      // Add AI response with typing effect
+      const newMessage = {
+        type: 'ai',
+        content: responseData.response,
+        timestamp: formatTimestamp(),
+        isTyping: true
+      };
+      
+      setHistory(prev => [...prev, newMessage]);
+      typeMessage(responseData.response);
 
     } catch (err) {
       console.error('Chat Error:', err);
       setError('Failed to get response from AI');
-      setHistory(prev => prev.filter(msg => msg.type !== 'ai' || !msg.isTyping));
     } finally {
       setIsLoading(false);
       setShowThinking(false);
@@ -284,6 +293,9 @@ const AiChat = () => {
   };
 
   const formatMessage = (content) => {
+    // Remove citation patterns like 【4:0†source】
+    content = content.replace(/【\d+:\d+†source】/g, '');
+    
     return content.split('\n').map((paragraph, idx) => {
       // Sub-bullet points and nested lists
       if (paragraph.match(/^\s+[•\-*]\s/)) {
@@ -439,7 +451,7 @@ const AiChat = () => {
           </svg>
         </button>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-6" ref={historyRef}>
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
           {showThinking && (
             <div className="flex items-start mb-4">
               <div className="flex-shrink-0 w-8 h-8">
@@ -450,14 +462,14 @@ const AiChat = () => {
               </div>
             </div>
           )}
-          {history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
-              <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
-            </div>
-          ) : (
-            <div className="flex flex-col space-y-4">
-              {history.map((message, index) => (
+          <div className="flex flex-col space-y-4">
+            {history.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
+                <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
+              </div>
+            ) : (
+              history.map((message, index) => (
                 <div
                   key={index}
                   className={`flex ${
@@ -471,21 +483,25 @@ const AiChat = () => {
                         : 'bg-surface-DEFAULT text-gray-100'
                     }`}
                   >
-                    {message.type === 'ai' ? (
+                    {message.type === 'ai' && index === history.length - 1 && isTyping ? (
+                      <div className="prose prose-invert max-w-none">
+                        <span>{displayedContent && formatMessage(displayedContent)}</span>
+                        <span className="typing-cursor"></span>
+                      </div>
+                    ) : (
                       <div className={`prose prose-invert max-w-none ${message.isTyping ? 'typing-animation' : ''}`}>
                         {formatMessage(message.content)}
                       </div>
-                    ) : (
-                      <p className="text-sm">{message.content}</p>
                     )}
                     <div className="text-xs text-gray-400 mt-2">
                       {formatTimestamp(message.timestamp)}
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
+          <div ref={historyRef} style={{ height: 0, width: 0, overflow: 'hidden' }} />
         </div>
 
         <div className="border-t border-dark-lightest p-4 bg-surface-DEFAULT">

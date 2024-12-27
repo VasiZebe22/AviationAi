@@ -155,7 +155,7 @@
   flex-direction: column;
   height: 100vh;
   position: relative;
-  padding-bottom: 80px;
+  padding-bottom: 0;
   padding-left: 80px;
 }
 
@@ -222,8 +222,15 @@
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  padding-bottom: 100px;
-  margin-bottom: 80px;
+  margin-bottom: 0;
+  scroll-behavior: smooth;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages > div:last-child {
+  margin-bottom: 0;
 }
 
 .welcome-message {
@@ -324,6 +331,78 @@
 
 .typing-indicator span:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+/* Typing cursor that follows the text */
+.typing-cursor {
+  display: inline-block;
+  width: 4px;
+  height: 15px;
+  background-color: #fff;
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Ensure cursor aligns with text */
+.prose-invert span {
+  display: inline;
+  vertical-align: baseline;
+}
+
+/* Typing animation */
+@keyframes messageAppear {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typing {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 /* Input Area */
@@ -427,52 +506,6 @@
   color: white;
 }
 
-/* Animations */
-@keyframes messageAppear {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes typing {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes shake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 10px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .chat-sidebar {
@@ -486,4 +519,13 @@
   .chat-form {
     margin: 0 12px;
   }
+}
+
+/* Remove any bottom spacing */
+.prose {
+  margin-bottom: 0;
+}
+
+.prose > *:last-child {
+  margin-bottom: 0;
 }

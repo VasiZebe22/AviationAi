@@ -114,3 +114,33 @@
 {"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T20:01:39.389Z"}
 {"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T20:01:39.577Z"}
 {"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T20:01:39.583Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-27T20:18:20.747Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-27T20:18:20.750Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-27T20:18:21.027Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-27T20:18:21.036Z"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:19:56.375Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_ehERwGeI2wmF9pX3g2ibHTF2","threadId":"thread_I4niNxrrGVa1cUzUJmhY2Xur","timestamp":"2024-12-27T20:20:11.964Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:26:09.867Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_UX365rhsKKx4IM2KZEcVJ7Sj","threadId":"thread_x2d68wix52X2nJg0kjOLVdLS","timestamp":"2024-12-27T20:26:25.591Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:29:47.819Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_n1NidSTNdKDVfT5BHzP2oP2q","threadId":"thread_Io6KH3wVhoxCJZRK6IiCQfYC","timestamp":"2024-12-27T20:30:01.870Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":10,"timestamp":"2024-12-27T20:33:23.485Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_3VhNMfedcYY4yHUQ65UzC3Ql","threadId":"thread_jSKrVnNmTOfrvHsKaaXUN8CC","timestamp":"2024-12-27T20:33:34.497Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:37:32.171Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_nhhWTrQUsQoEVVVvHawzOfzC","threadId":"thread_yFy7BMo4sfrcF4BUMCMoL6AB","timestamp":"2024-12-27T20:37:48.309Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:39:53.150Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_hQNQCMV7dcmnVGXsaqLhjcDl","threadId":"thread_2o7EphJjyiYE66lAFg4gcjw1","timestamp":"2024-12-27T20:40:06.327Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:44:18.284Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_9xJULAfznMg7xUQpcaHkKzYE","threadId":"thread_fdzvM39P360Gpa2LRbk34L8l","timestamp":"2024-12-27T20:44:31.527Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:47:34.300Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_c261GqTyKzQTRuNZxZrTQ5EP","threadId":"thread_BoxfZ2ppRrQAcTgfqDzmhn9J","timestamp":"2024-12-27T20:47:46.111Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":17,"timestamp":"2024-12-27T20:48:08.133Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_UTTj58SwK8NjaiUXMYsjrhk4","threadId":"thread_KQNCAHfC1l7T3YXL6jG5Uz0I","timestamp":"2024-12-27T20:48:23.836Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:50:29.600Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_jnoUbIn1kfYAly9FY8t660iz","threadId":"thread_ASR9OTTOnbCzDpzb4UnTFpQv","timestamp":"2024-12-27T20:50:46.411Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:53:01.700Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_2GVflG3omGCNPLfAPoke7XwZ","threadId":"thread_706Lii5BxestSRoEdwkJSR4h","timestamp":"2024-12-27T20:53:17.099Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T20:57:07.301Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_bhncS08II2O4Z9TP1TT8D3MC","threadId":"thread_DgGh4PslAcxpesc3deZILYn6","timestamp":"2024-12-27T20:57:20.345Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":11,"timestamp":"2024-12-27T21:00:59.968Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_MLKR7zp8PQT61vzSZ5IuN4CL","threadId":"thread_s253Tz2Ttx4KoR8HVNMGTp6T","timestamp":"2024-12-27T21:01:15.621Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
