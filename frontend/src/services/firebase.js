@@ -6,6 +6,7 @@ import {
     signOut,
     onAuthStateChanged
 } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // Firebase configuration with all required fields
 const firebaseConfig = {
@@ -31,6 +32,7 @@ try {
 }
 
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Authentication functions
 export const signIn = async (email, password) => {
@@ -81,4 +83,4 @@ export const onAuthChange = (callback) => {
     });
 };
 
-export { auth };
+export { auth, db };

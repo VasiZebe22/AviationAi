@@ -42,3 +42,4 @@ try {
     logger.error('Firebase Admin SDK initialization error:', error);
     throw error;
 }
+
