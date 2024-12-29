@@ -1,44 +1,114 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signIn, signUp, logout as firebaseLogout, onAuthChange } from '../services/firebase';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { 
+  signIn, 
+  signUp, 
+  logout,
+  onAuthChange, 
+  resendVerificationEmail,
+  isLegacyUser,
+  monitorSession
+} from '../services/firebase';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionId, setSessionId] = useState(null);
+  const navigate = useNavigate();
+
+  // Handle session invalidation
+  const handleSessionInvalid = useCallback(() => {
+    // Only show toast and navigate if we actually had a user
+    if (currentUser) {
+      toast.error('Your session has expired. Please log in again.');
+      setCurrentUser(null);
+      setSessionId(null);
+      navigate('/login');
+    }
+  }, [navigate, currentUser]);
 
   useEffect(() => {
+    let mounted = true;
+    let sessionUnsubscribe = null;
+    
     const unsubscribe = onAuthChange((userInfo) => {
-      setCurrentUser(userInfo);
+      if (!mounted) return;
+      
+      // Allow legacy accounts or verified accounts
+      if (userInfo?.user && (isLegacyUser(userInfo.user) || userInfo.user.emailVerified)) {
+        setCurrentUser(userInfo);
+      } else {
+        setCurrentUser(null);
+        setSessionId(null);
+      }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+      if (sessionUnsubscribe) {
+        sessionUnsubscribe();
+      }
+    };
   }, []);
 
+  // Set up session monitoring when user or sessionId changes
+  useEffect(() => {
+    let sessionUnsubscribe = null;
+
+    if (currentUser?.user?.uid && sessionId) {
+      sessionUnsubscribe = monitorSession(
+        currentUser.user.uid,
+        sessionId,
+        handleSessionInvalid
+      );
+    }
+
+    return () => {
+      if (sessionUnsubscribe) {
+        sessionUnsubscribe();
+      }
+    };
+  }, [currentUser?.user?.uid, sessionId, handleSessionInvalid]);
+
   const login = async (email, password) => {
+    setLoading(true);
     try {
-      const { user, token } = await signIn(email, password);
-      return { user, token };
+      const result = await signIn(email, password);
+      setSessionId(result.sessionId);
+      return result;
     } catch (error) {
-      console.error('Login error:', error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signup = async (email, password) => {
     try {
-      const { user, token } = await signUp(email, password);
-      return { user, token };
+      const result = await signUp(email, password);
+      return {
+        ...result,
+        requiresVerification: true
+      };
     } catch (error) {
-      console.error('Signup error:', error);
       throw error;
     }
   };
 
-  const logout = async () => {
+  const logoutUser = async () => {
     try {
-      await firebaseLogout();
+      await logout();
+      setCurrentUser(null);
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -49,42 +119,14 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     login,
     signup,
-    logout,
+    logout: logoutUser,
+    resendVerification: resendVerificationEmail,
     loading
   };
 
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'var(--background-color)'
-      }}>
-        <div style={{
-          width: '50px',
-          height: '50px',
-          border: '5px solid var(--primary-color)',
-          borderTop: '5px solid transparent',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
-      </div>
-    );
-  }
-
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+}

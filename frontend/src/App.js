@@ -1,10 +1,13 @@
-import React, { Suspense } from "react";
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import './styles/global.css';
+import './styles/utilities.css';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { ToastContainer } from 'react-toastify';
 import LoadingSpinner from './components/LoadingSpinner/LoadingSpinner';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Lazy load components
 const Homepage = React.lazy(() => import("./pages/Homepage/Homepage"));
@@ -30,85 +33,97 @@ function AppRoutes() {
     const { currentUser } = useAuth();
 
     return (
-        <Routes>
-            <Route 
-                path="/" 
-                element={
-                    <Suspense fallback={<LoadingSpinner />}>
-                        <Homepage />
-                    </Suspense>
-                } 
-            />
-            <Route 
-                path="/login" 
-                element={
-                    currentUser ? (
-                        <Navigate to="/dashboard" />
-                    ) : (
+        <>
+            <Routes>
+                <Route 
+                    path="/" 
+                    element={
                         <Suspense fallback={<LoadingSpinner />}>
-                            <Login />
+                            <Homepage />
                         </Suspense>
-                    )
-                } 
+                    } 
+                />
+                <Route 
+                    path="/login" 
+                    element={
+                        currentUser ? (
+                            <Navigate to="/dashboard" />
+                        ) : (
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Login />
+                            </Suspense>
+                        )
+                    } 
+                />
+                <Route 
+                    path="/signup" 
+                    element={
+                        currentUser ? (
+                            <Navigate to="/dashboard" />
+                        ) : (
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Signup />
+                            </Suspense>
+                        )
+                    } 
+                />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Dashboard />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/chat"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <AiChat />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/profile/edit"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <ProfileEdit />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+            </Routes>
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
             />
-            <Route 
-                path="/signup" 
-                element={
-                    currentUser ? (
-                        <Navigate to="/dashboard" />
-                    ) : (
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <Signup />
-                        </Suspense>
-                    )
-                } 
-            />
-            <Route
-                path="/dashboard"
-                element={
-                    <ProtectedRoute>
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <Dashboard />
-                        </Suspense>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/chat"
-                element={
-                    <ProtectedRoute>
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <AiChat />
-                        </Suspense>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/profile/edit"
-                element={
-                    <ProtectedRoute>
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <ProfileEdit />
-                        </Suspense>
-                    </ProtectedRoute>
-                }
-            />
-        </Routes>
+        </>
     );
 }
 
-const App = () => {
+export default function App() {
     return (
         <ErrorBoundary>
-            <ToastProvider>
-                <AuthProvider>
-                    <Router>
+            <Router>
+                <ToastProvider>
+                    <AuthProvider>
                         <AppRoutes />
-                    </Router>
-                </AuthProvider>
-            </ToastProvider>
+                    </AuthProvider>
+                </ToastProvider>
+            </Router>
         </ErrorBoundary>
     );
-};
-
-export default App;
+}
