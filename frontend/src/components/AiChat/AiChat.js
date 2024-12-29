@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAssistantResponse } from '../../api/assistant';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, arrayUnion, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
 const AiChat = () => {
@@ -114,9 +114,10 @@ const AiChat = () => {
     
     const typeChar = () => {
       if (currentIndex < message.length) {
-        setDisplayedContent(message.substring(0, currentIndex + 1)); // Use substring instead of concatenation
+        setDisplayedContent(prev => message.substring(0, currentIndex + 1));
         currentIndex++;
-        setTimeout(typeChar, Math.random() * 5 + 3);
+        // Further reduced timing to 3.75ms-8.75ms for quadruple speed
+        setTimeout(typeChar, Math.random() * 5 + 3.75);
       } else {
         setIsTyping(false);
       }
@@ -124,6 +125,10 @@ const AiChat = () => {
     
     typeChar();
   };
+
+  const renderTypingCursor = () => (
+    <span className="inline-block w-2 h-2 ml-0.5 -mb-0.5 bg-accent-lilac rounded-full animate-pulse" />
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -154,11 +159,15 @@ const AiChat = () => {
         const chatRef = doc(db, 'chats', chatId);
         await updateDoc(chatRef, {
           updatedAt: serverTimestamp(),
-          messages: newHistory // Update with full messages array
+          messages: newHistory
         });
       }
 
       const responseData = await getAssistantResponse(messageInput, currentUser.token);
+      
+      // Start typing animation
+      setIsTyping(true);
+      typeMessage(responseData.response);
       
       const assistantMessage = { type: 'assistant', content: responseData.response };
       const finalHistory = [...newHistory, assistantMessage];
@@ -168,7 +177,7 @@ const AiChat = () => {
       if (chatId) {
         const chatRef = doc(db, 'chats', chatId);
         await updateDoc(chatRef, {
-          messages: finalHistory // Update with full messages array including assistant's response
+          messages: finalHistory
         });
       }
 
@@ -359,35 +368,15 @@ const AiChat = () => {
   };
 
   const formatMessage = (content) => {
-    // Remove citation markers like 【4:0†source】
+    if (!content) return null;
+
+    // Remove citation markers
     content = content.replace(/【\d+:\d+†source】/g, '');
-    
-    return content.split('\n').map((paragraph, idx) => {
-      // Sub-bullet points and nested lists
-      if (paragraph.match(/^\s+[•\-*]\s/)) {
-        const level = Math.floor(paragraph.match(/^\s*/)[0].length / 2);
-        return (
-          <div key={idx} className={`flex items-start space-x-2 mb-2 ml-${level * 4}`}>
-            <div className="flex-shrink-0 w-1 h-1 rounded-full bg-gray-400 mt-2.5"></div>
-            <p className="text-sm text-gray-200">
-              {formatMarkdown(paragraph.replace(/^\s+[•\-*]\s/, ''))}
-            </p>
-          </div>
-        );
-      }
 
-      // Regular bullet points
-      if (paragraph.match(/^[•\-*]\s/)) {
-        return (
-          <div key={idx} className="flex items-start space-x-2 mb-2">
-            <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gray-400 mt-2"></div>
-            <p className="text-sm text-gray-200">
-              {formatMarkdown(paragraph.replace(/^[•\-*]\s/, ''))}
-            </p>
-          </div>
-        );
-      }
+    // Split content into paragraphs
+    const paragraphs = content.split('\n').filter(Boolean);
 
+    return paragraphs.map((paragraph, idx) => {
       // Headers
       if (paragraph.startsWith('# ')) {
         return (
@@ -449,6 +438,35 @@ const AiChat = () => {
       // Empty lines
       return <div key={idx} className="h-2" />;
     });
+  };
+
+  const renderMessageContent = (message, isLastMessage) => {
+    if (message.type === 'assistant' && isLastMessage && isTyping) {
+      // Remove citation markers from displayed content
+      const cleanContent = displayedContent.replace(/【\d+:\d+†source】/g, '');
+      
+      return cleanContent.split('\n').map((paragraph, idx) => {
+        if (!paragraph.trim()) return <div key={idx} className="h-2" />;
+        
+        // For the last paragraph, add the cursor
+        if (idx === cleanContent.split('\n').length - 1) {
+          return (
+            <p key={idx} className="text-sm mb-2 text-gray-200">
+              {formatMarkdown(paragraph)}
+              {renderTypingCursor()}
+            </p>
+          );
+        }
+        
+        return (
+          <p key={idx} className="text-sm mb-2 text-gray-200">
+            {formatMarkdown(paragraph)}
+          </p>
+        );
+      });
+    }
+    
+    return formatMessage(message.content);
   };
 
   const handleStartEdit = (chatId, existingTitle) => {
@@ -613,7 +631,7 @@ const AiChat = () => {
                     title="Delete chat"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 110-2h5V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
@@ -658,16 +676,9 @@ const AiChat = () => {
                         : 'bg-surface-DEFAULT text-gray-100'
                     }`}
                   >
-                    {message.type === 'assistant' && index === history.length - 1 && isTyping ? (
-                      <div className="prose prose-invert max-w-none">
-                        <span>{displayedContent && formatMessage(displayedContent)}</span>
-                        <span className="typing-cursor"></span>
-                      </div>
-                    ) : (
-                      <div className={`prose prose-invert max-w-none ${message.isTyping ? 'typing-animation' : ''}`}>
-                        {formatMessage(message.content)}
-                      </div>
-                    )}
+                    <div className="prose prose-invert max-w-none">
+                      {renderMessageContent(message, index === history.length - 1)}
+                    </div>
                     <div className="text-xs text-gray-400 mt-2">
                       {formatTimestamp(message.timestamp)}
                     </div>
