@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAssistantResponse } from '../../api/assistant';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
 const AiChat = () => {
@@ -13,10 +13,11 @@ const AiChat = () => {
   const [error, setError] = useState(null);
   const [savedChats, setSavedChats] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [showThinking, setShowThinking] = useState(false);
-  const [displayedContent, setDisplayedContent] = useState('');
+  const [editingChatId, setEditingChatId] = useState(null);
+  const [newTitle, setNewTitle] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [chatId, setChatId] = useState(null);
   const historyRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
@@ -88,16 +89,16 @@ const AiChat = () => {
       type,
       content,
       timestamp: formatTimestamp(),
-      isTyping: type === 'ai'
+      isTyping: type === 'assistant'
     };
     setHistory(prev => [...prev, newMessage]);
     
-    if (type === 'ai') {
+    if (type === 'assistant') {
       // Remove typing animation after a brief delay
       setTimeout(() => {
         setHistory(prev => 
           prev.map(msg => 
-            msg.type === 'ai' && msg.timestamp === newMessage.timestamp
+            msg.type === 'assistant' && msg.timestamp === newMessage.timestamp
               ? { ...msg, isTyping: false }
               : msg
           )
@@ -126,38 +127,59 @@ const AiChat = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!messageInput.trim()) return;
+    if (!messageInput.trim() || isLoading) return;
 
-    addMessage(messageInput, 'user');
-    setMessageInput('');
     setIsLoading(true);
     setError(null);
-    setShowThinking(true);
 
     try {
-      if (!currentUser?.token) {
-        throw new Error('Not authenticated');
+      const userMessage = { type: 'user', content: messageInput };
+      const newHistory = [...history, userMessage];
+      setHistory(newHistory);
+      setMessageInput('');
+
+      // Auto-save chat if this is the first message
+      if (history.length === 0) {
+        const firstMessagePreview = messageInput.slice(0, 25) + (messageInput.length > 25 ? '...' : '');
+        const chatRef = await addDoc(collection(db, 'chats'), {
+          userId: currentUser.user.uid,
+          title: firstMessagePreview,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          messages: [userMessage]
+        });
+        setChatId(chatRef.id);
+      } else if (chatId) {
+        // Update existing chat
+        const chatRef = doc(db, 'chats', chatId);
+        await updateDoc(chatRef, {
+          updatedAt: serverTimestamp(),
+          messages: newHistory // Update with full messages array
+        });
       }
 
       const responseData = await getAssistantResponse(messageInput, currentUser.token);
       
-      // Add AI response with typing effect
-      const newMessage = {
-        type: 'ai',
-        content: responseData.response,
-        timestamp: formatTimestamp(),
-        isTyping: true
-      };
-      
-      setHistory(prev => [...prev, newMessage]);
-      typeMessage(responseData.response);
+      const assistantMessage = { type: 'assistant', content: responseData.response };
+      const finalHistory = [...newHistory, assistantMessage];
+      setHistory(finalHistory);
+
+      // Update chat with assistant's response
+      if (chatId) {
+        const chatRef = doc(db, 'chats', chatId);
+        await updateDoc(chatRef, {
+          messages: finalHistory // Update with full messages array including assistant's response
+        });
+      }
 
     } catch (err) {
-      console.error('Chat Error:', err);
-      setError('Failed to get response from AI');
+      setError(err);
+      console.error('Error:', err);
     } finally {
       setIsLoading(false);
-      setShowThinking(false);
+      if (inputRef.current) {
+        inputRef.current.style.height = 'auto';
+      }
     }
   };
 
@@ -168,7 +190,41 @@ const AiChat = () => {
     }
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
+    // Save current chat if there are messages
+    if (history.length > 0 && currentUser?.user) {
+      try {
+        // Get the first user message for the title, or use the first AI message if no user message exists
+        const firstMessage = history.find(msg => msg.type === 'user') || history[0];
+        const title = firstMessage.content.length > 30 
+          ? firstMessage.content.substring(0, 30) + '...'
+          : firstMessage.content;
+
+        const chatData = {
+          userId: currentUser.user.uid,
+          title,
+          messages: history,
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        };
+
+        if (currentChat?.id) {
+          const chatRef = doc(db, 'chats', currentChat.id);
+          await updateDoc(chatRef, {
+            messages: history,
+            lastUpdated: new Date().toISOString()
+          });
+        } else {
+          const docRef = await addDoc(collection(db, 'chats'), chatData);
+          setSavedChats(prev => [{ id: docRef.id, ...chatData }, ...prev]);
+        }
+      } catch (error) {
+        console.error('Error saving chat:', error);
+        setError({ type: 'error', message: 'Failed to save chat before creating new one' });
+      }
+    }
+
+    // Start new chat
     setCurrentChat(null);
     setHistory([]);
     if (inputRef.current) {
@@ -235,10 +291,20 @@ const AiChat = () => {
     }
   };
 
-  const handleLoadChat = (chat) => {
-    setCurrentChat(chat);
-    setHistory(chat.messages);
-    setIsSidebarOpen(false);
+  const handleLoadChat = async (chat) => {
+    try {
+      const chatRef = doc(db, 'chats', chat.id);
+      const chatDoc = await getDoc(chatRef);
+      
+      if (chatDoc.exists()) {
+        const chatData = chatDoc.data();
+        setHistory(chatData.messages || []);
+        setChatId(chat.id);
+      }
+    } catch (err) {
+      console.error('Error loading chat:', err);
+      setError('Failed to load chat');
+    }
   };
 
   const formatMarkdown = (text) => {
@@ -293,7 +359,7 @@ const AiChat = () => {
   };
 
   const formatMessage = (content) => {
-    // Remove citation patterns like 【4:0†source】
+    // Remove citation markers like 【4:0†source】
     content = content.replace(/【\d+:\d+†source】/g, '');
     
     return content.split('\n').map((paragraph, idx) => {
@@ -385,35 +451,134 @@ const AiChat = () => {
     });
   };
 
+  const handleStartEdit = (chatId, existingTitle) => {
+    setEditingChatId(chatId);
+    setNewTitle(existingTitle || 'New Chat');
+  };
+
+  const handleSaveTitle = async (chatId) => {
+    if (!newTitle.trim()) return;
+    
+    try {
+      const chatRef = doc(db, 'chats', chatId);
+      await updateDoc(chatRef, {
+        title: newTitle.trim()
+      });
+      
+      setSavedChats(prevChats =>
+        prevChats.map(chat =>
+          chat.id === chatId
+            ? { ...chat, title: newTitle.trim() }
+            : chat
+        )
+      );
+      
+      if (currentChat?.id === chatId) {
+        setCurrentChat(prev => ({ ...prev, title: newTitle.trim() }));
+      }
+    } catch (error) {
+      console.error('Error updating chat title:', error);
+    } finally {
+      setEditingChatId(null);
+      setNewTitle('');
+    }
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    try {
+      // Delete from Firestore
+      const chatRef = doc(db, 'chats', chatId);
+      await deleteDoc(chatRef);
+      
+      // Update local state
+      setSavedChats(prevChats => prevChats.filter(chat => chat.id !== chatId));
+      
+      // If the deleted chat was the current chat, clear it
+      if (currentChat?.id === chatId) {
+        setCurrentChat(null);
+        setHistory([]);
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+      setError('Failed to delete chat');
+    }
+  };
+
+  const handleChatSelect = async (chat) => {
+    try {
+      const chatRef = doc(db, 'chats', chat.id);
+      const chatDoc = await getDoc(chatRef);
+      
+      if (chatDoc.exists()) {
+        const chatData = chatDoc.data();
+        setHistory(chatData.messages || []);
+        setChatId(chat.id);
+      }
+    } catch (err) {
+      console.error('Error loading chat:', err);
+      setError('Failed to load chat');
+    }
+  };
+
+  // Load saved chats when component mounts
+  useEffect(() => {
+    const loadSavedChats = async () => {
+      if (!currentUser?.user?.uid) return;
+      
+      // Simplified query without orderBy to avoid requiring composite index
+      const chatsQuery = query(
+        collection(db, 'chats'),
+        where('userId', '==', currentUser.user.uid)
+      );
+
+      const querySnapshot = await getDocs(chatsQuery);
+      const chats = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Sort chats client-side instead
+      const sortedChats = chats.sort((a, b) => {
+        const timeA = a.updatedAt?.seconds || 0;
+        const timeB = b.updatedAt?.seconds || 0;
+        return timeB - timeA;
+      });
+      
+      setSavedChats(sortedChats);
+    };
+
+    loadSavedChats();
+  }, [currentUser?.user?.uid, chatId]);
+
   return (
     <div className="flex h-screen bg-dark text-gray-100">
-      <div className={`fixed inset-y-0 left-0 w-64 bg-surface-DEFAULT shadow-lg transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}>
-        <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-dark-lightest">
-            <h2 className="text-xl font-semibold text-gray-100">Conversations</h2>
-          </div>
-          
-          <div className="flex flex-col flex-1">
-            <button
-              onClick={handleNewChat}
-              className="m-4 px-4 py-2 bg-accent-lilac text-white rounded-lg hover:bg-accent-lilac-dark transition-colors duration-200 flex items-center justify-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>New Chat</span>
-            </button>
-            
-            <div className="flex-1 overflow-y-auto">
-              {savedChats.map((chat) => (
-                <div
-                  key={chat.id}
-                  onClick={() => handleLoadChat(chat)}
-                  className={`p-3 cursor-pointer hover:bg-dark-lighter transition-colors duration-200 ${
-                    currentChat?.id === chat.id ? 'bg-accent-lilac bg-opacity-20 border-l-4 border-accent-lilac' : ''
-                  }`}
-                >
-                  <p className="text-sm font-medium text-gray-100 truncate">{chat.title || 'New Chat'}</p>
+      <div className="w-64 bg-dark-lighter flex flex-col">
+        <div className="p-4">
+          <button
+            onClick={handleNewChat}
+            className="w-full bg-accent-lilac text-white rounded-lg px-4 py-2 flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            New Chat
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="space-y-1">
+            {savedChats.map((chat) => (
+              <div
+                key={chat.id}
+                className={`p-3 cursor-pointer hover:bg-dark-lighter transition-colors duration-200 relative group flex items-center justify-between ${
+                  currentChat?.id === chat.id ? 'bg-accent-lilac bg-opacity-20 border-l-4 border-accent-lilac' : ''
+                }`}
+                onClick={() => handleChatSelect(chat)}
+              >
+                <div className="flex-1 min-w-0 mr-2">
+                  <div className="truncate text-sm font-medium text-gray-100">
+                    {chat.title || 'New Chat'}
+                  </div>
                   <p className="text-xs text-gray-400 mt-1">
                     {chat.createdAt instanceof Date 
                       ? chat.createdAt.toLocaleDateString()
@@ -424,52 +589,62 @@ const AiChat = () => {
                           : 'Date not available'}
                   </p>
                 </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="m-4 px-4 py-2 bg-dark-lighter text-gray-300 rounded-lg hover:bg-dark-lightest transition-colors duration-200 flex items-center justify-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span>Dashboard</span>
-            </button>
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartEdit(chat.id, chat.title);
+                    }}
+                    className="p-1 rounded hover:bg-accent-lilac hover:bg-opacity-20 transition-all duration-200"
+                    title="Rename chat"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-accent-lilac" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Are you sure you want to delete this chat?')) {
+                        handleDeleteChat(chat.id);
+                      }
+                    }}
+                    className="p-1 rounded hover:bg-red-500 hover:bg-opacity-20 transition-all duration-200 ml-1"
+                    title="Delete chat"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
+
+        <div className="p-4 border-t border-dark-lightest mt-auto">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full bg-accent-lilac text-white rounded-lg px-4 min-h-[44px] flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Dashboard
+          </button>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col h-full">
-        <button 
-          className="md:hidden fixed top-4 left-4 z-20 p-2 rounded-md bg-surface-DEFAULT shadow-md hover:bg-surface-light"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-        >
-          <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
         <div className="flex-1 overflow-y-auto p-4 md:p-6">
-          {showThinking && (
-            <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-8 h-8">
-                <img src="/ai-avatar.png" alt="AI" className="w-full h-full rounded-full" />
-              </div>
-              <div className="ml-3 text-sm text-gray-400">
-                Thinking...
-              </div>
+          {history.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
+              <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
             </div>
-          )}
-          <div className="flex flex-col space-y-4">
-            {history.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
-                <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
-              </div>
-            ) : (
-              history.map((message, index) => (
+          ) : (
+            <div className="space-y-4">
+              {history.map((message, index) => (
                 <div
                   key={index}
                   className={`flex ${
@@ -483,7 +658,7 @@ const AiChat = () => {
                         : 'bg-surface-DEFAULT text-gray-100'
                     }`}
                   >
-                    {message.type === 'ai' && index === history.length - 1 && isTyping ? (
+                    {message.type === 'assistant' && index === history.length - 1 && isTyping ? (
                       <div className="prose prose-invert max-w-none">
                         <span>{displayedContent && formatMessage(displayedContent)}</span>
                         <span className="typing-cursor"></span>
@@ -498,10 +673,21 @@ const AiChat = () => {
                     </div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-          <div ref={historyRef} style={{ height: 0, width: 0, overflow: 'hidden' }} />
+              ))}
+              
+              {isLoading && (
+                <div className="flex items-start">
+                  <div className="max-w-[80%] bg-surface-DEFAULT rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="border-t border-dark-lightest p-4 bg-surface-DEFAULT">
