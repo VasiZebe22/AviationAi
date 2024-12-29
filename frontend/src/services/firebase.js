@@ -7,7 +7,16 @@ import {
     onAuthStateChanged,
     sendEmailVerification
 } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { 
+    getFirestore, 
+    enableIndexedDbPersistence, 
+    query, 
+    collection, 
+    where, 
+    orderBy, 
+    getDocs,
+    limit 
+} from 'firebase/firestore';
 import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
 
 // Firebase configuration with all required fields
@@ -33,8 +42,19 @@ try {
     });
 }
 
-const auth = getAuth(app);
+// Initialize Firestore
 const db = getFirestore(app);
+
+// Enable offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+        console.warn('The current browser does not support persistence.');
+    }
+});
+
+const auth = getAuth(app);
 const firebaseDatabase = getDatabase(app);
 
 // Generate a unique session ID
@@ -209,3 +229,28 @@ export const onAuthChange = (callback) => {
 export { monitorSession, removeSession };
 
 export { auth, db };
+
+// Add this function to help with index creation
+export const createRequiredIndexes = async () => {
+    try {
+        // Test the query that requires the index
+        const q = query(
+            collection(db, 'chats'),
+            where('userId', '==', 'test'),
+            orderBy('updatedAt', 'desc')
+        );
+        await getDocs(q);
+        return { success: true };
+    } catch (err) {
+        if (err.message.includes('requires an index')) {
+            const indexUrl = err.message.match(/https:\/\/console\.firebase\.google\.com[^\s]*/)?.[0];
+            return {
+                success: false,
+                requiresIndex: true,
+                indexUrl: indexUrl,
+                message: 'This application requires a Firestore index to be created. Please contact the administrator with this URL: ' + indexUrl
+            };
+        }
+        return { success: false, error: err.message };
+    }
+};

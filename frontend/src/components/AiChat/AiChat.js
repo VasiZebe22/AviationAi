@@ -2,8 +2,23 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAssistantResponse } from '../../api/assistant';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, arrayUnion, getDoc } from 'firebase/firestore';
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  getDocs, 
+  orderBy, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  serverTimestamp, 
+  arrayUnion, 
+  getDoc,
+  limit 
+} from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const AiChat = () => {
   const { currentUser } = useAuth();
@@ -18,46 +33,65 @@ const AiChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [displayedContent, setDisplayedContent] = useState('');
   const [chatId, setChatId] = useState(null);
+  const [firestoreError, setFirestoreError] = useState(null);
+  const [isFirestoreConnected, setIsFirestoreConnected] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
   const historyRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
   // Wrap loadSavedChats in useCallback to prevent infinite re-renders
   const loadSavedChats = useCallback(async () => {
-    if (!currentUser?.user) {
-      console.log('No user logged in, skipping chat load');
-      return;
-    }
-    
+    if (!currentUser?.user?.uid) return;
+
     try {
-      console.log('Loading chats for user:', currentUser.user.uid);
-      const chatsRef = collection(db, 'chats');
       const q = query(
-        chatsRef,
+        collection(db, 'chats'),
         where('userId', '==', currentUser.user.uid),
-        orderBy('createdAt', 'desc')
+        orderBy('updatedAt', 'desc')
       );
-      
-      console.log('Executing Firestore query...');
       const querySnapshot = await getDocs(q);
-      console.log('Query returned:', querySnapshot.size, 'chats');
-      
-      const chats = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        console.log('Chat data:', { id: doc.id, ...data });
-        return {
+      const chats = [];
+      querySnapshot.forEach((doc) => {
+        chats.push({
           id: doc.id,
-          ...data
-        };
+          ...doc.data(),
+        });
       });
-      
-      console.log('Setting saved chats:', chats.length, 'chats found');
       setSavedChats(chats);
-    } catch (error) {
-      console.error('Error loading chats:', error);
-      setError({ type: 'error', message: `Failed to load chats: ${error.message}` });
+    } catch (err) {
+      console.error('Error loading chats:', err);
+      if (err.message.includes('requires an index')) {
+        // Fall back to a simpler query without ordering
+        try {
+          const simpleQ = query(
+            collection(db, 'chats'),
+            where('userId', '==', currentUser.user.uid)
+          );
+          const snapshot = await getDocs(simpleQ);
+          const chats = [];
+          snapshot.forEach((doc) => {
+            chats.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+          // Sort in memory as fallback
+          chats.sort((a, b) => {
+            const dateA = a.updatedAt?.toDate() || new Date(0);
+            const dateB = b.updatedAt?.toDate() || new Date(0);
+            return dateB - dateA;
+          });
+          setSavedChats(chats);
+        } catch (fallbackErr) {
+          console.error('Error in fallback query:', fallbackErr);
+          setError('Error loading chats. Please try again later.');
+        }
+      } else {
+        setError('Error loading chats. Please try again later.');
+      }
     }
-  }, [currentUser?.user]); // Only recreate when user changes
+  }, [currentUser?.user?.uid]); // Only recreate when user changes
 
   // Load saved chats when user changes
   useEffect(() => {
@@ -69,6 +103,67 @@ const AiChat = () => {
       setSavedChats([]);
     }
   }, [currentUser?.user?.uid, loadSavedChats]);
+
+  useEffect(() => {
+    const initializeFirestore = async () => {
+      setIsInitializing(true);
+      try {
+        // Simpler query just to test connection
+        const testQuery = query(
+          collection(db, 'chats'),
+          where('userId', '==', currentUser?.user?.uid),
+          limit(1)
+        );
+        await getDocs(testQuery);
+        
+        setIsFirestoreConnected(true);
+        setFirestoreError(null);
+      } catch (err) {
+        console.error('Firestore initialization error:', err);
+        if (err.message.includes('requires an index')) {
+          setError('Database initialization required. Please contact the administrator to set up the required indexes.');
+        } else {
+          setIsFirestoreConnected(false);
+          setFirestoreError(err.message);
+        }
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    if (currentUser?.user?.uid) {
+      initializeFirestore();
+    } else {
+      setIsInitializing(false);
+    }
+  }, [currentUser?.user?.uid]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('Network status: online');
+      setIsFirestoreConnected(true);
+      setFirestoreError(null);
+    };
+
+    const handleOffline = () => {
+      console.log('Network status: offline');
+      setIsFirestoreConnected(false);
+      setFirestoreError('You are currently offline. Please check your internet connection.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Check initial network status
+    if (!navigator.onLine) {
+      handleOffline();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const scrollToBottom = () => {
     if (historyRef.current) {
@@ -130,65 +225,203 @@ const AiChat = () => {
     <span className="inline-block w-2 h-2 ml-0.5 -mb-0.5 bg-accent-lilac rounded-full animate-pulse" />
   );
 
+  const formatMarkdown = (text) => {
+    // Replace markdown patterns with HTML
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>');
+  };
+
+  const formatMessage = (content) => {
+    // Remove citation markers
+    const cleanContent = content.replace(/【\d+:\d+†source】/g, '');
+    
+    return cleanContent.split('\n').map((paragraph, idx) => {
+      if (!paragraph.trim()) return <div key={idx} className="h-2" />;
+
+      // Check for numbered lists
+      const numberedListMatch = paragraph.match(/^(\d+)\.\s(.+)/);
+      if (numberedListMatch) {
+        const [_, number, text] = numberedListMatch;
+        return (
+          <div key={idx} className="flex items-start space-x-2 mb-2">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-lilac bg-opacity-20 flex items-center justify-center">
+              <span className="text-sm text-accent-lilac">{number}</span>
+            </div>
+            <p className="text-sm mt-0.5 text-gray-200 flex-1">
+              <span dangerouslySetInnerHTML={{ __html: formatMarkdown(text) }} />
+            </p>
+          </div>
+        );
+      }
+
+      return (
+        <p key={idx} className="text-sm mb-2 text-gray-200" 
+           dangerouslySetInnerHTML={{ __html: formatMarkdown(paragraph) }} />
+      );
+    });
+  };
+
+  const renderMessageContent = (message, isLastMessage) => {
+    if (message.type === 'assistant' && isLastMessage && isTyping) {
+      // Remove citation markers from displayed content
+      const cleanContent = displayedContent.replace(/【\d+:\d+†source】/g, '');
+      
+      return cleanContent.split('\n').map((paragraph, idx) => {
+        if (!paragraph.trim()) return <div key={idx} className="h-2" />;
+
+        // Check for numbered lists in typing animation
+        const numberedListMatch = paragraph.match(/^(\d+)\.\s(.+)/);
+        if (numberedListMatch) {
+          const [_, number, text] = numberedListMatch;
+          return (
+            <div key={idx} className="flex items-start space-x-2 mb-2">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-lilac bg-opacity-20 flex items-center justify-center">
+                <span className="text-sm text-accent-lilac">{number}</span>
+              </div>
+              <p className="text-sm mt-0.5 text-gray-200 flex-1">
+                <span dangerouslySetInnerHTML={{ __html: formatMarkdown(text) }} />
+                {idx === cleanContent.split('\n').length - 1 && renderTypingCursor()}
+              </p>
+            </div>
+          );
+        }
+        
+        // For the last paragraph, add the cursor
+        if (idx === cleanContent.split('\n').length - 1) {
+          return (
+            <p key={idx} className="text-sm mb-2 text-gray-200">
+              <span dangerouslySetInnerHTML={{ __html: formatMarkdown(paragraph) }} />
+              {renderTypingCursor()}
+            </p>
+          );
+        }
+        
+        return (
+          <p key={idx} className="text-sm mb-2 text-gray-200"
+             dangerouslySetInnerHTML={{ __html: formatMarkdown(paragraph) }} />
+        );
+      });
+    }
+    
+    return formatMessage(message.content);
+  };
+
+  const handleNewChat = () => {
+    setCurrentChat(null);
+    setHistory([]);
+    setMessageInput('');
+    setError(null);
+    setIsTyping(false);
+    setDisplayedContent('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!messageInput.trim() || isLoading) return;
 
     setIsLoading(true);
     setError(null);
+    let newChatId = chatId;
+    let localHistory = [];
 
     try {
       const userMessage = { type: 'user', content: messageInput };
-      const newHistory = [...history, userMessage];
-      setHistory(newHistory);
+      localHistory = [...history, userMessage];
+      
+      setHistory(localHistory);
       setMessageInput('');
 
-      // Auto-save chat if this is the first message
-      if (history.length === 0) {
-        const firstMessagePreview = messageInput.slice(0, 25) + (messageInput.length > 25 ? '...' : '');
-        const chatRef = await addDoc(collection(db, 'chats'), {
+      // Create new chat if we don't have one
+      if (!currentChat) {
+        console.log('Creating new chat...');
+        const chatData = {
           userId: currentUser.user.uid,
-          title: firstMessagePreview,
+          title: messageInput.substring(0, 50),
+          messages: localHistory,
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          messages: [userMessage]
-        });
-        setChatId(chatRef.id);
-      } else if (chatId) {
+          updatedAt: serverTimestamp()
+        };
+
+        const docRef = await addDoc(collection(db, 'chats'), chatData);
+        newChatId = docRef.id;
+        
+        const newChat = {
+          id: newChatId,
+          ...chatData,
+          lastUpdated: new Date().toISOString()
+        };
+        
+        setCurrentChat(newChat);
+        setSavedChats(prev => [newChat, ...prev]);
+      } else {
         // Update existing chat
-        const chatRef = doc(db, 'chats', chatId);
+        const chatRef = doc(db, 'chats', currentChat.id);
         await updateDoc(chatRef, {
-          updatedAt: serverTimestamp(),
-          messages: newHistory
+          messages: localHistory,
+          updatedAt: serverTimestamp()
         });
+        
+        setSavedChats(prev => prev.map(chat => 
+          chat.id === currentChat.id 
+            ? { ...chat, messages: localHistory, lastUpdated: new Date().toISOString() }
+            : chat
+        ));
       }
 
-      const responseData = await getAssistantResponse(messageInput, currentUser.token);
-      
+      // Get AI response
+      let responseData;
+      try {
+        responseData = await getAssistantResponse(messageInput, currentUser.token);
+        console.log('AI response received');
+      } catch (err) {
+        console.error('Error getting AI response:', err);
+        throw new Error(`Failed to get AI response: ${err.message}`);
+      }
+
+      const assistantMessage = { type: 'assistant', content: responseData.response };
+      const finalHistory = [...localHistory, assistantMessage];
+
+      // Save AI response
+      try {
+        console.log('Saving AI response to chat:', newChatId);
+        const chatRef = doc(db, 'chats', newChatId || currentChat.id);
+        await updateDoc(chatRef, {
+          messages: finalHistory,
+          updatedAt: serverTimestamp()
+        });
+        
+        setHistory(finalHistory);
+        setCurrentChat(prev => ({
+          ...prev,
+          messages: finalHistory
+        }));
+        setSavedChats(prev => prev.map(chat => 
+          chat.id === (newChatId || currentChat.id)
+            ? { ...chat, messages: finalHistory, lastUpdated: new Date().toISOString() }
+            : chat
+        ));
+        console.log('AI response saved successfully');
+      } catch (err) {
+        console.error('Error saving AI response:', err);
+        throw new Error(`Failed to save AI response: ${err.message}`);
+      }
+
       // Start typing animation
       setIsTyping(true);
       typeMessage(responseData.response);
-      
-      const assistantMessage = { type: 'assistant', content: responseData.response };
-      const finalHistory = [...newHistory, assistantMessage];
-      setHistory(finalHistory);
-
-      // Update chat with assistant's response
-      if (chatId) {
-        const chatRef = doc(db, 'chats', chatId);
-        await updateDoc(chatRef, {
-          messages: finalHistory
-        });
-      }
 
     } catch (err) {
-      setError(err);
-      console.error('Error:', err);
+      console.error('Error in handleSubmit:', err);
+      setError(err.message || 'An error occurred. Please try again.');
+      
+      if (chatId) {
+        loadSavedChats();
+      }
     } finally {
       setIsLoading(false);
-      if (inputRef.current) {
-        inputRef.current.style.height = 'auto';
-      }
     }
   };
 
@@ -196,48 +429,6 @@ const AiChat = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
-    }
-  };
-
-  const handleNewChat = async () => {
-    // Save current chat if there are messages
-    if (history.length > 0 && currentUser?.user) {
-      try {
-        // Get the first user message for the title, or use the first AI message if no user message exists
-        const firstMessage = history.find(msg => msg.type === 'user') || history[0];
-        const title = firstMessage.content.length > 30 
-          ? firstMessage.content.substring(0, 30) + '...'
-          : firstMessage.content;
-
-        const chatData = {
-          userId: currentUser.user.uid,
-          title,
-          messages: history,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        };
-
-        if (currentChat?.id) {
-          const chatRef = doc(db, 'chats', currentChat.id);
-          await updateDoc(chatRef, {
-            messages: history,
-            lastUpdated: new Date().toISOString()
-          });
-        } else {
-          const docRef = await addDoc(collection(db, 'chats'), chatData);
-          setSavedChats(prev => [{ id: docRef.id, ...chatData }, ...prev]);
-        }
-      } catch (error) {
-        console.error('Error saving chat:', error);
-        setError({ type: 'error', message: 'Failed to save chat before creating new one' });
-      }
-    }
-
-    // Start new chat
-    setCurrentChat(null);
-    setHistory([]);
-    if (inputRef.current) {
-      inputRef.current.focus();
     }
   };
 
@@ -301,12 +492,22 @@ const AiChat = () => {
   };
 
   const handleLoadChat = async (chat) => {
+    setIsTyping(false);
+    setError(null);
+    
     try {
       const chatRef = doc(db, 'chats', chat.id);
       const chatDoc = await getDoc(chatRef);
       
       if (chatDoc.exists()) {
         const chatData = chatDoc.data();
+        // Set both current chat and history
+        const fullChat = {
+          ...chat,
+          ...chatData,
+          id: chat.id
+        };
+        setCurrentChat(fullChat);
         setHistory(chatData.messages || []);
         setChatId(chat.id);
       }
@@ -316,157 +517,30 @@ const AiChat = () => {
     }
   };
 
-  const formatMarkdown = (text) => {
-    // Process the text in order of precedence
-    const parts = text.split(/(\*\*.*?\*\*|__.*?__|`.*?`|\*.*?\*|_.*?_|\[.*?\]\(.*?\))/g);
+  const handleChatSelect = async (chat) => {
+    setIsTyping(false);
+    setError(null);
     
-    return parts.map((part, i) => {
-      // Code
-      if (part.startsWith('`') && part.endsWith('`')) {
-        return (
-          <code key={i} className="px-1.5 py-0.5 rounded bg-dark-lighter text-gray-300 font-mono text-sm">
-            {part.slice(1, -1)}
-          </code>
-        );
-      }
-      // Bold
-      if ((part.startsWith('**') && part.endsWith('**')) || 
-          (part.startsWith('__') && part.endsWith('__'))) {
-        return (
-          <strong key={i} className="font-bold text-gray-100">
-            {part.slice(2, -2)}
-          </strong>
-        );
-      }
-      // Italic
-      if ((part.startsWith('*') && part.endsWith('*')) || 
-          (part.startsWith('_') && part.endsWith('_'))) {
-        return (
-          <em key={i} className="italic text-gray-100">
-            {part.slice(1, -1)}
-          </em>
-        );
-      }
-      // Links
-      if (part.match(/\[.*?\]\(.*?\)/)) {
-        const [text, url] = part.match(/\[(.*?)\]\((.*?)\)/).slice(1);
-        return (
-          <a 
-            key={i}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent-lilac hover:text-accent-lilac-dark underline"
-          >
-            {text}
-          </a>
-        );
-      }
-      // Regular text
-      return part;
-    });
-  };
-
-  const formatMessage = (content) => {
-    if (!content) return null;
-
-    // Remove citation markers
-    content = content.replace(/【\d+:\d+†source】/g, '');
-
-    // Split content into paragraphs
-    const paragraphs = content.split('\n').filter(Boolean);
-
-    return paragraphs.map((paragraph, idx) => {
-      // Headers
-      if (paragraph.startsWith('# ')) {
-        return (
-          <h1 key={idx} className="text-xl font-bold text-gray-100 mb-4">
-            {formatMarkdown(paragraph.substring(2))}
-          </h1>
-        );
-      }
-      if (paragraph.startsWith('## ')) {
-        return (
-          <h2 key={idx} className="text-lg font-bold text-gray-100 mb-3">
-            {formatMarkdown(paragraph.substring(3))}
-          </h2>
-        );
-      }
-      if (paragraph.startsWith('### ')) {
-        return (
-          <h3 key={idx} className="text-base font-bold text-gray-100 mb-2">
-            {formatMarkdown(paragraph.substring(4))}
-          </h3>
-        );
-      }
-
-      // Numbered lists
-      if (paragraph.match(/^\d+\./)) {
-        const [number, ...rest] = paragraph.split('.');
-        return (
-          <div key={idx} className="flex items-start space-x-2 mb-2">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-lilac bg-opacity-20 flex items-center justify-center">
-              <span className="text-sm text-accent-lilac">{number.trim()}</span>
-            </div>
-            <p className="text-sm mt-0.5 text-gray-200">
-              {formatMarkdown(rest.join('.').trim())}
-            </p>
-          </div>
-        );
-      }
-
-      // Code blocks
-      if (paragraph.startsWith('```')) {
-        return (
-          <pre key={idx} className="bg-dark-lighter rounded-lg p-4 mb-4 overflow-x-auto">
-            <code className="text-sm text-gray-300 font-mono">
-              {paragraph.replace(/```/g, '').trim()}
-            </code>
-          </pre>
-        );
-      }
-
-      // Regular paragraphs
-      if (paragraph.trim()) {
-        return (
-          <p key={idx} className="text-sm mb-2 text-gray-200">
-            {formatMarkdown(paragraph)}
-          </p>
-        );
-      }
-
-      // Empty lines
-      return <div key={idx} className="h-2" />;
-    });
-  };
-
-  const renderMessageContent = (message, isLastMessage) => {
-    if (message.type === 'assistant' && isLastMessage && isTyping) {
-      // Remove citation markers from displayed content
-      const cleanContent = displayedContent.replace(/【\d+:\d+†source】/g, '');
+    try {
+      const chatRef = doc(db, 'chats', chat.id);
+      const chatDoc = await getDoc(chatRef);
       
-      return cleanContent.split('\n').map((paragraph, idx) => {
-        if (!paragraph.trim()) return <div key={idx} className="h-2" />;
-        
-        // For the last paragraph, add the cursor
-        if (idx === cleanContent.split('\n').length - 1) {
-          return (
-            <p key={idx} className="text-sm mb-2 text-gray-200">
-              {formatMarkdown(paragraph)}
-              {renderTypingCursor()}
-            </p>
-          );
-        }
-        
-        return (
-          <p key={idx} className="text-sm mb-2 text-gray-200">
-            {formatMarkdown(paragraph)}
-          </p>
-        );
-      });
+      if (chatDoc.exists()) {
+        const chatData = chatDoc.data();
+        // Set both current chat and history
+        const fullChat = {
+          ...chat,
+          ...chatData,
+          id: chat.id
+        };
+        setCurrentChat(fullChat);
+        setHistory(chatData.messages || []);
+        setChatId(chat.id);
+      }
+    } catch (err) {
+      console.error('Error loading chat:', err);
+      setError('Failed to load chat');
     }
-    
-    return formatMessage(message.content);
   };
 
   const handleStartEdit = (chatId, existingTitle) => {
@@ -522,22 +596,6 @@ const AiChat = () => {
     }
   };
 
-  const handleChatSelect = async (chat) => {
-    try {
-      const chatRef = doc(db, 'chats', chat.id);
-      const chatDoc = await getDoc(chatRef);
-      
-      if (chatDoc.exists()) {
-        const chatData = chatDoc.data();
-        setHistory(chatData.messages || []);
-        setChatId(chat.id);
-      }
-    } catch (err) {
-      console.error('Error loading chat:', err);
-      setError('Failed to load chat');
-    }
-  };
-
   // Load saved chats when component mounts
   useEffect(() => {
     const loadSavedChats = async () => {
@@ -568,6 +626,24 @@ const AiChat = () => {
     loadSavedChats();
   }, [currentUser?.user?.uid, chatId]);
 
+  useEffect(() => {
+    return () => {
+      setIsTyping(false);
+      setDisplayedContent('');
+    };
+  }, [chatId]); // Reset when changing chats
+
+  const renderError = () => {
+    if (!error) return null;
+    return (
+      <div className="absolute bottom-20 left-0 right-0 px-4">
+        <div className="bg-red-500 text-white p-3 rounded-md shadow-lg">
+          {error}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-dark text-gray-100">
       <div className="w-64 bg-dark-lighter flex flex-col">
@@ -594,9 +670,28 @@ const AiChat = () => {
                 onClick={() => handleChatSelect(chat)}
               >
                 <div className="flex-1 min-w-0 mr-2">
-                  <div className="truncate text-sm font-medium text-gray-100">
-                    {chat.title || 'New Chat'}
-                  </div>
+                  {editingChatId === chat.id ? (
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSaveTitle(chat.id);
+                      }}
+                      className="flex items-center"
+                    >
+                      <input
+                        type="text"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        onBlur={() => handleSaveTitle(chat.id)}
+                        className="w-full bg-dark-lightest text-gray-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-accent-lilac focus:outline-none"
+                        autoFocus
+                      />
+                    </form>
+                  ) : (
+                    <div className="truncate text-sm font-medium text-gray-100">
+                      {chat.title || 'New Chat'}
+                    </div>
+                  )}
                   <p className="text-xs text-gray-400 mt-1">
                     {chat.createdAt instanceof Date 
                       ? chat.createdAt.toLocaleDateString()
@@ -653,100 +748,117 @@ const AiChat = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6">
-          {history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
-              <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
+      <div className="flex-1 flex flex-col h-full relative">
+        {isInitializing ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-gray-400">Initializing application...</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {history.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.type === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-lg p-4 ${
-                      message.type === 'user'
-                        ? 'bg-accent-lilac text-white'
-                        : 'bg-surface-DEFAULT text-gray-100'
-                    }`}
-                  >
-                    <div className="prose prose-invert max-w-none">
-                      {renderMessageContent(message, index === history.length - 1)}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-2">
-                      {formatTimestamp(message.timestamp)}
-                    </div>
-                  </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+              {history.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
+                  <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
                 </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex items-start">
-                  <div className="max-w-[80%] bg-surface-DEFAULT rounded-lg p-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse"></div>
-                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
-                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
+              ) : (
+                <div className="space-y-4">
+                  {history.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${
+                        message.type === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg p-4 ${
+                          message.type === 'user'
+                            ? 'bg-accent-lilac text-white'
+                            : 'bg-surface-DEFAULT text-gray-100'
+                        }`}
+                      >
+                        <div className="prose prose-invert max-w-none">
+                          {renderMessageContent(message, index === history.length - 1)}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-2">
+                          {formatTimestamp(message.timestamp)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                  
+                  {isLoading && (
+                    <div className="flex items-start">
+                      <div className="max-w-[80%] bg-surface-DEFAULT rounded-lg p-4">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse"></div>
+                          <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                          <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-
-        <div className="border-t border-dark-lightest p-4 bg-surface-DEFAULT">
-          <form onSubmit={handleSubmit} className="flex space-x-4">
-            <textarea
-              ref={inputRef}
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 min-h-[44px] max-h-32 p-2 bg-dark-lighter text-gray-100 border border-dark-lightest rounded-lg focus:ring-2 focus:ring-accent-lilac focus:border-transparent resize-none placeholder-gray-500"
-              rows="1"
-            />
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={handleSaveChat}
-                disabled={history.length === 0}
-                className={`p-2 rounded-lg transition-colors duration-200 ${
-                  history.length === 0
-                    ? 'bg-dark-lighter text-gray-600 cursor-not-allowed'
-                    : 'bg-dark-lighter text-gray-300 hover:bg-dark-lightest'
-                }`}
-                title="Save chat"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                </svg>
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading || !messageInput.trim()}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                  isLoading || !messageInput.trim()
-                    ? 'bg-dark-lighter text-gray-600 cursor-not-allowed'
-                    : 'bg-accent-lilac text-white hover:bg-accent-lilac-dark'
-                }`}
-              >
-                Send
-              </button>
+            {error && (
+              <div className="absolute bottom-20 left-0 right-0 px-4">
+                <div className="bg-red-500 text-white p-3 rounded-md shadow-lg">
+                  {error}
+                </div>
+              </div>
+            )}
+            <div className="p-4 border-t border-gray-700">
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <textarea
+                  ref={inputRef}
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your message..."
+                  className="flex-1 min-h-[44px] max-h-32 p-2 bg-dark-lighter text-gray-100 border border-dark-lightest rounded-lg focus:ring-2 focus:ring-accent-lilac focus:border-transparent resize-none placeholder-gray-500"
+                  rows="1"
+                />
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveChat}
+                    disabled={history.length === 0}
+                    className={`p-2 rounded-lg transition-colors duration-200 ${
+                      history.length === 0
+                        ? 'bg-dark-lighter text-gray-600 cursor-not-allowed'
+                        : 'bg-dark-lighter text-gray-300 hover:bg-dark-lightest'
+                    }`}
+                    title="Save chat"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading || !messageInput.trim()}
+                    className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                      isLoading || !messageInput.trim()
+                        ? 'bg-dark-lighter text-gray-600 cursor-not-allowed'
+                        : 'bg-accent-lilac text-white hover:bg-accent-lilac-dark'
+                    }`}
+                  >
+                    Send
+                  </button>
+                </div>
+              </form>
+              {error && (
+                <div className="mt-2 p-2 text-sm text-red-300 bg-red-900 bg-opacity-50 rounded-md">
+                  {error.message}
+                </div>
+              )}
             </div>
-          </form>
-          {error && (
-            <div className="mt-2 p-2 text-sm text-red-300 bg-red-900 bg-opacity-50 rounded-md">
-              {error.message}
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
