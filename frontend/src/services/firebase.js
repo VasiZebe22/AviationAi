@@ -181,6 +181,11 @@ export const resendVerificationEmail = async (user) => {
 
 export const logout = async () => {
     try {
+        const user = auth.currentUser;
+        if (user) {
+            // Remove session before signing out
+            await removeSession(user.uid);
+        }
         await signOut(auth);
     } catch (error) {
         console.error('Logout error:', error);

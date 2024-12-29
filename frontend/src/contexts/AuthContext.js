@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
     try {
       await logout();
       setCurrentUser(null);
+      setSessionId(null); // Clear session ID
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
