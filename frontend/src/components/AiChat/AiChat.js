@@ -20,6 +20,60 @@ import {
 import { db } from '../../services/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
+const BookmarkButton = ({ message, isBookmarked, onToggle, messageType, chatId }) => {
+  const [localBookmarked, setLocalBookmarked] = useState(isBookmarked);
+  const [isInitialRender, setIsInitialRender] = useState(true);
+
+  // Reset state when chat or message changes
+  useEffect(() => {
+    setLocalBookmarked(isBookmarked);
+    setIsInitialRender(true);
+  }, [isBookmarked, chatId, message.messageId]);
+
+  useEffect(() => {
+    if (isInitialRender) {
+      const timer = setTimeout(() => setIsInitialRender(false), 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialRender]);
+
+  const handleClick = async (e) => {
+    e.stopPropagation();
+    setLocalBookmarked(!localBookmarked);
+    await onToggle(e);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`absolute ${
+        messageType === 'user' ? 'left-0 -translate-x-[110%]' : 'right-0 translate-x-[110%]'
+      } top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-dark-lightest ${
+        isInitialRender ? '' : 'transition-all duration-200'
+      } ${
+        localBookmarked 
+          ? 'opacity-100 text-accent-lilac' 
+          : `opacity-0 ${!isInitialRender ? 'group-hover:opacity-100' : ''} text-gray-400`
+      }`}
+      title={localBookmarked ? "Remove bookmark" : "Bookmark message"}
+    >
+      <svg 
+        className="w-5 h-5" 
+        fill={localBookmarked ? "currentColor" : "none"} 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={2} 
+          d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" 
+        />
+      </svg>
+    </button>
+  );
+};
+
 const AiChat = () => {
   const { currentUser } = useAuth();
   const [messageInput, setMessageInput] = useState('');
@@ -36,9 +90,11 @@ const AiChat = () => {
   const [firestoreError, setFirestoreError] = useState(null);
   const [isFirestoreConnected, setIsFirestoreConnected] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [forceUpdate, setForceUpdate] = useState(0);
   const historyRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
 
   // Wrap loadSavedChats in useCallback to prevent infinite re-renders
   const loadSavedChats = useCallback(async () => {
@@ -342,7 +398,8 @@ const AiChat = () => {
           title: messageInput.substring(0, 50),
           messages: localHistory,
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          starred: false
         };
 
         const docRef = await addDoc(collection(db, 'chats'), chatData);
@@ -363,12 +420,6 @@ const AiChat = () => {
           messages: localHistory,
           updatedAt: serverTimestamp()
         });
-        
-        setSavedChats(prev => prev.map(chat => 
-          chat.id === currentChat.id 
-            ? { ...chat, messages: localHistory, lastUpdated: new Date().toISOString() }
-            : chat
-        ));
       }
 
       // Get AI response
@@ -468,11 +519,17 @@ const AiChat = () => {
           lastUpdated: new Date().toISOString()
         });
         
-        setSavedChats(prev => prev.map(chat => 
-          chat.id === currentChat.id 
-            ? { ...chat, messages: history, lastUpdated: new Date().toISOString() }
-            : chat
-        ));
+        setSavedChats(prevChats =>
+          prevChats.map(chat =>
+            chat.id === currentChat.id 
+              ? { ...chat, messages: history, lastUpdated: new Date().toISOString() }
+              : chat
+          )
+        );
+        
+        if (currentChat?.id === chatId) {
+          setCurrentChat(prev => ({ ...prev, messages: history, lastUpdated: new Date().toISOString() }));
+        }
       } else {
         console.log('Creating new chat...');
         const docRef = await addDoc(collection(db, 'chats'), chatData);
@@ -518,6 +575,7 @@ const AiChat = () => {
   };
 
   const handleChatSelect = async (chat) => {
+    setShowBookmarkedOnly(false); // Reset filter when changing chats
     setIsTyping(false);
     setError(null);
     
@@ -596,6 +654,247 @@ const AiChat = () => {
     }
   };
 
+  const toggleStar = async () => {
+    if (!currentChat) return;
+
+    try {
+      const chatRef = doc(db, 'chats', currentChat.id);
+      const newStarredState = !currentChat.starred;
+
+      // Update local state immediately
+      setCurrentChat(prev => ({
+        ...prev,
+        starred: newStarredState
+      }));
+
+      // Also update the chat in the savedChats list
+      setSavedChats(prev => prev.map(chat => 
+        chat.id === currentChat.id 
+          ? { ...chat, starred: newStarredState }
+          : chat
+      ));
+
+      // Update Firestore
+      await updateDoc(chatRef, {
+        starred: newStarredState
+      });
+    } catch (error) {
+      console.error('Error toggling star:', error);
+      // Revert local state if Firestore update fails
+      setCurrentChat(prev => ({
+        ...prev,
+        starred: !prev.starred
+      }));
+      setSavedChats(prev => prev.map(chat => 
+        chat.id === currentChat.id 
+          ? { ...chat, starred: !chat.starred }
+          : chat
+      ));
+    }
+  };
+
+  // Add bookmark function
+  const toggleBookmark = async (messageIndex, e) => {
+    e.stopPropagation();
+    if (!currentChat) return;
+
+    try {
+      const chatRef = doc(db, 'chats', currentChat.id);
+      const updatedMessages = [...currentChat.messages];
+      updatedMessages[messageIndex] = {
+        ...updatedMessages[messageIndex],
+        bookmarked: !updatedMessages[messageIndex].bookmarked
+      };
+
+      // Update local states immediately
+      setCurrentChat(prev => ({
+        ...prev,
+        messages: updatedMessages
+      }));
+
+      // Update history state to reflect in the filtered view
+      setHistory(updatedMessages);
+
+      // Update savedChats to maintain consistency
+      setSavedChats(prev => prev.map(chat => 
+        chat.id === currentChat.id 
+          ? { ...chat, messages: updatedMessages }
+          : chat
+      ));
+
+      // Update Firestore
+      await updateDoc(chatRef, {
+        messages: updatedMessages
+      });
+
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      // Revert local states if Firestore update fails
+      const revertedMessages = [...currentChat.messages];
+      setCurrentChat(prev => ({
+        ...prev,
+        messages: revertedMessages
+      }));
+      setHistory(revertedMessages);
+      setSavedChats(prev => prev.map(chat => 
+        chat.id === currentChat.id 
+          ? { ...chat, messages: revertedMessages }
+          : chat
+      ));
+    }
+  };
+
+  // Update message rendering
+  const renderMessage = (message, index) => {
+    if (!currentChat) return null;
+    
+    return (
+      <div
+        key={`${currentChat.id}-message-${index}-${message.bookmarked}`}
+        className={`flex ${
+          message.type === 'user' ? 'justify-end' : 'justify-start'
+        } relative group mx-4`}
+      >
+        <div
+          className={`max-w-[80%] rounded-lg p-4 relative ${
+            message.type === 'user'
+              ? 'bg-accent-lilac text-white'
+              : 'bg-surface-DEFAULT text-gray-100'
+          }`}
+        >
+          <div className="prose prose-invert max-w-none">
+            {renderMessageContent(message, index === history.length - 1)}
+          </div>
+          <div className="text-xs text-gray-400 mt-2">
+            {formatTimestamp(message.timestamp)}
+          </div>
+          <BookmarkButton 
+            key={`bookmark-${currentChat.id}-${index}-${message.bookmarked}`}
+            message={message}
+            isBookmarked={message.bookmarked}
+            onToggle={(e) => toggleBookmark(index, e)}
+            messageType={message.type}
+            chatId={currentChat.id}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderChatListItem = (chat) => {
+    // If chat has no timestamp and it's the current chat (new chat), use current time
+    const chatDate = chat?.createdAt?.toDate?.() || (currentChat === null ? new Date() : null);
+    const formattedDate = chatDate ? formatTimestamp(chatDate) : 'Date not available';
+    
+    return (
+      <div
+        key={chat?.id || 'new-chat'}
+        className={`p-3 cursor-pointer hover:bg-dark-lighter transition-colors duration-200 relative group flex items-center justify-between ${
+          currentChat?.id === chat?.id ? 'bg-accent-lilac bg-opacity-20 border-l-4 border-accent-lilac' : ''
+        }`}
+        onClick={() => handleChatSelect(chat)}
+      >
+        <div className="flex-1 min-w-0 mr-2">
+          {editingChatId === chat.id ? (
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSaveTitle(chat.id);
+              }}
+              className="flex items-center"
+            >
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onBlur={() => handleSaveTitle(chat.id)}
+                className="w-full bg-dark-lightest text-gray-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-accent-lilac focus:outline-none"
+                autoFocus
+              />
+            </form>
+          ) : (
+            <div className="flex items-center space-x-2">
+              {chat.starred && (
+                <svg
+                  className="w-4 h-4 text-accent-lilac flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.461a1 1 0 00.951-.69l1.07-3.292z"
+                  />
+                </svg>
+              )}
+              <span className="truncate text-sm font-medium text-gray-100">
+                {chat.title || 'New Chat'}
+              </span>
+            </div>
+          )}
+          <p className="text-xs text-gray-400 mt-1">
+            {formattedDate}
+          </p>
+        </div>
+        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStartEdit(chat.id, chat.title);
+            }}
+            className="p-1 rounded hover:bg-accent-lilac hover:bg-opacity-20 transition-all duration-200"
+            title="Rename chat"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-accent-lilac" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm('Are you sure you want to delete this chat?')) {
+                handleDeleteChat(chat.id);
+              }
+            }}
+            className="p-1 rounded hover:bg-red-500 hover:bg-opacity-20 transition-all duration-200 ml-1"
+            title="Delete chat"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderChatList = () => {
+    // Sort chats to prioritize new chats and then by updatedAt
+    const sortedChats = [...savedChats].sort((a, b) => {
+      if (!a.createdAt && !b.createdAt) return 0;
+      if (!a.createdAt) return -1; // New chats (without timestamp) go first
+      if (!b.createdAt) return 1;
+      
+      const dateA = a.updatedAt?.toDate?.() || new Date(a.lastUpdated || 0);
+      const dateB = b.updatedAt?.toDate?.() || new Date(b.lastUpdated || 0);
+      return dateB - dateA;
+    });
+
+    return sortedChats.map(chat => renderChatListItem(chat));
+  };
+
+  // Add this helper function to convert any date format to timestamp
+  const getTimestamp = (date) => {
+    if (date instanceof Date) {
+      return date.getTime();
+    }
+    if (typeof date === 'string') {
+      return new Date(date).getTime();
+    }
+    if (date?.toDate) {
+      return date.toDate().getTime();
+    }
+    return 0; // fallback for invalid dates
+  };
+
   // Load saved chats when component mounts
   useEffect(() => {
     const loadSavedChats = async () => {
@@ -614,11 +913,7 @@ const AiChat = () => {
       }));
       
       // Sort chats client-side instead
-      const sortedChats = chats.sort((a, b) => {
-        const timeA = a.updatedAt?.seconds || 0;
-        const timeB = b.updatedAt?.seconds || 0;
-        return timeB - timeA;
-      });
+      const sortedChats = chats.sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt));
       
       setSavedChats(sortedChats);
     };
@@ -632,6 +927,13 @@ const AiChat = () => {
       setDisplayedContent('');
     };
   }, [chatId]); // Reset when changing chats
+
+  const getFilteredHistory = useCallback(() => {
+    if (!showBookmarkedOnly) {
+      return history;
+    }
+    return history.filter(message => message.bookmarked);
+  }, [history, showBookmarkedOnly]);
 
   const renderError = () => {
     if (!error) return null;
@@ -661,77 +963,7 @@ const AiChat = () => {
         
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="space-y-1">
-            {savedChats.map((chat) => (
-              <div
-                key={chat.id}
-                className={`p-3 cursor-pointer hover:bg-dark-lighter transition-colors duration-200 relative group flex items-center justify-between ${
-                  currentChat?.id === chat.id ? 'bg-accent-lilac bg-opacity-20 border-l-4 border-accent-lilac' : ''
-                }`}
-                onClick={() => handleChatSelect(chat)}
-              >
-                <div className="flex-1 min-w-0 mr-2">
-                  {editingChatId === chat.id ? (
-                    <form 
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSaveTitle(chat.id);
-                      }}
-                      className="flex items-center"
-                    >
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onBlur={() => handleSaveTitle(chat.id)}
-                        className="w-full bg-dark-lightest text-gray-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-accent-lilac focus:outline-none"
-                        autoFocus
-                      />
-                    </form>
-                  ) : (
-                    <div className="truncate text-sm font-medium text-gray-100">
-                      {chat.title || 'New Chat'}
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    {chat.createdAt instanceof Date 
-                      ? chat.createdAt.toLocaleDateString()
-                      : typeof chat.createdAt === 'string' 
-                        ? new Date(chat.createdAt).toLocaleDateString()
-                        : chat.createdAt?.toDate?.()
-                          ? chat.createdAt.toDate().toLocaleDateString()
-                          : 'Date not available'}
-                  </p>
-                </div>
-                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStartEdit(chat.id, chat.title);
-                    }}
-                    className="p-1 rounded hover:bg-accent-lilac hover:bg-opacity-20 transition-all duration-200"
-                    title="Rename chat"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-accent-lilac" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (window.confirm('Are you sure you want to delete this chat?')) {
-                        handleDeleteChat(chat.id);
-                      }
-                    }}
-                    className="p-1 rounded hover:bg-red-500 hover:bg-opacity-20 transition-all duration-200 ml-1"
-                    title="Delete chat"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 110-2h5V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
+            {renderChatList()}
           </div>
         </div>
 
@@ -748,7 +980,7 @@ const AiChat = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col h-full relative">
+      <div className="flex-1 flex flex-col">
         {isInitializing ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -758,52 +990,114 @@ const AiChat = () => {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4 md:p-6">
-              {history.length === 0 ? (
+            <div 
+              ref={historyRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
+            >
+              {currentChat && getFilteredHistory().map((message, index) => renderMessage(message, index))}
+              {isLoading && (
+                <div className="flex items-start">
+                  <div className="max-w-[80%] bg-surface-DEFAULT rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                      <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {!currentChat && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <h1 className="text-4xl font-bold text-gray-100 mb-4">Welcome to AviationAI</h1>
-                  <p className="text-xl text-gray-300">Ask me anything about aviation!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {history.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${
-                        message.type === 'user' ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-4 ${
-                          message.type === 'user'
-                            ? 'bg-accent-lilac text-white'
-                            : 'bg-surface-DEFAULT text-gray-100'
-                        }`}
-                      >
-                        <div className="prose prose-invert max-w-none">
-                          {renderMessageContent(message, index === history.length - 1)}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-2">
-                          {formatTimestamp(message.timestamp)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {isLoading && (
-                    <div className="flex items-start">
-                      <div className="max-w-[80%] bg-surface-DEFAULT rounded-lg p-4">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse"></div>
-                          <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
-                          <div className="w-2 h-2 bg-accent-lilac rounded-full animate-pulse" style={{ animationDelay: '600ms' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-xl text-gray-300">Start a new chat to begin!</p>
                 </div>
               )}
             </div>
+
+            <div className="p-4 border-t border-dark-lightest">
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <textarea
+                    ref={inputRef}
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Type your message..."
+                    className="w-full bg-dark-lightest text-gray-100 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent-lilac resize-none"
+                    rows={1}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={toggleStar}
+                    className={`p-2 rounded-lg transition-colors duration-200 ${
+                      currentChat?.starred
+                        ? 'bg-accent-lilac bg-opacity-20 text-accent-lilac'
+                        : 'bg-dark-lighter text-gray-400 hover:text-accent-lilac hover:bg-dark-lightest'
+                    }`}
+                    title={currentChat?.starred ? "Unstar chat" : "Star chat"}
+                  >
+                    <svg className="w-5 h-5" fill={currentChat?.starred ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                    className={`p-2 rounded-lg transition-colors duration-200 ${
+                      showBookmarkedOnly 
+                        ? 'bg-accent-lilac bg-opacity-20 text-accent-lilac'
+                        : 'bg-dark-lighter text-gray-400 hover:text-accent-lilac hover:bg-dark-lightest'
+                    }`}
+                    title={showBookmarkedOnly ? "Show all messages" : "Show bookmarked messages only"}
+                  >
+                    <svg 
+                      className="w-5 h-5" 
+                      fill={showBookmarkedOnly ? "currentColor" : "none"} 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" 
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!messageInput.trim() || isLoading}
+                    className={`p-2 rounded-lg ${
+                      messageInput.trim() && !isLoading
+                        ? 'bg-accent-lilac text-white'
+                        : 'bg-dark-lighter text-gray-400 cursor-not-allowed'
+                    }`}
+                    title="Send message"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {error && (
               <div className="absolute bottom-20 left-0 right-0 px-4">
                 <div className="bg-red-500 text-white p-3 rounded-md shadow-lg">
@@ -811,52 +1105,6 @@ const AiChat = () => {
                 </div>
               </div>
             )}
-            <div className="p-4 border-t border-gray-700">
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <textarea
-                  ref={inputRef}
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  className="flex-1 min-h-[44px] max-h-32 p-2 bg-dark-lighter text-gray-100 border border-dark-lightest rounded-lg focus:ring-2 focus:ring-accent-lilac focus:border-transparent resize-none placeholder-gray-500"
-                  rows="1"
-                />
-                <div className="flex space-x-2">
-                  <button
-                    type="button"
-                    onClick={handleSaveChat}
-                    disabled={history.length === 0}
-                    className={`p-2 rounded-lg transition-colors duration-200 ${
-                      history.length === 0
-                        ? 'bg-dark-lighter text-gray-600 cursor-not-allowed'
-                        : 'bg-dark-lighter text-gray-300 hover:bg-dark-lightest'
-                    }`}
-                    title="Save chat"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                    </svg>
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isLoading || !messageInput.trim()}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                      isLoading || !messageInput.trim()
-                        ? 'bg-dark-lighter text-gray-600 cursor-not-allowed'
-                        : 'bg-accent-lilac text-white hover:bg-accent-lilac-dark'
-                    }`}
-                  >
-                    Send
-                  </button>
-                </div>
-              </form>
-              {error && (
-                <div className="mt-2 p-2 text-sm text-red-300 bg-red-900 bg-opacity-50 rounded-md">
-                  {error.message}
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>

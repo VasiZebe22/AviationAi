@@ -351,3 +351,388 @@
 {"level":"info","message":"Query processed successfully","runId":"run_9Qmmja8bZIMHZZvqfBz3TVqB","threadId":"thread_nFc37woKgPNLnkYsvrPN1MKb","timestamp":"2024-12-29T04:34:17.080Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
 {"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T04:35:17.302Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
 {"level":"info","message":"Query processed successfully","runId":"run_e2UJMAqDvwPM22nXuhjdvf50","threadId":"thread_V4NadzLdRKg6fiSmrsDDC1Y7","timestamp":"2024-12-29T04:35:32.871Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T21:30:41.751Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T21:30:41.752Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T21:30:42.017Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T21:30:42.025Z"}
+{"level":"info","message":"Processing assistant query","queryLength":50,"timestamp":"2024-12-29T21:34:05.482Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_R4LcLFPy4xQHKmE4Lpqf5TkG","threadId":"thread_xzqUpLpOJzy6Ki4qNqKVafxg","timestamp":"2024-12-29T21:34:23.644Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":54,"timestamp":"2024-12-29T22:03:23.889Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_m9gT2DRRuUZHOwjqAmv00nPr","threadId":"thread_Vqst3vMMinXwlPgh8gnmL6pH","timestamp":"2024-12-29T22:03:38.850Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":57,"timestamp":"2024-12-29T22:08:04.970Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_HgfHOfXtKZPu75La0FB3pQkM","threadId":"thread_eMDFhjsmLGpGULzPuXHgo2Wc","timestamp":"2024-12-29T22:08:18.146Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":53,"timestamp":"2024-12-29T22:12:54.836Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_fPfUAEnAMRD5Ae3PlQZjHu12","threadId":"thread_rbU0EJkiSlyygiTvPcrBc140","timestamp":"2024-12-29T22:13:07.174Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:15:00.157Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:15:00.159Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:15:00.351Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:15:00.357Z"}
+{"level":"info","message":"Processing assistant query","queryLength":54,"timestamp":"2024-12-29T22:15:30.539Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_vpB6QHz8vGU7KuSlp11QgBzJ","threadId":"thread_i809rcuJRfOBvLZ6LoLuVvVp","timestamp":"2024-12-29T22:15:41.780Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:16:55.048Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:16:55.050Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:16:55.254Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:16:55.261Z"}
+{"level":"info","message":"Processing assistant query","queryLength":29,"timestamp":"2024-12-29T22:17:31.224Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_F7zsvUAoMt23ebIyA1RlGWPK","threadId":"thread_JRxN5KQglSuoVrM4qYsrESXe","timestamp":"2024-12-29T22:17:45.514Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":22,"timestamp":"2024-12-29T22:18:44.170Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_bDJKJBT0cJkGJK2SHPTcIbVg","threadId":"thread_nIR9nYFqEXWcEvTCwQYedk5Z","timestamp":"2024-12-29T22:19:01.959Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":25,"timestamp":"2024-12-29T22:22:12.652Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_4cYynRGGy0a33JhEA8AouOH2","threadId":"thread_5R3F7CYKeSUbKoe6GKsTwqCR","timestamp":"2024-12-29T22:22:20.018Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:25:14.885Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:25:14.887Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:25:15.075Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:25:15.081Z"}
+{"level":"info","message":"Processing assistant query","queryLength":22,"timestamp":"2024-12-29T22:26:41.634Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_AQj2sPuIa56LSJXuKDKnT0RD","threadId":"thread_Yf74A6uLYtUyuEj6WBKvGTye","timestamp":"2024-12-29T22:26:53.738Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":22,"timestamp":"2024-12-29T22:27:43.310Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_5K1CgQpohSgtP9vuR18BznWy","threadId":"thread_tWpMhpGPPP4OotYb9Xaasyht","timestamp":"2024-12-29T22:27:59.026Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T22:28:30.434Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_RohPP7rRRpZKPiFVMXGUIfh6","threadId":"thread_BsRX6TrWIaBwdEXj0yICIIvL","timestamp":"2024-12-29T22:28:42.119Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":22,"timestamp":"2024-12-29T22:30:30.203Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_woBNFkjZh1SAUpqyism20cb0","threadId":"thread_QtxqlauXFTmdKAWl1YY4GvXc","timestamp":"2024-12-29T22:30:45.413Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:34:54.623Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:34:54.624Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:34:54.861Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:34:54.868Z"}
+{"level":"info","message":"Processing assistant query","queryLength":28,"timestamp":"2024-12-29T22:35:16.029Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_ejHuqu406LaUjot30FcVZ8Kd","threadId":"thread_sx6lWczR1M1SbL191vJhjY2R","timestamp":"2024-12-29T22:35:31.307Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":31,"timestamp":"2024-12-29T22:39:24.140Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_8BzZbYqy6TKUAtE98vQ63D0a","threadId":"thread_J8PuPVXOS9EQ2vTJkHGgZIxg","timestamp":"2024-12-29T22:39:34.940Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:40:46.257Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:40:46.259Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:40:46.451Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:40:46.458Z"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T22:41:32.837Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_CYskDBwmGmUhoJctU53gVfnM","threadId":"thread_MTwI2VC5f9Oo24IwtSQ9MeuL","timestamp":"2024-12-29T22:41:46.147Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:42:34.774Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:42:34.776Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:42:34.964Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:42:34.970Z"}
+{"level":"info","message":"Processing assistant query","queryLength":31,"timestamp":"2024-12-29T22:43:20.025Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_NiQ71MRbv2R23ShFFRUdLQa6","threadId":"thread_C8WHPwhmTer84QxlRHukZyfG","timestamp":"2024-12-29T22:43:30.867Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":32,"timestamp":"2024-12-29T22:44:27.321Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_V1Dvn4AfQQRT4MxPLOxKydCO","threadId":"thread_0jjT5q4VO4rSGWWaNToWL1aF","timestamp":"2024-12-29T22:44:38.006Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:50:50.886Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:50:50.888Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:50:51.079Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:50:51.086Z"}
+{"level":"info","message":"Processing assistant query","queryLength":32,"timestamp":"2024-12-29T22:51:14.190Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_Eg9ZM6FRvqAeX4OexfDzM4VR","threadId":"thread_qy1DCo1wXQa9Ei6cgDZNOwtU","timestamp":"2024-12-29T22:51:22.638Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":32,"timestamp":"2024-12-29T22:52:22.872Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_z0Nv3nE5XKeOj2q37U4mOaXF","threadId":"thread_5d8TxL0N5JWPHS9v4uUO1uZL","timestamp":"2024-12-29T22:52:35.575Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T22:56:52.197Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T22:56:52.199Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T22:56:52.389Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T22:56:52.395Z"}
+{"level":"info","message":"Processing assistant query","queryLength":29,"timestamp":"2024-12-29T22:58:17.756Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_rf1FLVEchYYO7xNbtMMFa1o2","threadId":"thread_FpXsF62ItDZd2fZqhs0K9Euf","timestamp":"2024-12-29T22:58:22.983Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":2,"timestamp":"2024-12-29T22:59:53.639Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_CHw2CzWW50uPTCYviK4mCr8E","threadId":"thread_CXiMf1AkixJWQvuxeWuH9tYh","timestamp":"2024-12-29T22:59:59.139Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:00:33.266Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:00:33.268Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:00:33.458Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:00:33.464Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:02:44.273Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:02:44.276Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:02:44.464Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:02:44.470Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:05:06.756Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:05:06.758Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:05:06.941Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:05:06.948Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:07:26.852Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:07:26.854Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:07:27.044Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:07:27.050Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:08:51.049Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:08:51.051Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:08:51.243Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:08:51.250Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:10:32.645Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:10:32.647Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:10:32.841Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:10:32.847Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:11:40.657Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:11:40.659Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:11:40.851Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:11:40.857Z"}
+{"level":"info","message":"Processing assistant query","queryLength":29,"timestamp":"2024-12-29T23:11:55.830Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_RXOKCRaYAZ6TQZLvU8wbPKkU","threadId":"thread_Op5iErgZOj3lS5NFpWRY9jec","timestamp":"2024-12-29T23:12:05.196Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":31,"timestamp":"2024-12-29T23:12:16.159Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_NoWmkjxf8pH6LHYrLFvQ785v","threadId":"thread_gtqfbEdRIEBg3qU7HOCWM0uf","timestamp":"2024-12-29T23:12:26.966Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:12:47.359Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_D7iT62uEX8y4VDuls0HRXNsJ","threadId":"thread_ovFz1ndSM2fHEUQirs6hAXS9","timestamp":"2024-12-29T23:12:57.652Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:15:14.776Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:15:14.778Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:15:14.986Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:15:14.993Z"}
+{"level":"info","message":"Processing assistant query","queryLength":31,"timestamp":"2024-12-29T23:15:41.612Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_elcJa8MYkz9qyJBg172L7XSu","threadId":"thread_SNQM1FnnORYXVHs9xRHiZ3sC","timestamp":"2024-12-29T23:15:46.668Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:15:58.881Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_AfUSpHKcUD8Uee0SA01RRV1m","threadId":"thread_1aw6rRdO3QfoEcIXTdoTW6Ws","timestamp":"2024-12-29T23:16:10.480Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:19:23.392Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:19:23.393Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:19:23.587Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:19:23.593Z"}
+{"level":"info","message":"Processing assistant query","queryLength":30,"timestamp":"2024-12-29T23:19:54.315Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_0Zn0kNQPQOUf7O6yKyZHHFhx","threadId":"thread_0sAdAfpwNGRkK8olmJrPiZgu","timestamp":"2024-12-29T23:20:03.202Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":30,"timestamp":"2024-12-29T23:20:14.770Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_o3uOjdwnLLdQMGyN7PZo22Hg","threadId":"thread_Hk8Ws0YoKJ1B0dalmGOjzIrw","timestamp":"2024-12-29T23:20:27.581Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:20:45.196Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_k1ZeRIKCNVkcvj75rHvJo4cJ","threadId":"thread_AsaxzEpyeplnjbP4Nli81tei","timestamp":"2024-12-29T23:20:59.112Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:27:05.235Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:27:05.237Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:27:05.427Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:27:05.433Z"}
+{"level":"info","message":"Processing assistant query","queryLength":30,"timestamp":"2024-12-29T23:27:28.605Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_FXwGiThOFoVm9PW3yA1mXezR","threadId":"thread_O6Kuki8MOeTzLaYuz9JR9foX","timestamp":"2024-12-29T23:27:38.199Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:27:43.007Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_1B6xYPb0pr0dRB1qU4JsfZug","threadId":"thread_PgqjtQS0ekrjFnhgJ1ky3LRs","timestamp":"2024-12-29T23:27:54.635Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":46,"timestamp":"2024-12-29T23:29:10.310Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_4r8bZ1fNPM0MrmiltV5snQOZ","threadId":"thread_fn0UzO7rP5OYxJQ4VqYXbG2e","timestamp":"2024-12-29T23:29:23.246Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:29:54.986Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_m6SeEKgIjv5Kuo69J7fWlsnA","threadId":"thread_WtDnCXd1oRECOUbnC180g2Rw","timestamp":"2024-12-29T23:30:09.301Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":20,"timestamp":"2024-12-29T23:33:05.322Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_E804ctLnsrz4zaAr6EMoUrpA","threadId":"thread_iiHoneeqGfQRbL7VeYUjHwFb","timestamp":"2024-12-29T23:33:12.555Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:33:31.246Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_hO3HdBoX2fAckVJaLa2eC9wE","threadId":"thread_pnGR7xHBU5My06ZKcVprnz2Q","timestamp":"2024-12-29T23:33:48.990Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-29T23:36:08.590Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-29T23:36:08.592Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-29T23:36:08.798Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-29T23:36:08.804Z"}
+{"level":"info","message":"Processing assistant query","queryLength":17,"timestamp":"2024-12-29T23:36:28.225Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_SKCOWjWnzeqfJ2ZTebHlwcpZ","threadId":"thread_qBbZrypHm187PfkpVutjYreM","timestamp":"2024-12-29T23:36:33.616Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-29T23:36:47.819Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_NMm4apff5pLJVEpkepwkwVAS","threadId":"thread_S3JROuAp8ocmtl4CHwmPnFRq","timestamp":"2024-12-29T23:36:58.465Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":42,"timestamp":"2024-12-29T23:37:36.389Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_T0VzkbUxx29NKtLEL1ld5JC4","threadId":"thread_QYGsYX4gNkv7qpzu6qhA7xFn","timestamp":"2024-12-29T23:37:43.955Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":48,"timestamp":"2024-12-29T23:38:24.375Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_8uT2jT4w2xZtgySKHdiIN0hq","threadId":"thread_Fbk5Aszjm0EqCLNRei5CJYLw","timestamp":"2024-12-29T23:38:36.302Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:18:42.887Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:18:42.889Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:18:43.093Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:18:43.099Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:24:16.441Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:24:16.443Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:24:16.645Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:24:16.651Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:29:20.738Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:29:20.740Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:29:20.941Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:29:20.947Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:33:40.062Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:33:40.064Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:33:40.254Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:33:40.260Z"}
+{"level":"info","message":"Processing assistant query","queryLength":47,"timestamp":"2024-12-30T23:34:22.778Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_8YpIyt6J2kd74D5abo48xW6y","threadId":"thread_cv2vYpiKhJEWfm9l2mE8THTm","timestamp":"2024-12-30T23:34:33.919Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:46:49.014Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:46:49.016Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:46:49.209Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:46:49.215Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:50:10.609Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:50:10.610Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:50:10.807Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:50:10.813Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:52:37.813Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:52:37.815Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:52:38.006Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:52:38.012Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:57:24.693Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:57:24.695Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:57:24.885Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:57:24.891Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-30T23:58:58.626Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-30T23:58:58.628Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-30T23:58:58.819Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-30T23:58:58.825Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:01:08.991Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:01:08.993Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:01:09.182Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:01:09.188Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:03:04.337Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:03:04.339Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:03:04.530Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:03:04.536Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:10:38.492Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:10:38.494Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:10:38.682Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:10:38.688Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:18:51.631Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:18:51.633Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:18:51.828Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:18:51.834Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:25:29.140Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:25:29.141Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:25:29.330Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:25:29.336Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:28:39.295Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:28:39.297Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:28:39.489Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:28:39.495Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:33:26.257Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:33:26.259Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:33:26.454Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:33:26.460Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T00:51:01.600Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T00:51:01.602Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T00:51:01.792Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T00:51:01.798Z"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T01:02:56.799Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:03:11.745Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:03:11.748Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:03:11.991Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:03:11.998Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:05:32.896Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:05:32.898Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:05:33.131Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:05:33.140Z"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T01:06:05.440Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_bqZuZriN5fGLP8mlBL1Y0rhR","threadId":"thread_LFTc8ucpXqmAK6dXkSyZhcGZ","timestamp":"2024-12-31T01:06:17.589Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T01:07:21.157Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_O9okubnDtaNHAH6PbA6lvBX4","threadId":"thread_w1OTJvdQuain4GORjqbMC34F","timestamp":"2024-12-31T01:07:31.159Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T01:08:28.158Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_IFjA5ocS6eXXIawK2qFK4VIT","threadId":"thread_PmbAKRF7M5Dy1gVBY8U7cg8O","timestamp":"2024-12-31T01:08:39.626Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:15:50.725Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:15:50.727Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:15:50.941Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:15:50.948Z"}
+{"level":"info","message":"Processing assistant query","queryLength":18,"timestamp":"2024-12-31T01:18:22.954Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_lsUVIx5SZ9BQce7DGCYLWvOB","threadId":"thread_CeUgTSlLOl9v9Vp8pKPIZAEB","timestamp":"2024-12-31T01:18:38.676Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:21:08.217Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:21:08.219Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:21:08.449Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:21:08.456Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:22:41.351Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:22:41.353Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:22:41.583Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:22:41.591Z"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T01:23:07.498Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_kEoe14GSJBJ2sk2QmeR5a7XF","threadId":"thread_c6sMoyQPb7wVh0IRGQoi5l1x","timestamp":"2024-12-31T01:23:27.329Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:25:06.830Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:25:06.832Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:25:07.043Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:25:07.050Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:26:52.206Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:26:52.208Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:26:52.451Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:26:52.458Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:31:23.051Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:31:23.053Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:31:23.268Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:31:23.275Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:32:51.133Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:32:51.135Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:32:51.362Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:32:51.369Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:39:21.478Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:39:21.481Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:39:21.708Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:39:21.716Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:42:17.199Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:42:17.201Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:42:17.396Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:42:17.402Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T01:57:46.773Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T01:57:46.775Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T01:57:46.987Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T01:57:46.994Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:08:47.427Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:08:47.429Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:08:47.623Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:08:47.628Z"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T02:10:02.678Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_CIe9YY0iJGSLDPspSLAWCW0j","threadId":"thread_pv2QaVGyggPJhc9WJtjhl96M","timestamp":"2024-12-31T02:10:16.045Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:13:14.916Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:13:14.918Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:13:15.113Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:13:15.120Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:15:33.368Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:15:33.370Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:15:33.563Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:15:33.570Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:19:58.735Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:19:58.737Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:19:58.938Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:19:58.945Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:21:25.190Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:21:25.192Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:21:25.390Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:21:25.396Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:26:56.829Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:26:56.831Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:26:57.023Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:26:57.029Z"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T02:27:57.777Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_2ou2sHyU7w9c8TOeCVbdmgWl","threadId":"thread_0V2CyJsqocxaS8gUZUZqoQhC","timestamp":"2024-12-31T02:28:10.201Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":19,"timestamp":"2024-12-31T02:29:39.313Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_EXuNszpTMEPGhcVkEtx0O5Zl","threadId":"thread_wvbERdZi8c6eGn4x0eN30Azp","timestamp":"2024-12-31T02:29:54.865Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":22,"timestamp":"2024-12-31T02:30:35.987Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_icTJtGgV6x00EM57PsWjzSU7","threadId":"thread_pHSAxm6DBOrmgceLz75VktJQ","timestamp":"2024-12-31T02:30:44.382Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":22,"timestamp":"2024-12-31T02:32:56.678Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_pOkxb9q9pRjx7DrhEKNBkl3r","threadId":"thread_oL2dZX5JXzmdcAZXDZPHpTqa","timestamp":"2024-12-31T02:33:05.654Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:36:25.925Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:36:25.927Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:36:26.123Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:36:26.129Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:38:14.521Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:38:14.523Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:38:14.723Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:38:14.729Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:39:33.571Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:39:33.573Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:39:33.766Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:39:33.772Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:42:25.027Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:42:25.029Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:42:25.222Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:42:25.228Z"}
+{"level":"info","message":"Processing assistant query","queryLength":35,"timestamp":"2024-12-31T02:45:19.352Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_dpzcPCToXhbuMbOnDwX6z79a","threadId":"thread_F4rAPmEK6AFjyE2J4H7LAMFd","timestamp":"2024-12-31T02:45:28.111Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":54,"timestamp":"2024-12-31T02:46:39.739Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_wkDjWjb70jnslUWBFqZ7UK3Z","threadId":"thread_ewhphq4pC2PdHwws4hMuzUPp","timestamp":"2024-12-31T02:46:48.213Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":42,"timestamp":"2024-12-31T02:48:06.839Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_eAhyV8VPfb0olg3bEX2gHfFO","threadId":"thread_p9gl0SJuY4ftWhVZGzPVdcox","timestamp":"2024-12-31T02:48:39.988Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":23,"timestamp":"2024-12-31T02:49:31.638Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_73EFSim80CbKnW9r6bRfqxUh","threadId":"thread_At9GRw1pxqYiFN46SyWw3134","timestamp":"2024-12-31T02:49:37.128Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:51:30.334Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:51:30.335Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:51:30.542Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:51:30.547Z"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:53:29.215Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:53:29.216Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:53:29.411Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:53:29.417Z"}
+{"level":"info","message":"Processing assistant query","queryLength":36,"timestamp":"2024-12-31T02:54:09.072Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_xcJrcaliDvXDMXSWTCxMyp9Z","threadId":"thread_HdghiJAdRBXyzesL2Qh9tgXN","timestamp":"2024-12-31T02:54:24.099Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":26,"timestamp":"2024-12-31T02:54:51.598Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_ucF2m5D1kLFkTcBIhZkP7kpp","threadId":"thread_q3kzbo0aqbiEgbcY7l7MoU5M","timestamp":"2024-12-31T02:54:59.866Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T02:58:54.794Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T02:58:54.796Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T02:58:54.991Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T02:58:54.997Z"}
+{"level":"info","message":"Processing assistant query","queryLength":48,"timestamp":"2024-12-31T02:59:32.166Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_1isitDT81Trtjaa8lvvmSZ2G","threadId":"thread_HpbRG3FBm7vTtlugHeew10Gk","timestamp":"2024-12-31T02:59:38.603Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":10,"timestamp":"2024-12-31T02:59:55.613Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_gEmbdI0WiSIUtpo3Ma3C7wnD","threadId":"thread_ZquaXvWtjFHi7GJZnxK33qmw","timestamp":"2024-12-31T03:00:01.586Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T03:03:09.489Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T03:03:09.491Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T03:03:09.686Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T03:03:09.692Z"}
+{"level":"info","message":"Processing assistant query","queryLength":31,"timestamp":"2024-12-31T03:03:42.483Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_pKrodP8VTGNY5e5kd6WXpNoR","threadId":"thread_aVLLYfDfDsBpnjxh98Tsk6Lu","timestamp":"2024-12-31T03:03:47.629Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T03:05:03.599Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T03:05:03.601Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T03:05:03.793Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T03:05:03.799Z"}
+{"level":"info","message":"Processing assistant query","queryLength":78,"timestamp":"2024-12-31T03:05:49.542Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_p1C3hTVcuPmhf9UXAZK7H4iy","threadId":"thread_NAMd5ptdA7NHN4WEdMQEjvMx","timestamp":"2024-12-31T03:06:02.438Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Environment Variables Loading...","timestamp":"2024-12-31T03:07:03.042Z"}
+{"hasKey":true,"level":"info","message":"OpenAI API Key Status:","timestamp":"2024-12-31T03:07:03.044Z"}
+{"level":"info","message":"Firebase Admin initialized","timestamp":"2024-12-31T03:07:03.239Z"}
+{"level":"info","message":"Server is running on http://localhost:3000","timestamp":"2024-12-31T03:07:03.245Z"}
+{"level":"info","message":"Processing assistant query","queryLength":78,"timestamp":"2024-12-31T03:07:30.208Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_0VUYBXEpZBZQHEic5oqXxIBs","threadId":"thread_dS0IpuFiMHYgWaovO0yNEJ6T","timestamp":"2024-12-31T03:07:44.441Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Processing assistant query","queryLength":78,"timestamp":"2024-12-31T03:08:22.714Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
+{"level":"info","message":"Query processed successfully","runId":"run_KWxZTItwsN8QOlrJaseFuHYB","threadId":"thread_V8gYjBhHynBmSyYc3jiPpWFM","timestamp":"2024-12-31T03:08:34.569Z","userId":"63vFDijTEOVE4DZ2rmjLhpeokbw1"}
