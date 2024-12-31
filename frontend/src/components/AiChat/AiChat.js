@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAssistantResponse } from '../../api/assistant';
 import { useNavigate } from 'react-router-dom';
@@ -94,7 +94,8 @@ const AiChat = () => {
   const historyRef = useRef(null);
   const inputRef = useRef(null);
   const navigate = useNavigate();
-  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
+  const [showStarredChatsOnly, setShowStarredChatsOnly] = useState(false);
+  const [showBookmarkedMessagesOnly, setShowBookmarkedMessagesOnly] = useState(false);
 
   // Wrap loadSavedChats in useCallback to prevent infinite re-renders
   const loadSavedChats = useCallback(async () => {
@@ -575,7 +576,7 @@ const AiChat = () => {
   };
 
   const handleChatSelect = async (chat) => {
-    setShowBookmarkedOnly(false); // Reset filter when changing chats
+    setShowBookmarkedMessagesOnly(false); // Reset filter when changing chats
     setIsTyping(false);
     setError(null);
     
@@ -821,7 +822,7 @@ const AiChat = () => {
                   viewBox="0 0 20 20"
                 >
                   <path
-                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.461a1 1 0 00.951-.69l1.07-3.292z"
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.461a1 1 0 001 1.81z"
                   />
                 </svg>
               )}
@@ -866,19 +867,131 @@ const AiChat = () => {
     );
   };
 
-  const renderChatList = () => {
-    // Sort chats to prioritize new chats and then by updatedAt
-    const sortedChats = [...savedChats].sort((a, b) => {
-      if (!a.createdAt && !b.createdAt) return 0;
-      if (!a.createdAt) return -1; // New chats (without timestamp) go first
-      if (!b.createdAt) return 1;
+  const groupChatsByDate = (chats) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const groups = {
+      today: [],
+      yesterday: [],
+      previous30Days: [],
+      byMonth: {}
+    };
+
+    chats.forEach(chat => {
+      let chatDate;
       
-      const dateA = a.updatedAt?.toDate?.() || new Date(a.lastUpdated || 0);
-      const dateB = b.updatedAt?.toDate?.() || new Date(b.lastUpdated || 0);
-      return dateB - dateA;
+      // For new chats without any dates, put them in today's group
+      if (!chat.createdAt && !chat.updatedAt) {
+        groups.today.push(chat);
+        return;
+      }
+
+      if (chat.createdAt?.toDate) {
+        chatDate = chat.createdAt.toDate();
+      } else if (chat.createdAt instanceof Date) {
+        chatDate = chat.createdAt;
+      } else if (chat.createdAt) {
+        chatDate = new Date(chat.createdAt);
+      } else if (chat.updatedAt?.toDate) {
+        chatDate = chat.updatedAt.toDate();
+      } else if (chat.updatedAt instanceof Date) {
+        chatDate = chat.updatedAt;
+      } else if (chat.updatedAt) {
+        chatDate = new Date(chat.updatedAt);
+      } else {
+        groups.today.push(chat);
+        return;
+      }
+
+      // Handle invalid dates
+      if (isNaN(chatDate.getTime())) {
+        groups.today.push(chat);
+        return;
+      }
+
+      chatDate.setHours(0, 0, 0, 0);
+
+      if (chatDate.getTime() === today.getTime()) {
+        groups.today.push(chat);
+      } else if (chatDate.getTime() === yesterday.getTime()) {
+        groups.yesterday.push(chat);
+      } else if (chatDate >= thirtyDaysAgo && chatDate < yesterday) {
+        groups.previous30Days.push(chat);
+      } else {
+        const monthYear = chatDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        if (!groups.byMonth[monthYear]) {
+          groups.byMonth[monthYear] = [];
+        }
+        groups.byMonth[monthYear].push(chat);
+      }
     });
 
-    return sortedChats.map(chat => renderChatListItem(chat));
+    return groups;
+  };
+
+  const renderDateHeader = (title) => (
+    <div className="px-4 pt-8 pb-2 first:pt-3">
+      <h3 className="text-base font-semibold text-gray-400">{title}</h3>
+    </div>
+  );
+
+  const renderChatList = () => {
+    const filteredChats = savedChats.filter(chat => 
+      !showStarredChatsOnly || chat.starred
+    );
+
+    const groupedChats = groupChatsByDate(filteredChats);
+    
+    return (
+      <div className="space-y-6">
+        {groupedChats.today.length > 0 && (
+          <div>
+            {renderDateHeader('Today')}
+            <div className="space-y-1">
+              {groupedChats.today.map(chat => renderChatListItem(chat))}
+            </div>
+          </div>
+        )}
+        
+        {groupedChats.yesterday.length > 0 && (
+          <div>
+            {renderDateHeader('Yesterday')}
+            <div className="space-y-1">
+              {groupedChats.yesterday.map(chat => renderChatListItem(chat))}
+            </div>
+          </div>
+        )}
+        
+        {groupedChats.previous30Days.length > 0 && (
+          <div>
+            {renderDateHeader('Previous 30 Days')}
+            <div className="space-y-1">
+              {groupedChats.previous30Days.map(chat => renderChatListItem(chat))}
+            </div>
+          </div>
+        )}
+        
+        {Object.entries(groupedChats.byMonth).map(([monthYear, monthChats]) => (
+          <div key={monthYear}>
+            {renderDateHeader(monthYear)}
+            <div className="space-y-1">
+              {monthChats.map(chat => renderChatListItem(chat))}
+            </div>
+          </div>
+        ))}
+
+        {filteredChats.length === 0 && (
+          <div className="px-4 py-2 text-sm text-gray-400">
+            No chats found
+          </div>
+        )}
+      </div>
+    );
   };
 
   // Add this helper function to convert any date format to timestamp
@@ -928,12 +1041,10 @@ const AiChat = () => {
     };
   }, [chatId]); // Reset when changing chats
 
-  const getFilteredHistory = useCallback(() => {
-    if (!showBookmarkedOnly) {
-      return history;
-    }
-    return history.filter(message => message.bookmarked);
-  }, [history, showBookmarkedOnly]);
+  const displayedMessages = useMemo(() => {
+    if (!currentChat?.messages) return [];
+    return currentChat.messages.filter(msg => !showBookmarkedMessagesOnly || msg.bookmarked);
+  }, [currentChat?.messages, showBookmarkedMessagesOnly]);
 
   const renderError = () => {
     if (!error) return null;
@@ -950,15 +1061,38 @@ const AiChat = () => {
     <div className="flex h-screen bg-dark text-gray-100">
       <div className="w-64 bg-dark-lighter flex flex-col">
         <div className="p-4">
-          <button
-            onClick={handleNewChat}
-            className="w-full bg-accent-lilac text-white rounded-lg px-4 py-2 flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors duration-200"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            New Chat
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleNewChat}
+              className="flex-1 bg-accent-lilac text-white rounded-lg px-3 py-2 flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              New Chat
+            </button>
+            <button
+              onClick={() => setShowStarredChatsOnly(prev => !prev)}
+              className={`p-2 rounded hover:bg-accent-lilac hover:bg-opacity-20 transition-all duration-200 ${
+                showStarredChatsOnly ? 'text-accent-lilac bg-accent-lilac bg-opacity-20' : 'text-gray-400'
+              }`}
+              title={showStarredChatsOnly ? "Show all chats" : "Show starred chats only"}
+            >
+              <svg 
+                className="w-5 h-5" 
+                fill={showStarredChatsOnly ? "currentColor" : "none"} 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto scrollbar-hide">
@@ -994,7 +1128,7 @@ const AiChat = () => {
               ref={historyRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
             >
-              {currentChat && getFilteredHistory().map((message, index) => renderMessage(message, index))}
+              {currentChat && displayedMessages.map((message, index) => renderMessage(message, index))}
               {isLoading && (
                 <div className="flex items-start">
                   <div className="max-w-[80%] bg-surface-DEFAULT rounded-lg p-4">
@@ -1031,9 +1165,9 @@ const AiChat = () => {
                   <button
                     type="button"
                     onClick={toggleStar}
-                    className={`p-2 rounded-lg transition-colors duration-200 ${
+                    className={`p-2 rounded-lg ${
                       currentChat?.starred
-                        ? 'bg-accent-lilac bg-opacity-20 text-accent-lilac'
+                        ? 'bg-accent-lilac text-white'
                         : 'bg-dark-lighter text-gray-400 hover:text-accent-lilac hover:bg-dark-lightest'
                     }`}
                     title={currentChat?.starred ? "Unstar chat" : "Star chat"}
@@ -1043,30 +1177,30 @@ const AiChat = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                       />
                     </svg>
                   </button>
                   <button
-                    onClick={() => setShowBookmarkedOnly(!showBookmarkedOnly)}
+                    onClick={() => setShowBookmarkedMessagesOnly(!showBookmarkedMessagesOnly)}
                     className={`p-2 rounded-lg transition-colors duration-200 ${
-                      showBookmarkedOnly 
+                      showBookmarkedMessagesOnly 
                         ? 'bg-accent-lilac bg-opacity-20 text-accent-lilac'
                         : 'bg-dark-lighter text-gray-400 hover:text-accent-lilac hover:bg-dark-lightest'
                     }`}
-                    title={showBookmarkedOnly ? "Show all messages" : "Show bookmarked messages only"}
+                    title={showBookmarkedMessagesOnly ? "Show all messages" : "Show bookmarked messages only"}
                   >
-                    <svg 
-                      className="w-5 h-5" 
-                      fill={showBookmarkedOnly ? "currentColor" : "none"} 
-                      stroke="currentColor" 
+                    <svg
+                      className="w-5 h-5"
+                      fill={showBookmarkedMessagesOnly ? "currentColor" : "none"}
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" 
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
                       />
                     </svg>
                   </button>
