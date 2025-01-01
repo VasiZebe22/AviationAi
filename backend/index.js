@@ -6,31 +6,14 @@ const express = require("express");
 const cors = require("cors");
 const OpenAI = require("openai");
 const rateLimit = require('express-rate-limit');
-const winston = require('winston');
+const logger = require('./logger');
+const helmet = require('helmet');
+const compression = require('compression');
+const { body, validationResult } = require('express-validator');
 
 //------------------------------------------------------------------------------
 // LOGGING CONFIGURATION
 //------------------------------------------------------------------------------
-// Configure Winston logger for both file and console logging
-// Error logs go to error.log, combined logs go to combined.log
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-    ),
-    transports: [
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'combined.log' })
-    ]
-});
-
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: winston.format.simple()
-    }));
-}
-
 logger.info("Environment Variables Loading...");
 logger.info("OpenAI API Key Status:", { hasKey: !!process.env.OPENAI_API_KEY });
 
@@ -47,6 +30,10 @@ logger.info("Firebase Admin initialized");
 //------------------------------------------------------------------------------
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Security Middleware
+app.use(helmet());
+app.use(compression());
 
 // CORS Configuration
 // Restrict API access to specific origins for security
@@ -79,6 +66,51 @@ const openai = new OpenAI({
 // Middleware Configuration
 
 app.use(express.json());
+
+// Global Rate Limiter: 100 requests per 15 minutes
+const globalRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use(globalRateLimiter);
+
+// Global Error Handler
+const errorHandler = (err, req, res, next) => {
+    logger.error('Global error:', { 
+        error: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        path: req.path,
+        method: req.method
+    });
+
+    res.status(err.status || 500).json({
+        error: process.env.NODE_ENV === 'production' 
+            ? 'An unexpected error occurred' 
+            : err.message
+    });
+};
+
+app.use(errorHandler);
+
+// Request Validation Middleware
+const validate = (validations) => {
+    return async (req, res, next) => {
+        await Promise.all(validations.map(validation => validation.run(req)));
+
+        const errors = validationResult(req);
+        if (errors.isEmpty()) {
+            return next();
+        }
+
+        return res.status(400).json({
+            errors: errors.array()
+        });
+    };
+};
 
 //------------------------------------------------------------------------------
 // API SECURITY AND RATE LIMITING
@@ -139,7 +171,13 @@ app.get('/test-firebase', async (req, res) => {
 //------------------------------------------------------------------------------
 // User registration endpoint
 // Creates new user in Firebase Authentication
-app.post('/register', async (req, res) => {
+app.post('/register', 
+    validate([
+        body('email').isEmail().normalizeEmail(),
+        body('password').isLength({ min: 6 })
+            .withMessage('Password must be at least 6 characters long')
+    ]),
+    async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await admin.auth().createUser({
@@ -154,7 +192,12 @@ app.post('/register', async (req, res) => {
 });
 
 // Login endpoint
-app.post("/login", async (req, res) => {
+app.post("/login",
+    validate([
+        body('email').isEmail().normalizeEmail(),
+        body('password').exists().withMessage('Password is required')
+    ]),
+    async (req, res) => {
     const { email, password } = req.body;
 
     logger.info('Login attempt:', {
@@ -229,7 +272,13 @@ app.post('/refresh-token', async (req, res) => {
 // Advanced Assistant API endpoint
 // Uses OpenAI's Thread and Assistant APIs for more complex interactions
 // Includes rate limiting and authentication
-app.post("/assistant-query", queryRateLimiter, authenticate, async (req, res) => {
+app.post("/assistant-query", 
+    queryRateLimiter,
+    authenticate,
+    validate([
+        body('query').exists().notEmpty().withMessage('Query is required')
+    ]),
+    async (req, res) => {
   const { query } = req.body;
   const userId = req.user.uid;
 

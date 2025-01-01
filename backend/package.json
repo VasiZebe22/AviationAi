@@ -13,21 +13,22 @@
   "description": "",
   "dependencies": {
     "body-parser": "^1.20.3",
+    "compression": "^1.7.5",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
     "firebase": "^11.1.0",
     "firebase-admin": "^13.0.2",
-    "helmet": "^7.1.0",
+    "helmet": "^7.2.0",
     "openai": "^4.77.0",
     "web-vitals": "^4.2.4",
-    "winston": "^3.17.0",
-    "express-validator": "^7.0.1"
+    "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7",
     "eslint": "^8.56.0",
+    "nodemon": "^3.1.7",
     "prettier": "^3.2.0"
   }
 }
