@@ -1,0 +1,1259 @@
+[
+    {
+        "id": "Q-508659",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "03015g25kt",
+                "forecast",
+                "4500",
+                "1504",
+                "period"
+            ]
+        },
+        "content": {
+            "question": "In the following TAF, what is the forecast weather at 08:00 UTC?\nTAF EHAM 142300Z 1500/1509 33005KT 9999 SCT025 BKN100 BECMG 1500/1502 27015KT 4500 -SN SCT008 OVC015 TEMPO 1502/1506 0400 +SN VV002 BECMG 1504/1506 01008KT 9999 NSW SCT030 TEMPO 1507/1509 03015G25KT 1200 SHSN SCT006 SCT015CB",
+            "options": {
+                "A": "Moderate snow showers or no significant weather",
+                "B": "Moderate snow showers or heavy snow",
+                "C": "Heavy snow or no significant weather",
+                "D": "Light snow or moderate snow showers"
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "The question is asking for the forecast weather at 0800 UTC",
+                "TAF EHAM 142300Z 1500/1509 33005KT 9999 SCT025 BKN100 BECMG 1500/1502 27015KT 4500 -SN SCT008 OVC015 TEMPO 1502/1506 0400 +SN VV002 BECMG 1504/1506 01008KT 9999 NSW SCT030 TEMPO 1507/1509 03015G25KT 1200 SHSN SCT006 SCT015CB So: 1500/1509 33005KT 9999 SCT025 BKN100 Period of validity, beginning on day 15 at 00 UTC/ ending on day 15 at 09 UTC >>> No significant weather TEMPO 1507/1509 03015G25KT 1200 SHSN SCT006 SCT015CB Period of validity, beginning on day 15 at 07 UTC/ ending on day 15 at 09 UTC >>> SH Shower(s) SN Snow"
+            ],
+            "explanation": "The question is asking for the forecast weather at 0800 UTC. TAF EHAM 142300Z 1500/1509 33005KT 9999 SCT025 BKN100 BECMG 1500/1502 27015KT 4500 -SN SCT008 OVC015 TEMPO 1502/1506 0400 +SN VV002 BECMG 1504/1506 01008KT 9999 NSW SCT030 TEMPO 1507/1509 03015G25KT 1200 SHSN SCT006 SCT015CB So: 1500/1509 33005KT 9999 SCT025 BKN100 Period of validity, beginning on day 15 at 00 UTC/ ending on day 15 at 09 UTC >>> No significant weather TEMPO 1507/1509 03015G25KT 1200 SHSN SCT006 SCT015CB Period of validity, beginning on day 15 at 07 UTC/ ending on day 15 at 09 UTC >>> SH Shower(s) SN Snow",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-508473",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "means",
+                "broadcast",
+                "chapter",
+                "forecasts",
+                "appropriate"
+            ]
+        },
+        "content": {
+            "question": "What is a VOLMET broadcast?",
+            "options": {
+                "A": "Provision, as appropriate, of current METAR, SPECI, TAF and SIGMET by means of continuous and repetitive voice broadcast.",
+                "B": "Information issued by a meteorological watch office concerning the occurrence or expected occurrence of specified enroute weather phenomena which may affect the safety of aircraft operations.",
+                "C": "That part of an ATIS which is concerned to meteorological information.",
+                "D": "Weather information transmitted continuously via radio (special broadcast), containing weather information for one airport."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "ICAO Annex 3 Chapter 1 VOLMET",
+                "Meteorological information for aircraft in flight",
+                "Data link-VOLMET (D-VOLMET)"
+            ],
+            "explanation": "ICAO Annex 3 Chapter 1 VOLMET. Meteorological information for aircraft in flight. Data link-VOLMET (D-VOLMET). Provision of current aerodrome routine meteorological reports (METAR) and aerodrome special meteorological reports (SPECI), aerodrome forecasts (TAF), SIGMET, special air-reports not covered by a SIGMET and, where available, AIRMET via data link. VOLMET broadcast. Provision, as appropriate, of current METAR, SPECI, TAF and SIGMET by means of continuous and repetitive voice broadcasts.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-504666",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "turbulence",
+                "area",
+                "forecast",
+                "region",
+                "hours"
+            ]
+        },
+        "content": {
+            "question": "During flight planning, information about the existence and severity of turbulence aloft can be found on the appropriate..",
+            "options": {
+                "A": "wind and temperature chart.",
+                "B": "significant weather chart.",
+                "C": "contour line chart with isohypses.",
+                "D": "surface analysis chart."
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "Significant Weather Charts are visual presentations of significant weather phenomena for a given geographical region",
+                "SIGWX charts are issued by World Area Forecast Centers (WAFC) every six hours (at 00:00, 06:00, 12:00 and 18:00 UTC) as forecast charts to a fixed time specified on the chart",
+                "In accordance with ICAO Annex 3, the following weather phenomena have to be shown on a Significant Weather (SIGWX) Chart if present in the chart coverage area: A) thunderstorms (indicate moderate/severe turbulence/icing), B) tropical cyclone, C) severe squall lines, D) moderate or severe turbulence (in cloud or clear air), E) moderate or severe icing, F) widespread sandstorm / dust storm, G) for FL100 to FL250, clouds associated with a) to f), H) above FL250, cumulonimbus cloud associated with a) to f), I) surface position of well-defined convergence zones, J) surface positions, speed and direction of movement of frontal systems when associated with significant en-route weather phenomena, K) tropopause heights (tropopause level, tropopause high, tropopause low), L) jet streams, M) volcanic eruptions producing ash clouds of significance to aircraft operations, including those producing only steam"
+            ],
+            "explanation": "Significant Weather Charts are visual presentations of significant weather phenomena for a given geographical region. SIGWX charts are issued by World Area Forecast Centers (WAFC) every six hours (at 00:00, 06:00, 12:00 and 18:00 UTC) as forecast charts to a fixed time specified on the chart. In accordance with ICAO Annex 3, the following weather phenomena have to be shown on a Significant Weather (SIGWX) Chart if present in the chart coverage area: A) thunderstorms (indicate moderate/severe turbulence/icing), B) tropical cyclone, C) severe squall lines, D) moderate or severe turbulence (in cloud or clear air), E) moderate or severe icing, F) widespread sandstorm / dust storm, G) for FL100 to FL250, clouds associated with a) to f), H) above FL250, cumulonimbus cloud associated with a) to f), I) surface position of well-defined convergence zones, J) surface positions, speed and direction of movement of frontal systems when associated with significant en-route weather phenomena, K) tropopause heights (tropopause level, tropopause high, tropopause low), L) jet streams, M) volcanic eruptions producing ash clouds of significance to aircraft operations, including those producing only steam.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-508908",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "most",
+                "likely",
+                "slight",
+                "area",
+                "conditions"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nThe weather most likely to be experienced at position \"A\" is:",
+            "options": {
+                "A": "cumulus, cumulonimbus clouds, heavy rain or snow showers, medium to strong winds.",
+                "B": "clear skies, good visibility in light winds.",
+                "C": "mainly overcast with stratus or stratocumulus and drizzle, medium to strong winds.",
+                "D": "radiation fog, low stratus, drizzle, no medium or upper cloud, light wind."
+            },
+            "correct": "C"
+        },
+        "learning": {
+            "key_points": [
+                "As we can see, position \"A\" is located in the warm sector of the polar front depression",
+                "Conditions that may be expected in the warm sector are: Surface W/V - Steady, usually from the SW",
+                "Pressure - Slight fall"
+            ],
+            "explanation": "As we can see, position \"A\" is located in the warm sector of the polar front depression. Conditions that may be expected in the warm sector are: Surface W/V - Steady, usually from the SW. Pressure - Slight fall. Cloud - BKN to OVC, some large breaks may occur, base low, St, Sc. Precipitation - Light rain, drizzle Visibility - Poor, possibly advection fog in winter. Furthermore, winds from the SW will bring Tropical Maritime Airmasses. Weather associated with Tropical Maritime Airmass: Low cloud, Stratus and Stratocumulus may be expected, along with drizzle or light precipitation. Visibility poor. Advection fog over sea area late spring, early summer, over land winter, early spring. In high summer insolation and convection break down the stability resulting in clear skies or possibly a few small Cu.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-501028",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "regional",
+                "conditions",
+                "well",
+                "region",
+                "broadcast"
+            ]
+        },
+        "content": {
+            "question": "Can TREND and TAF reports be found in scheduled HF and continuous VHF VOLMETs?",
+            "options": {
+                "A": "These reports are prohibited in both HF and VHF VOLMETs.",
+                "B": "TAFs are contained in both whenever it is possible.",
+                "C": "TAFs are scheduled VOLMETs only if available.",
+                "D": "TRENDs are in both VOLMETs if available."
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "VOLMET",
+                "Meteorological information for aircraft in flight",
+                "Meteorological information about multiple aerodromes in a certain region is sent to aircraft during flight by a pre-recorded voice broadcast, called VOLMET"
+            ],
+            "explanation": "VOLMET. Meteorological information for aircraft in flight. Meteorological information about multiple aerodromes in a certain region is sent to aircraft during flight by a pre-recorded voice broadcast, called VOLMET. It is a continuous automated voice message about actual weather conditions and forecasts. VOLMET broadcast on HF consist of weather messages such as METAR, SPECI and TREND as well as (based on regional agreements) TAF and SIGMET. Therefore, its content is similar to these messages.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506551",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "area",
+                "conditions",
+                "unlikely",
+                "sct035",
+                "160º"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nWhich of the following weather conditions would be expected at Ellinikon International airport (LGAT) at around 14:50 UTC?",
+            "options": {
+                "A": "16002KT 0200 R33L/0600N FG VV001 12/12 Q1031 BECMG 0800=",
+                "B": "26014KT 8000 BKN090 17/12 Q1009 BECMG 4000 RA=",
+                "C": "21002KT 5000 HZ SCT040 29/16 Q1026 NOSIG=",
+                "D": "23018G35KT 9999 SCT035 10/04 Q0988 NOSIG="
+            },
+            "correct": "C"
+        },
+        "learning": {
+            "key_points": [
+                "Ellinikon International airport (LGAT) - is located in a High Pressure System area",
+                "In an anticyclone (high pressure) the winds tend to be light (evidenced by the widely spaced isobars) and blow in a clockwise direction (in the northern hemisphere)",
+                "Also, the air is descending, which reduces the formation of cloud and leads to light winds and settled weather conditions"
+            ],
+            "explanation": "Ellinikon International airport (LGAT) - is located in a High Pressure System area. In an anticyclone (high pressure) the winds tend to be light (evidenced by the widely spaced isobars) and blow in a clockwise direction (in the northern hemisphere). Also, the air is descending, which reduces the formation of cloud and leads to light winds and settled weather conditions. ANTICYCLONIC WEATHER Cloud - None except on the edge of the anticyclone. Precipitation - None. Visibility - Generally moderate with haze Temperature - Dependent on type. Winds - Light. => This is perfectly described by the following METAR: \"21002KT 5000 HZ SCT040 29/16 Q1026 NOSIG=\" The fact that we will most likely experience light winds, rules out two of the options: \"23018G35KT 9999 SCT035 10/04 Q0988 NOSIG=\"; and \"26014KT 8000 BKN090 17/12 Q1009 BECMG 4000 RA=\" \"16002KT 0200 R33L/0600N FG VV001 12/12 Q1031 BECMG 0800=\" INCORRECT. Moderate visibility can be expected, which rules out this. Furthermore, we can expect winds from a southwesterly direction => 160º is very unlikely.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-502183",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "turbulence",
+                "period",
+                "conditions",
+                "rate",
+                "eddy"
+            ]
+        },
+        "content": {
+            "question": "Which of the following groups of conditions requires a crew to transmit a special air-report?",
+            "options": {
+                "A": "Volcanic ash cloud; isolated thunderstorms; moderate or severe sandstorms.",
+                "B": "Severe turbulence; widespread thunderstorms; severe mountain waves.",
+                "C": "Light/moderate aircraft icing; severe turbulence; embedded thunderstorms.",
+                "D": "Heavy wind shears; light or moderate aircraft icing; moderate or severe turbulence."
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "Volcanic ash cloud; isolated thunderstorms; moderate or severe sandstorms",
+                "(wrong because \"isolated\" TS is not correct) Severe turbulence; widespread thunderstorms; severe mountain waves",
+                "(correct answer) Light/Moderate aircraft icing; severe turbulence; embedded thunderstorms"
+            ],
+            "explanation": "Volcanic ash cloud; isolated thunderstorms; moderate or severe sandstorms. (wrong because \"isolated\" TS is not correct) Severe turbulence; widespread thunderstorms; severe mountain waves. (correct answer) Light/Moderate aircraft icing; severe turbulence; embedded thunderstorms. (wrong because \"light\" icing is not correct) Heavy wind shears; light or moderate aircraft icing; moderate or severe turbulence. (wrong because \"light\" icing is not correct) A special air-report (ARS) can be made by any aircraft, when encountering or observing weather phenomena that may affect safety as for example severe turbulence, icing or mountain waves, hail, cumolonimbus clouds, squall-lines, thunderstorms, sandstorms, volcanic ash cloud, volcanic activity or phenomena regarding SIGMET. ICAO Annex 3 Table A4-2. Template for the special air-report (downlink) Condition prompting the issuance of a special air-report (M) SEV TURB (see also note 2) or SEV ICE or SEV MTW or TS GR (see also note 3) or TS (see also note 3) or HVY SS (see also note 4) or VA CLD [FL nnn/nnn] or VA (see also note 5) [MT nnnnnnnnnnnnnnnnnnnn] Notes.— 1. The time of occurrence to be reported in accordance with Table A4-1. 2. The turbulence to be reported in accordance with 2.6.3. 3. Obscured, embedded or widespread thunderstorms or thunderstorms in squall lines. 4. Duststorm or sandstorm. 5. Pre-eruption volcanic activity or a volcanic eruption. 2.6.3 Special air-reports Special air-reports on turbulence shall be made during any phase of the flight whenever the peak value of the cube root of EDR exceeds 0.7. The special air-report on turbulence shall be made with reference to the 1-minute period immediately preceding the observation. Both the average and peak value of turbulence shall be observed. The average and peak values shall be reported in terms of the cube root of EDR. Special air-reports shall be issued every minute until such time as the peak values of the cube root of EDR fall below 0.7. Note: EDR = Eddy Dissipation Rate (represents the intensity of turbulence)",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-509457",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "turbulence",
+                "dust",
+                "prepares",
+                "objective",
+                "cyclone"
+            ]
+        },
+        "content": {
+            "question": "Who prepares a SIGMET?",
+            "options": {
+                "A": "A meteorological watch office.",
+                "B": "ATC.",
+                "C": "An aeronautical office.",
+                "D": "FIS."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "Learning Objective 050",
+                "10",
+                "04"
+            ],
+            "explanation": "Learning Objective 050.10.04.01.03: Name the meteorological watch offices (MWOs) as the provider for SIGMET and AIRMET information. SIGMET - Information issued by a meteorological watch office concerning the occurrence or expected occurrence of specified en-route weather phenomena which may affect the safety of aircraft operations. ICAO Annex 3 According to ICAO Annex 3, a SIGMET will be issued for: thunderstorm; heavy hail; tropical cyclone; freezing rain; severe turbulence (not associated with convective cloud); severe icing (not associated with convective cloud); severe mountain waves; heavy sand/dust storm; volcanic ash cloud.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-501046",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "conditions",
+                "should",
+                "could",
+                "facilities",
+                "chapter"
+            ]
+        },
+        "content": {
+            "question": "Which of the following messages should be cancelled when the conditions are no longer occurring or no longer expected to occur?",
+            "options": {
+                "A": "Aerodrome warnings",
+                "B": "TAFs",
+                "C": "GAMETs",
+                "D": "Trend forecasts"
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "ICAO Annex 3 Chapter 7 7",
+                "3 Aerodrome warnings 7",
+                "3"
+            ],
+            "explanation": "ICAO Annex 3 Chapter 7 7.3 Aerodrome warnings 7.3.1 Aerodrome warnings shall be issued by the aerodrome meteorological office designated by the meteorological authority concerned and shall give concise information of meteorological conditions which could adversely affect aircraft on the ground, including parked aircraft, and the aerdrome facilities and services. 7.3.2 Recommendation.- Aerodrome warnings should be cancelled when the conditions are no longer occurring and/or no longer expected to occur at the aerodrome.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-501408",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "hour",
+                "decreases",
+                "next",
+                "cold",
+                "into"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nWhat change in pressure, will occur at point F, during the next hour as the occlusion approaches?",
+            "options": {
+                "A": "Constant pressure.",
+                "B": "A drop in pressure.",
+                "C": "Irregular fluctuations.",
+                "D": "A rise in pressure."
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "The figure depicts a COLD OCCLUSION – the cold air behind the cold front undercuts the less cold air ahead of the warm front, warm front becomes a front aloft",
+                "In simple words, the cold front transits into the occlusion (and not the warm front)",
+                "As we can see in the attached figure: A – Cold front B – Warm sector C – Warm front D – Cold occlusion F – zone ahead of warm front (cool air) E – Zone behind cold front (cold air) PRESSURE CHANGES IN A FRONTAL OCCLUSION: Ahead of a warm front: steady decreasing At the warm front: stops falling In the warm sector: decreases slightly At the cold front: starts to rise Behind the cold front: increases slowly With regards to this question, we know that a warm front moves relatively slowly, and, for that reason, we can assume that during the next hour, zone “F” will still be ahead of the warm front – pressure will be decreasing"
+            ],
+            "explanation": "The figure depicts a COLD OCCLUSION – the cold air behind the cold front undercuts the less cold air ahead of the warm front, warm front becomes a front aloft. In simple words, the cold front transits into the occlusion (and not the warm front). As we can see in the attached figure: A – Cold front B – Warm sector C – Warm front D – Cold occlusion F – zone ahead of warm front (cool air) E – Zone behind cold front (cold air) PRESSURE CHANGES IN A FRONTAL OCCLUSION: Ahead of a warm front: steady decreasing At the warm front: stops falling In the warm sector: decreases slightly At the cold front: starts to rise Behind the cold front: increases slowly With regards to this question, we know that a warm front moves relatively slowly, and, for that reason, we can assume that during the next hour, zone “F” will still be ahead of the warm front – pressure will be decreasing.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-507522",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "must",
+                "decision",
+                "forecast",
+                "period",
+                "conditions"
+            ]
+        },
+        "content": {
+            "question": "Below is the forecast for the destination of a flight whose ETA is 20:30 UTC.\nTAF YUDO 120600Z 1212/1306 17010KT 3000 SCT005 BECMG 1218/1220 VRB03KT BCFG NSC TEMPO 1220/1222 0300 FG VV001= What can be said about the destination airport at 20:30 UTC if ILS minima 350 m RVR, 200 ft Decision Height are being considered?",
+            "options": {
+                "A": "There is the possibility that the weather conditions may be below the applicable landing minima.",
+                "B": "The weather conditions will be above the applicable landing minima until 22:00 UTC because the weather change is not completed before this time.",
+                "C": "The weather conditions will be above the applicable landing minima because the decrease in visibility below the ILS minima will be a little bit later than 20:30 UTC.",
+                "D": "The weather conditions will be above the applicable landing minima throughout the forecast period because 300m of visibility corresponds to at least 900m RVR."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "TAF YUDO 120600Z 1212/1306 17010KT 3000 SCT005 BECMG 1218/1220 VRB03KT BCFG NSC TEMPO 1220/1222 0300 FG VV001= Period of validity is stated as 12:00 UTC day 12 until 06:00 UTC day 13 (1212/1306)",
+                "Initial weather conditions are forecasted to be: 17010KT = wind 170º at 10 kt 3000 = visibility 3000 m SCT005 = scattered clouds at 500 ft above the airport",
+                "A change of permanent character is expected to occur on day 12 at any time between 18:00 and 20:00 (BECMG 1218/1220)"
+            ],
+            "explanation": "TAF YUDO 120600Z 1212/1306 17010KT 3000 SCT005 BECMG 1218/1220 VRB03KT BCFG NSC TEMPO 1220/1222 0300 FG VV001= Period of validity is stated as 12:00 UTC day 12 until 06:00 UTC day 13 (1212/1306). Initial weather conditions are forecasted to be: 17010KT = wind 170º at 10 kt 3000 = visibility 3000 m SCT005 = scattered clouds at 500 ft above the airport. A change of permanent character is expected to occur on day 12 at any time between 18:00 and 20:00 (BECMG 1218/1220). After the change occurs, the following conditions are to be expected: VRB03KT – wind variable at 3 kts. BCFG – patches of fog NSC – no significant clouds Next changes expected are of temporary character (TEMPO 1220/1222) => which means that the listed conditions can occur on day 12 at any time between 20:00 and 22:00 UTC, but are not of permanent character and may occur momentarily, for a max of 1h at each time. Thereafter, the conditions will revert back to how they were previously. 0300 = visibility 300 m FG - fog VV001 – vertical visibility 100 ft. The change of temporary character indicates that between 20 UTC and 22 UTC, the visibility may deteriorate to 300 m (+ forecasted fog). This may occur before 2030 ETA – therefore, we must be prepared for the visibility to be already below our stated landing minima of 350 m at that time. Note: RVR usually exceeds the reported prevailing visibility, however, we cannot rely on this being the case and we must assume the worst.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506317",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "period",
+                "forecast",
+                "definite",
+                "next",
+                "hours"
+            ]
+        },
+        "content": {
+            "question": "TC ADVISORY\nDTG: 20130712/1900Z\nTCAC: MIAMI\nTC: DORIAN\nTC ADVISORY NR: 2013/4\nOBS PSN: 12/1800Z N2706 W07306\nMOV: NW 18KT\nINTST CHANGE: INTSF\nC: 962 HPA\nMAX WIND: 030KT\nAccording to the tropical cyclone advisory above, which of the following statements are correct?\n1. Pressure 962 hpa\n2. Cyclone will increase in strength\n3. Max wind surface 30 MPS\n4. Max Wind at 24 h 27 MPS\n5. New Message will be at 2000z\n6. Occurs 15 March",
+            "options": {
+                "A": "1 and 2.",
+                "B": "1, 3 and 4.",
+                "C": "1 and 3.",
+                "D": "1, 3, 5 and 6."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "Note: This question has been created from incomplete feedback",
+                "It is possible that the official TC Advisory provides further information, making another statement correct",
+                "The current correct option is correct for the present TC Advisory"
+            ],
+            "explanation": "Note: This question has been created from incomplete feedback. It is possible that the official TC Advisory provides further information, making another statement correct. The current correct option is correct for the present TC Advisory. Please let us know if you come across this question in your official exam. \"Pressure 962 hpa\" is correct, \"C: 962 HPA\" \"Cyclone will increase in strength\" is correct, \"INTST CHANGE: INTSF\" = Intensifying. \"Max wind surface 30 MPS\" is incorrect, \"MAX WIND: 030KT\" maximum wind is reported in knots. In this case, max wind equals 30 kt, which is approximately equal to 15 m/s (meters per second). \"Max Wind at 24 h 27 MPS\" is incorrect, it's not specified if Max Wind at 24 h 27 MPS. \"New Message will be at 2000z\" is incorrect, it's not specified New Message will be at 2000z \"Occurs 15 March\" is incorrect, the date of the message is 12th July 2013, not 15 March. Tropical Cyclone Advisory Information - Form of the code 1- Identification group: The report starts with the term \"TC ADVISORY\", which indicates that it is a tropical cyclone advisory. 2- Date and time of the issuance (abbreviated as \"DTG\"): The year, month, day, hours and minutes of the issuance are reported in UTC as \"yyyymmdd/GGggZ\" ⇒ 20130712/1900z 12th of july 2013 at 1900z. 3- Name of the TCAC (abbreviated as \"TCAC\"): The name of the TCAC that issued the report is given in a free text form ⇒ MIAMI 4- Name of the tropical cyclone (abbreviated as \"TC\"): The name, or number of the cyclone is given ⇒ DORIAN 5- Advisory number (abbreviated as NR): This number starts with \"01\" and increase with each cyclone in the season ⇒ 2013/4 6- Observed position of the centre (abbreviated as \"OBS PSN\"): Geographical coordinates of the centre of the tropical cyclone given in degrees and minutes ⇒ N2706 W07306 7- Direction and speed of the movement (abbreviated as \"MOV\"): If the tropical ccylone moves slowly (moving at a speed lower than 3 kt), or it is stationary (moving at a speed lower than 1 kt), the abbreviations SLW or STNR are used, respectively ⇒ NW 18 KT 8 - Intensity change (abbreviated as \"INTST CHANGE\"): This appears to be optional. If there is a definite change in intensity, it will be shown here; INTSF, NC, etc ⇒INTSF 9- Atmospheric pressure of the centre (abbreviated as \"C\"): Given in units of hPa ⇒ 963 hPa 10- Maximum surface wind (abbreviated as \"MAX WIND\") The maximum value of the surface wind near the centre over a 10 minute time period ⇒ 30 KT 11- Forecast of the position of the centre and maximum wind (abbreviated as \"FCST PSN\" and \"FCST MAX WIND\"): This information is reported 6, 12, 18 and 24 hours after the time of observation ⇒ Not present on this extract 12- Remarks (abbreviated as \"RMK\") ⇒ Not present on this extract 13- The code \"NXT MSG EXP\" indicates the date of the issuance of the next advisory ⇒ Not present on this extract The report ends with an equal sign.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-501358",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "forecast",
+                "period",
+                "conditions",
+                "next",
+                "means"
+            ]
+        },
+        "content": {
+            "question": "What is the lowest cloud base that can be expected from the forecast for 15:00 UTC?\nKCHS 280430Z 2806/2906 VRB05KT 4000 BR SCT005 OVC013 BECMG 2813/2814 9000 SHRA OVC015 PROB40 TEMPO 2814/2816 VRB15G25KT 1600 TSRA OVC010CB BECMG 2816/2818 26010KT BECMG 2821/2822 CAVOK=",
+            "options": {
+                "A": "1500 feet",
+                "B": "1300 feet",
+                "C": "1000 feet",
+                "D": "3000 feet"
+            },
+            "correct": "C"
+        },
+        "learning": {
+            "key_points": [
+                "KCHS 280430Z 2806/2906 VRB05KT 4000 BR SCT005 OVC013 BECMG 2813/2814 9000 SHRA OVC015 PROB40 TEMPO 2814/2816 VRB15G25KT 1600 TSRA OVC010CB BECMG 2816/2818 26010KT BECMG 2821/2822 CAVOK= Period of validity is stated as 06:00 UTC day 28 until 06:00 UTC day 29 (2806/2906)",
+                "Initial weather conditions are forecasted to be: VRB05KT = wind variable 5 kt 4000 = visibility 4000 m BR = mist SCT005 = scattered clouds at 500 ft above the airport",
+                "OVC013 = overcast layer at 1300 ft A change of permanent character is expected to occur on day 28 at any time between 13:00 and 14:00 (BECMG 2813/2814) and there is only a 40% probability that they will occur (PROB40)"
+            ],
+            "explanation": "KCHS 280430Z 2806/2906 VRB05KT 4000 BR SCT005 OVC013 BECMG 2813/2814 9000 SHRA OVC015 PROB40 TEMPO 2814/2816 VRB15G25KT 1600 TSRA OVC010CB BECMG 2816/2818 26010KT BECMG 2821/2822 CAVOK= Period of validity is stated as 06:00 UTC day 28 until 06:00 UTC day 29 (2806/2906). Initial weather conditions are forecasted to be: VRB05KT = wind variable 5 kt 4000 = visibility 4000 m BR = mist SCT005 = scattered clouds at 500 ft above the airport. OVC013 = overcast layer at 1300 ft A change of permanent character is expected to occur on day 28 at any time between 13:00 and 14:00 (BECMG 2813/2814) and there is only a 40% probability that they will occur (PROB40). After the change occurs, the following conditions are to be expected: 9000 = visibility 9000 m SHRA = showers of rain OVC015 = overcast layer at 1500 ft Next changes expected are of temporary character (TEMPO 2814/2816) => which means that the listed conditions can occur on day 28 at any time between 14:00 and 16:00 UTC, but are not of permanent character and may occur momentarily, for a max of 1h at each time. Thereafter, the conditions will revert back to how they were previously. VRB15G25KT = wind variable 15 kt gusting to a maximum of 25 kt 1600 = visibility 1600 m TSRA = thunderstorms and moderate rain OVC010CB = overcast layer at 1000 ft and Cumulonimbus Another change of permanent character is expected to occur later on day 28 at any time between 16:00 and 18:00 (BECMG 2816/2818). 26010KT = wind at 260º at 10 kt Another change of permanent character is expected to occur later on day 28 at any time between 21:00 and 22:00 (BECMG 2821/2822). CAVOK => At 1500 UTC, we might be affected by the change of permanent character occurring between 13:00 and 14:00 UTC => OVC015 or the change of temporary character occurring between 14:00 and 16:00 UTC => OVC010CB. Since the question asks for lowest possible cloud base and not the most probable one, the correct option is 1000 ft.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-509704",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "speed",
+                "accumulation",
+                "gust",
+                "between",
+                "additionally"
+            ]
+        },
+        "content": {
+            "question": "An aerodrome warning message gives information, among other things, about…",
+            "options": {
+                "A": "GR; FG; FZRA including the observed friction coefficient.",
+                "B": "DS; SN clearing; FZRA including the observed braking action.",
+                "C": "PL; SS; RA.",
+                "D": "TS; SN including the expected or observed snow accumulation; hoar frost."
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "AERODROME WARNINGS will be issued by the competent meteorological authority for the following hazards: a) gales b) strong wind warnings when mean speed exceeding 20 kt (gust 28 kt) or 25 kt (gust 37 kt) dependent on aerodrome requirements c) thunderstorms, hail or squalls d) snow (incl",
+                "snow accumulation) e) frost warnings including hoar frost and glaze or rime ice f) fog (when the visibility is expected to fall below 600 m) g) freezing precipitation h) duststorms, sandstorms i) tsunami j) volcanic ash Additionally a warning of a marked temperature inversion will be issued at selected aerodromes if a temperature increase of 10°C or more exists between the surface and 1000 ft above the surface"
+            ],
+            "explanation": "AERODROME WARNINGS will be issued by the competent meteorological authority for the following hazards: a) gales b) strong wind warnings when mean speed exceeding 20 kt (gust 28 kt) or 25 kt (gust 37 kt) dependent on aerodrome requirements c) thunderstorms, hail or squalls d) snow (incl. snow accumulation) e) frost warnings including hoar frost and glaze or rime ice f) fog (when the visibility is expected to fall below 600 m) g) freezing precipitation h) duststorms, sandstorms i) tsunami j) volcanic ash Additionally a warning of a marked temperature inversion will be issued at selected aerodromes if a temperature increase of 10°C or more exists between the surface and 1000 ft above the surface.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506801",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "procedures",
+                "should",
+                "phase",
+                "reporting",
+                "management"
+            ]
+        },
+        "content": {
+            "question": "When a pilot reports windshear during approach, the ... should be included in the message:",
+            "options": {
+                "A": "aircraft type",
+                "B": "aircraft mass",
+                "C": "aircraft configuration",
+                "D": "number of persons on board"
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "AIR TRAFFIC SERVICES (ATS) REPORTING OF WIND SHEAR 5",
+                "3",
+                "11 The relay of air-reports of wind shear to other aircraft and the provision of wind shear information to pilots in general are covered in the Procedures for Air Navigation Services — Air Traffic Management (Doc 4444, PANS-ATM), 6"
+            ],
+            "explanation": "AIR TRAFFIC SERVICES (ATS) REPORTING OF WIND SHEAR 5.3.11 The relay of air-reports of wind shear to other aircraft and the provision of wind shear information to pilots in general are covered in the Procedures for Air Navigation Services — Air Traffic Management (Doc 4444, PANS-ATM), 6.4.1, 6.6 and 7.3.1.2.2. The air-report should be relayed with content unchanged, although additional relevant factual information missing from the original report should be added if known (e.g. aircraft type, runway). The reports should be relayed using the following standardsequence, the contents depending upon the details of the original report: a) wind shear — identifier; b) aircraft type — added if not included in the original report; c) description of event — no change to the report as received from the pilot; d) height wind shear encountered — no change to the report as received from the pilot; e) phase of flight — no change to the report as received from the pilot; f) runway — added if not included in the original report; g) time of encounter — no change to the report as received from the pilot; and h) MET/operational information — no change to the report as received from the pilot. An example of such a report is as follows: “WIND SHEAR B747 REPORTED STRONG WIND SHEAR AT 300 FT ON APPROACH RWY27 AT 0937 MAX THRUST REQUIRED”",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-507356",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "discussion",
+                "forecast",
+                "conditions",
+                "typically",
+                "visual"
+            ]
+        },
+        "content": {
+            "question": "Runway Visual Range (RVR) is:",
+            "options": {
+                "A": "usually better than meteorological visibility.",
+                "B": "measured with ceilometers alongside the runway.",
+                "C": "reported when meteorological visibility is less than 2 000 m.",
+                "D": "reported in TAF and METAR."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "Runway Visual Range (RVR) is the range over which the pilot of an aircraft on the centre line of a runway can see the runway surface markings or the light delineating the runway or identifying its centre line",
+                "(ICAO Annex 3) The RVR is specific to the runway and its actual lighting system (i",
+                "e"
+            ],
+            "explanation": "Runway Visual Range (RVR) is the range over which the pilot of an aircraft on the centre line of a runway can see the runway surface markings or the light delineating the runway or identifying its centre line. (ICAO Annex 3) The RVR is specific to the runway and its actual lighting system (i.e. can be different for different runways of the same airport at the same time), where visibility only refers to the general range an object or light can be seen in the current conditions. ICAO Aerodrome Meteorological Observation and Forecast Study Group (AMOFSG) A COMPARISON OF RVR AND VISIBILITY REPORTS 2. Discussion Previous studies have shown that the reported value of RVR is typically higher than the associated visibility value. In fact, empirical rules can be used to relate values of visibility with the most probable value of RVR (see IP3 from the sixth meeting of this study group). These findings are consistent with the fact that the assessment of RVR takes advantage of high intensity runway lights while the visibility assessment is based upon lights of moderate intensity Note: \"measured with ceilometers alongside the runway.\" INCORRECT. RVR is measured with transmissometers. A ceilometer is a device that uses a laser or other light source to determine the height of a cloud ceiling or cloud base \"reported when meteorological visibility is less than 2 000 m.\" INCORRECT. RVR is reported when the visibility decreases below 1500 m.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-507121",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "area",
+                "speed",
+                "turbulence",
+                "explain",
+                "prepare"
+            ]
+        },
+        "content": {
+            "question": "Which of the following gridded forecasts do the WAFCs prepare for flight-planning purposes?",
+            "options": {
+                "A": "Geostrophic wind speed, vertical extent of CBs, humidity and CAT.",
+                "B": "Density, pressure and precipitation intensity.",
+                "C": "Upper wind and temperature, humidity and CAT.",
+                "D": "Upper wind, surface wind, and jet streams."
+            },
+            "correct": "C"
+        },
+        "learning": {
+            "key_points": [
+                "050",
+                "10",
+                "02"
+            ],
+            "explanation": "050.10.02.04.02: Explain that world area forecast centres prepare global sets of gridded forecasts for flight planning purposes (upper wind, temperature, humidity). The World Forecast Centres (WAFCs) continuously provide standardized and digital data and charts to aircraft during flights, ensuring uninterrupted access to crucial information. These resources include gridded forecasts at upper height levels, ranging from FL050 to FL630. These are for the following atmospheric variables: Air temperature Humidity Upper wind direction and speed Temperature and level of the tropopause Wind speed, wind direction and flight level of maximum wind Geopotential altitude of the flight levels Cumulonimbus clouds, turbulence and icing. Gridded forecasts are combined into information processing systems. The data is relayed from pilot reports/aircraft.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-503227",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "greater",
+                "speed",
+                "provided",
+                "means",
+                "located"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nWhat is the vertical extent of the jet stream located around 38.5ºN 25ºW?",
+            "options": {
+                "A": "26 000 ft",
+                "B": "32 000 ft",
+                "C": "34 000 ft",
+                "D": "48 000 ft"
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "Looking at the chart provided, at 38",
+                "5ºN 25ºW (as outlined in the explanation figure), we have the following information: \"FL340 220/480\" Which means that the jet stream core is at FL340 and its depth/vertical extent is: FL220 to FL480 ⇒ 26 000 ft When the maximum wind speed is 60 m/s (120 kt) or more, the flight levels between which winds are greater than 40 m/s (80 kts) are indicated => in this case, FL220 and FL480, are lower and upper levels of this jet stream, respectively, where the wind speed is 80 kt",
+                "From the lower limit (FL220, in this case), the wind speed increases from 80 kt until it reaches 150 kt at FL340 at the jet core - decreasing again until reaching 80 kt at the upper limit, FL480"
+            ],
+            "explanation": "Looking at the chart provided, at 38.5ºN 25ºW (as outlined in the explanation figure), we have the following information: \"FL340 220/480\" Which means that the jet stream core is at FL340 and its depth/vertical extent is: FL220 to FL480 ⇒ 26 000 ft When the maximum wind speed is 60 m/s (120 kt) or more, the flight levels between which winds are greater than 40 m/s (80 kts) are indicated => in this case, FL220 and FL480, are lower and upper levels of this jet stream, respectively, where the wind speed is 80 kt. From the lower limit (FL220, in this case), the wind speed increases from 80 kt until it reaches 150 kt at FL340 at the jet core - decreasing again until reaching 80 kt at the upper limit, FL480.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-503444",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "anticlockwise",
+                "speed",
+                "circulates",
+                "order",
+                "friction"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nAccording to the extract of the surface isobar map, the surface wind direction over the sea is approximately:",
+            "options": {
+                "A": "310°",
+                "B": "220°",
+                "C": "140°",
+                "D": "110°"
+            },
+            "correct": "C"
+        },
+        "learning": {
+            "key_points": [
+                "Firstly, it is important to note that the phenomena occurs in the Southern Hemisphere (45ºS) - this is very important to consider in order to find out from which direction the wind blows from",
+                "Now, take a closer look at the isobars => we can see that we have a HIGH pressure system to the left and a LOW pressure system to the right",
+                "Remember that the wind circulates anticlockwise around a High and clockwise around a Low in the Southern Hemisphere"
+            ],
+            "explanation": "Firstly, it is important to note that the phenomena occurs in the Southern Hemisphere (45ºS) - this is very important to consider in order to find out from which direction the wind blows from. Now, take a closer look at the isobars => we can see that we have a HIGH pressure system to the left and a LOW pressure system to the right. Remember that the wind circulates anticlockwise around a High and clockwise around a Low in the Southern Hemisphere. We will, therefore, have geostrophic winds (blowing parallel to the isobars) => from South east, approx. 125º. However, the question asks for surface winds and due to surface friction. In the southern hemisphere, over the sea: The surface wind veers by 10º/15º and speed reduces to 70% when compared to geostrophic winds. Therefore, the surface wind will blow from 125º + 15º = 140º",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-505765",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "heat",
+                "speed",
+                "decreases",
+                "water",
+                "thermometers"
+            ]
+        },
+        "content": {
+            "question": "Which instrument is used to measure atmospheric humidity?",
+            "options": {
+                "A": "Anemometer",
+                "B": "Nephoscope",
+                "C": "Transmissometer",
+                "D": "Hygrometer"
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "Atmospheric humidity can be measured using a psychrometer, a dry bulb and wet bulb hygrometer or an electrical hygrometer",
+                "The psychrometer and the dry bulb and wet bulb hygrometer use two thermometers to measure relative humidity; one measures the dry-bulb temperature and the other measures the wet-bulb temperature",
+                "The wet-bulb thermometer contains water in the base that evaporates and absorbs heat which decreases the temperature reading"
+            ],
+            "explanation": "Atmospheric humidity can be measured using a psychrometer, a dry bulb and wet bulb hygrometer or an electrical hygrometer. The psychrometer and the dry bulb and wet bulb hygrometer use two thermometers to measure relative humidity; one measures the dry-bulb temperature and the other measures the wet-bulb temperature. The wet-bulb thermometer contains water in the base that evaporates and absorbs heat which decreases the temperature reading. To determine the relative humidity, the temperatures are taken from the dry-bulb thermometer and the temperature difference between the wet and dry bulb thermometers. Note: \"Anemometer\" is used to measure wind speed. \"Nephoscope\" is used to measure the movement of clouds. \"Transmissometer\" is used to determine visibility and runway visual range.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-503760",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "area",
+                "turbulence",
+                "forecast",
+                "conditions",
+                "inform"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nYou are flying from Brussels (B) (50° 55'N, 004° 30'E) to Deauville (D) (49° 00'N, 000° 00'E) at FL060. The route follows the red line from \"B\" to \"D\" on the chart. What type of clouds and dangers would you expect during the descent towards Deauville?",
+            "options": {
+                "A": "Most cloudy with a risk of moderate turbulence and moderate icing above 4 000 ft.",
+                "B": "Isolated cumulonimbus clouds with severe turbulence within these clouds.",
+                "C": "No foggy conditions at destination.",
+                "D": "Moderate and severe turbulence during the approach can be expected."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "IMPORTANT NOTE: This question was formulated based on extremely insufficient feedback",
+                "Only the question itself was supplied; the options were devised by our team",
+                "If you encounter this question in your official examination, please inform us"
+            ],
+            "explanation": "IMPORTANT NOTE: This question was formulated based on extremely insufficient feedback. Only the question itself was supplied; the options were devised by our team. If you encounter this question in your official examination, please inform us. During the descent towards Deauville, we pass through sector \"B\" which has an occluded front followed by a slow moving cold/warm front reversal, so many different weather conditions can be expected in this area. Sector \"B\" contains cumulus and stratocumulus clouds which are overcast in the frontal areas between cloud bases of 1 500-3 000ft and tops of 5 000 - 8 000ft. Moderate icing and turbulence are forecast within this clouds. The 0°C level in sector \"B\" is between 4 000 ft and 6 000 ft, which could make the aircraft in non-icing conditions, however, convective activity such as that associated with fronts in this region can cause air movements that reduce the 0°C isotherm, and can cause icing in our case. Also, NASA quotes ice as being worst between +2°C and -20°C, so we know it can happen in low positive temperatures.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-502020",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "number",
+                "elevation",
+                "group",
+                "rate",
+                "lapse"
+            ]
+        },
+        "content": {
+            "question": "In METAR messages, the pressure group represents the:",
+            "options": {
+                "A": "QFE rounded down to the nearest hPa.",
+                "B": "QNH rounded down to the nearest hPa.",
+                "C": "QNH rounded up to the nearest hPa.",
+                "D": "QFE rounded to the nearest hPa."
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "QNH - barometric pressure at the airfield (QFE), converted to mean sea level (MSL) using the ISA temperature at the airfield and the ISA pressure lapse rate",
+                "In other words, it is the pressure set on the subscale of the altimeter so that the instrument indicates its height above sea level",
+                "When on the aerodrome with QNH set the altimeter will read aerodrome elevation"
+            ],
+            "explanation": "QNH - barometric pressure at the airfield (QFE), converted to mean sea level (MSL) using the ISA temperature at the airfield and the ISA pressure lapse rate. In other words, it is the pressure set on the subscale of the altimeter so that the instrument indicates its height above sea level. When on the aerodrome with QNH set the altimeter will read aerodrome elevation. QNH is always a whole number, without any decimal places, and is always rounded down.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-503155",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "departure",
+                "alphabet",
+                "congestion",
+                "busy",
+                "ground"
+            ]
+        },
+        "content": {
+            "question": "Which kind of meteorological information is normally transmitted in an ATIS?",
+            "options": {
+                "A": "AIRMET / GAMET.",
+                "B": "METAR / SPECI.",
+                "C": "TAF / SPECI.",
+                "D": "MET REPORT / SPECIAL."
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "The Automatic Terminal Information Service (ATIS) is a continuous broadcast of current aerodrome weather and other aerodrome information",
+                "The purpose of the ATIS is to improve controller effectiveness and to reduce congestion on busy ground, tower and approach frequencies by automatically transmitting on a discrete VHF radio frequency",
+                "Pilots departing from or arriving at aerodromes which offer ATIS are encouraged to listen to the ATIS broadcast and to notify air traffic control, on initial contact, that they have received the ATIS broadcast, by passing the phonetic alphabet code letter by which all ATIS broadcasts are identified"
+            ],
+            "explanation": "The Automatic Terminal Information Service (ATIS) is a continuous broadcast of current aerodrome weather and other aerodrome information. The purpose of the ATIS is to improve controller effectiveness and to reduce congestion on busy ground, tower and approach frequencies by automatically transmitting on a discrete VHF radio frequency. Pilots departing from or arriving at aerodromes which offer ATIS are encouraged to listen to the ATIS broadcast and to notify air traffic control, on initial contact, that they have received the ATIS broadcast, by passing the phonetic alphabet code letter by which all ATIS broadcasts are identified. At some aerodromes there will be a separate ATIS broadcast for departure and arrival. In order to free up air traffic VHF communication frequencies, some aerodromes transmit the ATIS information on the voice channel of a VOR beacon located at the aerodrome. ATIS will be broadcast in plain language and will contain some or all of the following information, if applicable. Aerodrome name. ATIS sequence designator or information code. Time of observation. Runway in use and status. Surface wind in knots and referenced to magnetic north. Visibility and RVR. Present weather. Significant cloud. Temperature and dew point. Altimeter setting. Transition level. Type of approach expected. And finally any warnings pertinent to flight operations.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506716",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "prepares",
+                "affect",
+                "route",
+                "watch",
+                "weather"
+            ]
+        },
+        "content": {
+            "question": "Which one of the following agencies prepares SIGMET?",
+            "options": {
+                "A": "World area forecast centre",
+                "B": "Meteorological office",
+                "C": "Aeronautical meteorological station",
+                "D": "Meteorological watch office"
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "ICAO Annex 3 SIGMET information",
+                "Information issued by a meteorological watch office concerning the occurrence or expected occurrence of specified en-route weather phenomena which may affect the safety of aircraft operations"
+            ],
+            "explanation": "ICAO Annex 3 SIGMET information. Information issued by a meteorological watch office concerning the occurrence or expected occurrence of specified en-route weather phenomena which may affect the safety of aircraft operations.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-501617",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "area",
+                "accepted",
+                "providing",
+                "speed",
+                "forecast"
+            ]
+        },
+        "content": {
+            "question": "What are examples of grid point datasets prepared by the World Area Forecast Centres (WAFCs)?",
+            "options": {
+                "A": "Flight level and temperature of tropopause.",
+                "B": "Temperature of the tropopause, precipitation, and in-cloud turbulence.",
+                "C": "Surface wind, upper air pressure, and humidity.",
+                "D": "Horizontal extent of CBs, humidity, and direction and speed of the geostrophic wind."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "ICAO Annex 3 World area forecast centre (WAFC)",
+                "A meteorological centre designated to prepare and issue significant weather forecasts and upper-air forecasts in digital form on a global basis direct to States by appropriate means as part of the aeronautical fixed service",
+                "CHAPTER 3"
+            ],
+            "explanation": "ICAO Annex 3 World area forecast centre (WAFC). A meteorological centre designated to prepare and issue significant weather forecasts and upper-air forecasts in digital form on a global basis direct to States by appropriate means as part of the aeronautical fixed service. CHAPTER 3. WORLD AREA FORECAST SYSTEM AND METEOROLOGICAL OFFICES 3.2 World area forecast centres 3.2.1 A Contracting State, having accepted the responsibility for providing a WAFC within the framework of the world area forecast system, shall arrange for that centre: a) to prepare gridded global forecasts of: 1) upper wind; 2) upper-air temperature and humidity; 3) geopotential altitude of flight levels; 4) flight level and temperature of tropopause; 5) direction, speed and flight level of maximum wind; 6) cumulonimbus clouds; 7) icing; and 8) turbulence;",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-503535",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "area",
+                "likely",
+                "most",
+                "interpret",
+                "cold"
+            ]
+        },
+        "content": {
+            "question": "To best detect low cumulus clouds in summer, which satellite imagery should be used?",
+            "options": {
+                "A": "Visual and infrared.",
+                "B": "Water vapour.",
+                "C": "Infrared.",
+                "D": "Visual."
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "Visual Images",
+                "Although visual photography may be easy to interpret, it suﬀers the disadvantage of not being available continuously, due to lack of sunlight at night",
+                "Clouds will appear white, the land grey and the sea black Infrared (IR)"
+            ],
+            "explanation": "Visual Images. Although visual photography may be easy to interpret, it suﬀers the disadvantage of not being available continuously, due to lack of sunlight at night. Clouds will appear white, the land grey and the sea black Infrared (IR). Infrared images have the advantage of being available for 24 hours a day and the shading of the picture will be more or less the same by day and by night. Cold (high) cloud will give a white image, lower cloud a somewhat darker one, whilst warm land will give a dark image. To get a clear picture of the weather you should analyse both the IR and visible images. If both images are bright in the same area => very likely that you can find a very high and thick cloud with high convective activity over that area. If you get cloud returns on a visible imagery but not on an IR image => most likely a low cloud or fog. If you get a white return on an IR imagery, along with a translucent whitish layer on a visible imagery => it is most likely a high wispy cloud - a thin layer of cirrostratus.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-507443",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "must",
+                "greater",
+                "area",
+                "conditions",
+                "code"
+            ]
+        },
+        "content": {
+            "question": "The term CAVOK is used when weather conditions are:",
+            "options": {
+                "A": "9999, NSC, NSW",
+                "B": "9000, no clouds, NOSIG",
+                "C": "8000, HAZARDOUS WX NIL, NOSIG",
+                "D": "9999, NSC, NOSIG"
+            },
+            "correct": "A"
+        },
+        "learning": {
+            "key_points": [
+                "The code CAVOK is frequently used in the METAR code, being the abbreviation for “cloud, ceiling and visibility are OK",
+                "” If CAVOK is used, it will replace the visibility, RVR, weather and cloud groups",
+                "There are four criteria which must be met in order for CAVOK to appear in the METAR"
+            ],
+            "explanation": "The code CAVOK is frequently used in the METAR code, being the abbreviation for “cloud, ceiling and visibility are OK.” If CAVOK is used, it will replace the visibility, RVR, weather and cloud groups. There are four criteria which must be met in order for CAVOK to appear in the METAR. These are: the visibility must be 10 kilometers or more; the height of the lowest cloud must be no less than 5000 ft, or the level of highest minimum sector altitude, whichever is the greater; there must be no cumulonimbus or ‘towering cumulus’ (TCU) present; there must be no significant weather at or in the vicinity of the aerodrome. Note: Minimum Sector Altitude is the lowest altitude that may be used under emergency conditions which will provide a minimum clearance of 1 000 ft above all objects located in an area contained within a sector of a circle of 25 NM radius centered on a radio navigation aid. 9999 Visibility of 10 Km or more NSC No Significant Cloud NSW No Significant Weather",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506592",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "area",
+                "labeled",
+                "spatial",
+                "forecast",
+                "region"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nOn the route shown in the annex from Lomé (L) to Nairobi (N), the highest coverage of CB to be expected is:",
+            "options": {
+                "A": "Between 0 and 25%.",
+                "B": "Less than 50%.",
+                "C": "More than 75%.",
+                "D": "50 - 75%."
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "The flight path from Lomé (L) to Nairobi (N) traverses an area with intermittent occurrences of CBs (cumulonimbus clouds) labeled as OCNL (occasional) and ISOL (isolated)",
+                "As a result, the extent of cloud coverage in this region is below 75% of the total area in question",
+                "Isolated (ISOL)"
+            ],
+            "explanation": "The flight path from Lomé (L) to Nairobi (N) traverses an area with intermittent occurrences of CBs (cumulonimbus clouds) labeled as OCNL (occasional) and ISOL (isolated). As a result, the extent of cloud coverage in this region is below 75% of the total area in question. Isolated (ISOL). Used if an area consists of individual features which are forecast to affect an area with a maximum spatial coverage of between less than 50% of the area concerned. These features can be easily avoided. Occasional (OCNL). Used if an area consists of well-separated features, which are forecast to affect an area with a maximum spatial coverage of between 50% and 75% of the area concerned. These features can be avoided by pilots. Frequent (FRQ). Used if within a particular area there is little separation between phenomena, and the spatial coverage is greater than 75% of the area forecast to be affected by that phenomenon (used for convective types only). These features will be difficult to avoid. The following are some of the abbreviations associated with CB (and TS) with their meaning: ISOL, (isolated) - individual OCNL, (occasional) - well-separated FRQ, (frequent) - little or no separation between CB SQL, (squall) - a line of CB with little or no separation",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-504353",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "29015kt",
+                "continuing",
+                "period",
+                "forecast",
+                "next"
+            ]
+        },
+        "content": {
+            "question": "According to the following TAF, which of the following is the time period between 06:00 UTC and 21:00 UTC on the 14th day of the month during which a pilot can fly without expecting any type of precipitation?\nEDDF 140500Z 1406/1512 VRB02KT CAVOK BECMG 1408/1410 13008KT 9999 SCT040 TEMPO 1411/1413 25010KT 8000 SHRA SCT033 TCU PROB30 TEMPO 1413/1415 27010KT 5000 TSRA SCT027CB BECMG 1415/1417 29015KT 7000 SHRA OVC015 BECMG 1503/1506 31010KT 8000 -RA BKN025 BECMG 1509/1512 9999 SCT030=",
+            "options": {
+                "A": "From 15:00z to 18:00z",
+                "B": "From 06:00z to 11:00z",
+                "C": "From 09:00z to 12:00z",
+                "D": "From 07:00z to 12:00z"
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "Note: We do not have the exact feedback about this TAF and the question",
+                "We have had to make some small additions to fill in the gaps, so do not expect to see this question in the exam exactly as it is here",
+                "Please let us know if you do see this question in your exam, and any differences you can remember from it, thank you! The best way to answer a question like this is to go through it and mark out where no precipitation is expected"
+            ],
+            "explanation": "Note: We do not have the exact feedback about this TAF and the question. We have had to make some small additions to fill in the gaps, so do not expect to see this question in the exam exactly as it is here. Please let us know if you do see this question in your exam, and any differences you can remember from it, thank you! The best way to answer a question like this is to go through it and mark out where no precipitation is expected. EDDF 140500Z 1406/1512 VRB02 KT CAVOK The initial forecast, no precipitation expected from 06:00 on the 14th. BECMG 1408/1410 13008 KT 9999 SCT040 Still no precipitation expected in the new time window which begins from 08:00 to 10:00. TEMPO 1411/13 25010 KT 8000 SHRA SCT033 TCU Showers of rain are expected temporarily for maximum 1 hour between 11:00 and 13:00 on the 14th. Therefore, these times cannot be part of the correct answer. PROB30 TEMPO 1413/1415 27010 KT 5000 TSRA SCT027CB There is a PROB30 chance of thunderstorms with rain between 13:00 and 15:00 on the 14th. Therefore, these times cannot be part of the correct answer. BECMG 1415/1417 29015 KT 7000 SHRA OVC015 Showers of rain are forecast, beginning between 15:00 and 17:00 on the 14th, and continuing until the next forecast window. BECMG 1503/1506 31010KT 8000 -RA BKN025 We are now outside of the window of time set by the question - 06:00 to 21:00 on the 14th. Therefore, no further part of the forecast need be counted. BECMG 1509/1512 9999 SCT030= Watch out for this section, it is on the 15th day of the month, so not applicable to the question. Therefore, the only time window that has no precipitation forecast at all between 06:00 and 21:00 on the 14th is between 06:00 and 11:00",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-503633",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "turbulence",
+                "decision",
+                "forecast",
+                "conditions",
+                "into"
+            ]
+        },
+        "content": {
+            "question": "Considering gridded forecast products, what does having gridded data on CBs and turbulence allow?",
+            "options": {
+                "A": "Passengers can view the weather on in-flight entertainment systems so will better understand the reasons for any delay or re-routing.",
+                "B": "The only reason to present data in this way is that it can be filed and easily retrieved for accident investigation purposes.",
+                "C": "Crews will receive advance warning about each and every type of hazardous weather conditions ahead.",
+                "D": "The data can be displayed in a variety of forms to aid crews in visualising flight hazards."
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "Numerical weather prediction (NWP) uses mathematical models of the atmosphere and oceans to predict the weather based on current weather conditions",
+                "The gridded forecasts are part of the NWP and these solve most of the traditional forecast limitations",
+                "For example, a gridded CB forecast contains all convective clouds producing precipitation, whereas a SIGWX contains only areas of isolated or occasional embedded CB"
+            ],
+            "explanation": "Numerical weather prediction (NWP) uses mathematical models of the atmosphere and oceans to predict the weather based on current weather conditions. The gridded forecasts are part of the NWP and these solve most of the traditional forecast limitations. For example, a gridded CB forecast contains all convective clouds producing precipitation, whereas a SIGWX contains only areas of isolated or occasional embedded CB. Gridded forecasts are available at upper height, between FL050 and FL630. These are for the following atmospheric variables: Air temperature Humidity Wind direction and speed Temperature of the tropopause Wind speed, wind direction and flight level of maximum wind Geopotential altitude of the flight levels Cumulonimbus clouds, turbulence and icing. This data can be integrated into, and visualised by, flight planning software and play a key part in the decision making process. The data is relayed from pilot reports/aircraft.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506455",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "number",
+                "than",
+                "identifying",
+                "visual",
+                "between"
+            ]
+        },
+        "content": {
+            "question": "RVR is reported in steps of _____ when the RVR is less than 400 m, and _____ when the RVR is 400 m or more but less than 800 m, and _____ when the RVR is 800 m or more.",
+            "options": {
+                "A": "20 m; 50 m; 100 m.",
+                "B": "25 m; 50 m; 100 m.",
+                "C": "15 m; 30 m; 90 m.",
+                "D": "0 m; 50 m; 100 m."
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "Runway visual range (RVR)",
+                "The range over which the pilot of an aircraft on the centre line of a runway can see the runway surface markings or the lights delineating the runway or identifying its centre line",
+                "In METARs, the RVR values are prefixed by the letter “R”, followed by the runway number for which the RVR value applies and the actual RVR value"
+            ],
+            "explanation": "Runway visual range (RVR). The range over which the pilot of an aircraft on the centre line of a runway can see the runway surface markings or the lights delineating the runway or identifying its centre line. In METARs, the RVR values are prefixed by the letter “R”, followed by the runway number for which the RVR value applies and the actual RVR value. According to ICAO Annex 3, RVR is reported in steps of 25 m when the RVR is between 0 - 375 m (less than 400 m), 50 m when the RVR is between 400 - 750 m (less than 800 m) and 100 m when the RVR is between 800 - 2000 m (800 m or more).",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-508946",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "speed",
+                "forecast",
+                "reference",
+                "referenced",
+                "rate"
+            ]
+        },
+        "content": {
+            "question": "Which units are used for the forecast wind at higher levels?",
+            "options": {
+                "A": "Direction in degrees relative to magnetic north and speed in knots.",
+                "B": "Direction in degrees relative to grid north and speed in km/h.",
+                "C": "Direction in degrees relative to true north and speed in knots.",
+                "D": "Direction in degrees relative to magnetic north and speed in km/h."
+            },
+            "correct": "C"
+        },
+        "learning": {
+            "key_points": [
+                "WIND DIRECTION",
+                "The wind direction is reported, in tens of degrees, from which the wind is blowing with reference to True North",
+                "Except wind reported by ATC/ATIS – wind direction in that case is referenced to Magnetic North"
+            ],
+            "explanation": "WIND DIRECTION. The wind direction is reported, in tens of degrees, from which the wind is blowing with reference to True North. Except wind reported by ATC/ATIS – wind direction in that case is referenced to Magnetic North. WIND SPEED. The rate is reported, in knots, at which the wind passes a given point.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-502252",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "speed",
+                "shaft",
+                "should",
+                "located",
+                "accuracy"
+            ]
+        },
+        "content": {
+            "question": "The wind indicator for a weather observation receives the measured value from an anemometer. Where is this instrument placed?",
+            "options": {
+                "A": "On the roof of the weather station.",
+                "B": "On a mast 10 m above the runway.",
+                "C": "Close to the station about 2 m above the ground.",
+                "D": "1 m above the runway."
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "Measurement of winds An anemometer is commonly used to measure wind speed",
+                "It is a set of 3 hemispherical cups which rotate on a shaft with the effect of the wind",
+                "The speed of rotation of the shaft is directly proportional to the wind speed"
+            ],
+            "explanation": "Measurement of winds An anemometer is commonly used to measure wind speed. It is a set of 3 hemispherical cups which rotate on a shaft with the effect of the wind. The speed of rotation of the shaft is directly proportional to the wind speed. According to ICAO, the anemometer should be positioned 10 m (33 ft) above aerodrome level and located clear of buildings and obstructions which could affect the airflow and hence accuracy.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-505798",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "decoded",
+                "describing",
+                "code",
+                "should",
+                "coefficient"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nWhich of the following runway state messages, added to a METAR, could be decoded as follows? All runways have deposits of dry snow, to an extent of 11% to 25% of the runway covered, to a depth of 50 mm, with a braking coefficient of 0.35.",
+            "options": {
+                "A": "88425093",
+                "B": "88425035",
+                "C": "99204536",
+                "D": "77240564"
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "Runway State Group A runway state group will be added to a METAR when there is significant contamination on the runway",
+                "=> The format is RXX/XXXXXX the runway designator followed by an oblique then 6 digits describing the contamination state",
+                "Please refer to the attached figure"
+            ],
+            "explanation": "Runway State Group A runway state group will be added to a METAR when there is significant contamination on the runway. => The format is RXX/XXXXXX the runway designator followed by an oblique then 6 digits describing the contamination state. Please refer to the attached figure. Use the question’s attached table to find the corresponding codes. For All runways = code “88” For dry snow = code “4” Extent of Runway Contamination 11% to 25% = code “2” Depth of Deposit 50 mm = we will have code “50” (if 1 mm = 01; 50 mm = 50) Braking coefficient of 0.35 = code \"35\" The coded runway state group for “All runways have deposits of dry snow, to an extent of 11% to 25% of the runway covered, to a depth of 50 mm, with a braking coefficient of 0.35.” should be as follows: 88/425035",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-506559",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 3,
+            "keywords": [
+                "conditions",
+                "3000",
+                "visual",
+                "same",
+                "have"
+            ]
+        },
+        "content": {
+            "question": "An aerodrome makes routine weather reports once per hour. The most recent METAR reads as this:\n131020Z 15005KT CAVOK 18/14 Q1010 NOSIG\nAt 10:45 UTC, the prevailing visibility is observed to have been 3000 m in smoke for the last 10 minutes. In accordance with ICAO Annex 3, which of the following actions should the aerodrome meteorological office take?",
+            "options": {
+                "A": "Take no immediate action before the next METAR in 35 minutes time.",
+                "B": "Issue an amendment (AMD) to the previous METAR.",
+                "C": "Issue a SPECI stating the revised visibility only.",
+                "D": "Issue a SPECI with all the most recent conditions, including the most recent visibility."
+            },
+            "correct": "D"
+        },
+        "learning": {
+            "key_points": [
+                "Note: We do not have the full feedback for this question, the last two options (including the correct option) are mostly unknown, and have been made up by us to fit what we expect to be asked",
+                "Please let us know if you see this question in your exam, and what you can remember from the options, thank you! A METAR is routine weather report issued at hourly or half-hourly intervals",
+                "It is a description of the meteorological elements observed at an airport at a specific time"
+            ],
+            "explanation": "Note: We do not have the full feedback for this question, the last two options (including the correct option) are mostly unknown, and have been made up by us to fit what we expect to be asked. Please let us know if you see this question in your exam, and what you can remember from the options, thank you! A METAR is routine weather report issued at hourly or half-hourly intervals. It is a description of the meteorological elements observed at an airport at a specific time. A SPECI is special weather report issued when there is significant deterioration or improvement in airport weather conditions, such as significant changes of surface winds, visibility, cloud base height and occurrence of severe weather. The SPECI will not just include the changed condition, it should include a full report of all conditions, including the condition(s) that has triggered the SPECI. - The format of the SPECI report is very similar to that of the METAR and the elements used have the same meaning. The identifier METAR or SPECI at the beginning of the weather report differentiates them. ICAO Annex 3 - Appendix 3, 2.3 contains the criteria for issuing a SPECI, and recommends that a SPECI should be issued:. b) when the visibility is improving and changes to or passes through one or more of the following values, or when the visibility is deteriorating and passes through one or more of the following values: 1) 800, 1 500 or 3 000 m; and 2) 5 000 m, in cases where significant numbers of flights are operated in accordance with the visual flight rules;.",
+            "reference": "Aviation Regulations"
+        }
+    },
+    {
+        "id": "Q-501209",
+        "category": "050",
+        "subcategory": "050-10",
+        "metadata": {
+            "topic": "Meteorological Information",
+            "difficulty": 2,
+            "keywords": [
+                "area",
+                "unable",
+                "pulse",
+                "ground",
+                "therefore"
+            ]
+        },
+        "content": {
+            "question": "Refer to figure.\nThe dark area (around 60 NM / 330°) on this weather radar return showing is:",
+            "options": {
+                "A": "Scalloped edges",
+                "B": "Shadowing",
+                "C": "Finger",
+                "D": "Hook"
+            },
+            "correct": "B"
+        },
+        "learning": {
+            "key_points": [
+                "WEATHER ATTENUATION The weather radar display depends on signal returns: the more intense the precipitation, the less distance the radar can see through",
+                "Therefore when the radar echo is unable to make the two way trip through heavy precipitation, a \"shadowing\" effect occurs",
+                "The stronger the rainstorm, the more radar energy will be scattered by Weather Attenuation"
+            ],
+            "explanation": "WEATHER ATTENUATION The weather radar display depends on signal returns: the more intense the precipitation, the less distance the radar can see through. Therefore when the radar echo is unable to make the two way trip through heavy precipitation, a \"shadowing\" effect occurs. The stronger the rainstorm, the more radar energy will be scattered by Weather Attenuation. In simple words, Radar attenuation (shadowing) is simply the absorption or reflection of radar signals as the radar pulse penetrates an area of precipitation, preventing that radar from detecting any additional cells that lie behind the first storm. Tip for avoiding shadows: To accurately interpret your radar returns, aim the tilt on your radar down far enough to paint the ground, then look for returns. If you see a potential shadow (a dark, blank area), look for a cell in front of the shadow. If you see a storm before the shadow, avoid it. If you don’t see any storm cells in front of the dark area, it’s probably not a shadow, but may be a large lake or a tall mountain (equally disturbing, depending on your altitude).",
+            "reference": "Aviation Regulations"
+        }
+    }
+]

@@ -4,12 +4,43 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const OpenAI = require("openai");
-const rateLimit = require('express-rate-limit');
-const logger = require('./logger');
+const rateLimit = require("express-rate-limit");
+const { body, validationResult } = require("express-validator");
+const logger = require("./logger");
 const helmet = require('helmet');
 const compression = require('compression');
-const { body, validationResult } = require('express-validator');
+const OpenAI = require("openai");
+const { initializeFirebase } = require("./firebase");
+
+// Initialize Firebase Admin SDK first
+initializeFirebase();
+
+// Then import modules that depend on Firebase
+const { adminAuth, db } = require("./firebase");
+const authenticate = require("./middleware/auth");
+
+// Import routes
+const questionsRoutes = require('./routes/questions');
+
+// Initialize Express app
+const app = express();
+
+// Initialize OpenAI API with the API key and updated configuration
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://api.openai.com/v1',
+  defaultHeaders: {
+    'Accept-Encoding': 'gzip',
+  },
+  timeout: 30000,
+});
+
+// Basic middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(compression());
 
 //------------------------------------------------------------------------------
 // LOGGING CONFIGURATION
@@ -18,22 +49,9 @@ logger.info("Environment Variables Loading...");
 logger.info("OpenAI API Key Status:", { hasKey: !!process.env.OPENAI_API_KEY });
 
 //------------------------------------------------------------------------------
-// FIREBASE ADMIN SETUP
-//------------------------------------------------------------------------------
-// Import Firebase admin instance from our centralized setup
-const { admin, auth: adminAuth } = require('./firebase');
-
-logger.info("Firebase Admin initialized");
-
-//------------------------------------------------------------------------------
 // EXPRESS SERVER CONFIGURATION
 //------------------------------------------------------------------------------
-const app = express();
-const PORT = process.env.PORT || 3000;
-
 // Security Middleware
-app.use(helmet());
-app.use(compression());
 
 // CORS Configuration
 // Restrict API access to specific origins for security
@@ -53,51 +71,42 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Initialize OpenAI API with the API key and updated configuration
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: 'https://api.openai.com/v1',
-  defaultHeaders: {
-    'Accept-Encoding': 'gzip',
-  },
-  timeout: 30000,
-});
-
 // Middleware Configuration
-
-app.use(express.json());
 
 // Global Rate Limiter: 100 requests per 15 minutes
 const globalRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again later',
-    standardHeaders: true,
-    legacyHeaders: false,
+    message: "Too many requests from this IP, please try again later"
+});
+
+// More restrictive rate limiter for AI queries: 5 requests per minute
+const queryRateLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
 });
 
 app.use(globalRateLimiter);
 
-// Global Error Handler
-const errorHandler = (err, req, res, next) => {
-    logger.error('Global error:', { 
-        error: err.message,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-        path: req.path,
-        method: req.method
-    });
+//------------------------------------------------------------------------------
+// ERROR HANDLING AND VALIDATION
+//------------------------------------------------------------------------------
 
+// Error Handler Middleware
+const errorHandler = (err, req, res, next) => {
+    logger.error('Error:', { 
+        error: err.message,
+        code: err.code,
+        stack: err.stack
+    });
     res.status(err.status || 500).json({
-        error: process.env.NODE_ENV === 'production' 
-            ? 'An unexpected error occurred' 
-            : err.message
+        error: err.message || 'Internal Server Error'
     });
 };
 
-app.use(errorHandler);
-
 // Request Validation Middleware
-const validate = (validations) => {
+const validate = validations => {
     return async (req, res, next) => {
         await Promise.all(validations.map(validation => validation.run(req)));
 
@@ -106,45 +115,10 @@ const validate = (validations) => {
             return next();
         }
 
-        return res.status(400).json({
+        res.status(400).json({
             errors: errors.array()
         });
     };
-};
-
-//------------------------------------------------------------------------------
-// API SECURITY AND RATE LIMITING
-//------------------------------------------------------------------------------
-// Rate limiter: 5 requests per minute per IP
-const queryRateLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 5, // Limit each IP to 5 requests per windowMs
-    message: "Too many requests from this IP, please try again later.",
-});
-
-//------------------------------------------------------------------------------
-// AUTHENTICATION MIDDLEWARE
-//------------------------------------------------------------------------------
-// Verify Firebase JWT tokens and attach user data to request
-const authenticate = async (req, res, next) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'No token provided' });
-        }
-
-        const idToken = authHeader.split('Bearer ')[1];
-        const decodedToken = await adminAuth.verifyIdToken(idToken);
-        req.user = decodedToken;
-        next();
-    } catch (error) {
-        logger.error('Authentication error:', { 
-            error: error.message,
-            code: error.code,
-            stack: error.stack
-        });
-        return res.status(401).json({ error: 'Invalid token' });
-    }
 };
 
 //------------------------------------------------------------------------------
@@ -180,7 +154,7 @@ app.post('/register',
     async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await admin.auth().createUser({
+        const user = await adminAuth.createUser({
             email,
             password,
         });
@@ -253,10 +227,10 @@ app.post('/refresh-token', async (req, res) => {
 
   try {
     // Verify the old token
-    const decodedToken = await admin.auth().verifyIdToken(oldToken);
+    const decodedToken = await adminAuth.verifyIdToken(oldToken);
     
     // Create a new custom token
-    const newToken = await admin.auth().createCustomToken(decodedToken.uid);
+    const newToken = await adminAuth.createCustomToken(decodedToken.uid);
     
     res.json({ token: newToken });
   } catch (error) {
@@ -335,19 +309,20 @@ app.post("/assistant-query",
   }
 });
 
-// Import auth routes
-const { router: authRouter, verifyToken } = require('./routes/auth');
+//------------------------------------------------------------------------------
+// ROUTES
+//------------------------------------------------------------------------------
 
-// Use auth routes
-app.use('/auth', authRouter);
+// Mount routes
+app.use('/api/questions', authenticate, questionsRoutes);
 
-// Protect routes that require authentication
-app.use('/api', verifyToken);
+// Apply error handler middleware last
+app.use(errorHandler);
 
 //------------------------------------------------------------------------------
 // SERVER STARTUP
 //------------------------------------------------------------------------------
-// Start the Express server and log the port
+const PORT = 3000;
 app.listen(PORT, () => {
-  logger.info(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on port ${PORT}`);
 });

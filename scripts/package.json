@@ -1,0 +1,10 @@
+{
+  "name": "firebase-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for Firebase management",
+  "main": "create-indexes.js",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "firebase-admin": "^11.11.0"
+  }
+}

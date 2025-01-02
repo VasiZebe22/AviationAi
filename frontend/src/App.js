@@ -16,6 +16,10 @@ const Signup = React.lazy(() => import("./pages/Signup/SignupPage"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard/Dashboard"));
 const AiChat = React.lazy(() => import("./components/AiChat/AiChat"));
 const ProfileEdit = React.lazy(() => import("./components/Profile/ProfileEdit"));
+const Questions = React.lazy(() => import("./pages/Questions/Questions"));
+const Categories = React.lazy(() => import("./pages/Categories"));
+const TestConfig = React.lazy(() => import("./pages/TestConfig/TestConfig"));
+const Results = React.lazy(() => import("./pages/Results/Results"));
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -88,11 +92,51 @@ function AppRoutes() {
                     }
                 />
                 <Route
-                    path="/profile/edit"
+                    path="/profile"
                     element={
                         <ProtectedRoute>
                             <Suspense fallback={<LoadingSpinner />}>
                                 <ProfileEdit />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/practice"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Categories />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/questions/:categoryId"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Questions />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route 
+                    path="/test"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <TestConfig />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route 
+                    path="/results"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <Results />
                             </Suspense>
                         </ProtectedRoute>
                     }
@@ -114,16 +158,19 @@ function AppRoutes() {
     );
 }
 
-export default function App() {
+function App() {
     return (
         <ErrorBoundary>
             <Router>
-                <ToastProvider>
-                    <AuthProvider>
+                <AuthProvider>
+                    <ToastProvider>
                         <AppRoutes />
-                    </AuthProvider>
-                </ToastProvider>
+                        <ToastContainer />
+                    </ToastProvider>
+                </AuthProvider>
             </Router>
         </ErrorBoundary>
     );
 }
+
+export default App;

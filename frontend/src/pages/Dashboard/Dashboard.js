@@ -292,6 +292,35 @@ const Dashboard = () => {
               <ProfileSection userData={userData} onSave={handleProfileUpdate} />
             </DashboardCard>
 
+            {/* Practice Card */}
+            <DashboardCard title="Practice Questions">
+              <div className="space-y-4">
+                <div className="text-sm text-gray-300 mb-4">
+                  Test your knowledge across different aviation topics
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <button
+                    onClick={() => navigate('/practice')}
+                    className="w-full px-4 py-3 bg-accent-lilac hover:bg-accent-lilac-light text-white rounded-lg transition-colors duration-200 flex items-center justify-between group"
+                  >
+                    <span>Start Practice</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                  {userData.recentActivity
+                    .filter(activity => activity.action.toLowerCase().includes('practice'))
+                    .map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400">{activity.action}</span>
+                        <span className="text-gray-500">{activity.time}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </DashboardCard>
+
             {/* Overview Card */}
             <DashboardCard title="Overview">
               <div className="space-y-4">

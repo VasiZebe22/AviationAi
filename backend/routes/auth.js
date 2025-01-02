@@ -58,7 +58,4 @@ router.post('/token', async (req, res) => {
     }
 });
 
-module.exports = {
-    router,
-    verifyToken
-};
+module.exports = router;

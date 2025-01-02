@@ -9,7 +9,6 @@ import {
 } from 'firebase/auth';
 import { 
     getFirestore, 
-    enableIndexedDbPersistence, 
     query, 
     collection, 
     where, 
@@ -19,7 +18,7 @@ import {
 } from 'firebase/firestore';
 import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
 
-// Firebase configuration with all required fields
+// Firebase configuration
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -31,31 +30,30 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app;
-try {
-    app = initializeApp(firebaseConfig);
-} catch (error) {
-    console.error('Error initializing Firebase:', error);
-    console.log('Firebase config:', {
-        ...firebaseConfig,
-        apiKey: firebaseConfig.apiKey ? '***' : undefined
-    });
-}
+const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore
-const db = getFirestore(app);
-
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-    } else if (err.code === 'unimplemented') {
-        console.warn('The current browser does not support persistence.');
-    }
-});
-
+// Initialize services
 const auth = getAuth(app);
+const db = getFirestore(app);
 const firebaseDatabase = getDatabase(app);
+
+// Create required indexes for questions collection
+const createQuestionsIndexes = async () => {
+    try {
+        const questionsRef = collection(db, 'questions');
+        await getDocs(
+            query(
+                questionsRef,
+                where('categoryId', '==', '010'),
+                orderBy('created_at', 'desc')
+            )
+        );
+    } catch (error) {
+        console.error('Error creating indexes:', error);
+    }
+};
+
+createQuestionsIndexes();
 
 // Generate a unique session ID
 const generateSessionId = () => {
@@ -228,29 +226,4 @@ export const onAuthChange = (callback) => {
 // Export session management functions
 export { monitorSession, removeSession };
 
-export { auth, db };
-
-// Add this function to help with index creation
-export const createRequiredIndexes = async () => {
-    try {
-        // Test the query that requires the index
-        const q = query(
-            collection(db, 'chats'),
-            where('userId', '==', 'test'),
-            orderBy('updatedAt', 'desc')
-        );
-        await getDocs(q);
-        return { success: true };
-    } catch (err) {
-        if (err.message.includes('requires an index')) {
-            const indexUrl = err.message.match(/https:\/\/console\.firebase\.google\.com[^\s]*/)?.[0];
-            return {
-                success: false,
-                requiresIndex: true,
-                indexUrl: indexUrl,
-                message: 'This application requires a Firestore index to be created. Please contact the administrator with this URL: ' + indexUrl
-            };
-        }
-        return { success: false, error: err.message };
-    }
-};
+export { auth, db, firebaseDatabase };
