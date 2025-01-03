@@ -138,20 +138,23 @@ const Categories = () => {
   };
 
   const handleQuestionTypeChange = (type) => {
-    // If clicking the currently selected option, do nothing
-    if (filters.questionTypes[type] && Object.values(filters.questionTypes).filter(Boolean).length === 1) {
+    // If any option is selected (except the one being clicked) and it's not "all", grey out other options
+    const hasSelectionOtherThanCurrent = Object.entries(filters.questionTypes)
+      .some(([key, value]) => value && key !== type);
+
+    // If clicking a disabled option, do nothing
+    if (hasSelectionOtherThanCurrent && type !== 'all') {
       return;
     }
 
-    const newQuestionTypes = {
-      all: false,
-      withAnnexes: false,
-      withoutAnnexes: false,
-      [type]: true
-    };
+    // Toggle the clicked option
     setFilters(prev => ({
       ...prev,
-      questionTypes: newQuestionTypes
+      questionTypes: {
+        all: type === 'all' ? !prev.questionTypes.all : false,
+        withAnnexes: type === 'withAnnexes' ? !prev.questionTypes.withAnnexes : false,
+        withoutAnnexes: type === 'withoutAnnexes' ? !prev.questionTypes.withoutAnnexes : false
+      }
     }));
   };
 
@@ -209,46 +212,43 @@ const Categories = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Question Type Selection */}
             <div 
-              className="flex items-center cursor-pointer"
+              className={`flex items-center ${(filters.questionTypes.withAnnexes || filters.questionTypes.withoutAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               onClick={() => handleQuestionTypeChange('all')}
             >
               <input
                 type="checkbox"
                 checked={filters.questionTypes.all}
                 onChange={() => {}}
+                disabled={filters.questionTypes.withAnnexes || filters.questionTypes.withoutAnnexes}
                 className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
               />
-              <label className="ml-3 text-gray-300 cursor-pointer">All Questions</label>
+              <label className="ml-3 text-gray-300">All Questions</label>
             </div>
             <div 
-              className="flex items-center cursor-pointer"
+              className={`flex items-center ${(filters.questionTypes.all || filters.questionTypes.withoutAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               onClick={() => handleQuestionTypeChange('withAnnexes')}
             >
               <input
                 type="checkbox"
                 checked={filters.questionTypes.withAnnexes}
                 onChange={() => {}}
-                className={`w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1 
-                  ${!filters.questionTypes.withAnnexes ? 'opacity-50' : ''}`}
+                disabled={filters.questionTypes.all || filters.questionTypes.withoutAnnexes}
+                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
               />
-              <label className={`ml-3 text-gray-300 cursor-pointer ${!filters.questionTypes.withAnnexes ? 'opacity-50' : ''}`}>
-                With Annexes
-              </label>
+              <label className="ml-3 text-gray-300">With Annexes</label>
             </div>
             <div 
-              className="flex items-center cursor-pointer"
+              className={`flex items-center ${(filters.questionTypes.all || filters.questionTypes.withAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               onClick={() => handleQuestionTypeChange('withoutAnnexes')}
             >
               <input
                 type="checkbox"
                 checked={filters.questionTypes.withoutAnnexes}
                 onChange={() => {}}
-                className={`w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1 
-                  ${!filters.questionTypes.withoutAnnexes ? 'opacity-50' : ''}`}
+                disabled={filters.questionTypes.all || filters.questionTypes.withAnnexes}
+                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
               />
-              <label className={`ml-3 text-gray-300 cursor-pointer ${!filters.questionTypes.withoutAnnexes ? 'opacity-50' : ''}`}>
-                Without Annexes
-              </label>
+              <label className="ml-3 text-gray-300">Without Annexes</label>
             </div>
 
             <FilterOption
