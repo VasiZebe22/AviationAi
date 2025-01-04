@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import questionService from '../../services/questionService';
 
+/**
+ * Array of ATPL question categories with their metadata
+ * Each category contains:
+ * - id: Unique identifier for the category (e.g., '010' for Air Law)
+ * - title: Display name of the category
+ * - description: Brief explanation of the category content
+ * - image: Path to the category's illustration image
+ */
 const categories = [
   {
     id: '010',
@@ -83,12 +91,25 @@ const categories = [
   }
 ];
 
+/**
+ * Categories Component
+ * Main component for displaying and managing ATPL question categories
+ * Features:
+ * - Study/Exam mode selection
+ * - Question filtering options
+ * - Category progress tracking
+ * - Navigation to specific question sets
+ */
 const Categories = () => {
   const navigate = useNavigate();
+  
+  // State Management
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [userProgress, setUserProgress] = useState({});
-  const [mode, setMode] = useState('study');
+  const [mode, setMode] = useState('study');  // 'study' or 'exam' mode
+  
+  // Question filter state with default values
   const [filters, setFilters] = useState({
     questionTypes: {
       all: true,
@@ -106,10 +127,15 @@ const Categories = () => {
     showCorrectAnswers: false
   });
 
+  // Fetch user's progress when component mounts
   useEffect(() => {
     fetchUserProgress();
   }, []);
 
+  /**
+   * Fetches the user's progress stats for all categories
+   * Updates userProgress state with completion percentages
+   */
   const fetchUserProgress = async () => {
     try {
       setLoading(true);
@@ -123,6 +149,10 @@ const Categories = () => {
     }
   };
 
+  /**
+   * Handles navigation to questions page when a category is selected
+   * @param {string} categoryId - The ID of the selected category
+   */
   const handleCategoryClick = (categoryId) => {
     navigate(`/questions/${categoryId}`, {
       state: {
@@ -132,22 +162,32 @@ const Categories = () => {
     });
   };
 
+  /**
+   * Calculates the completion percentage for a given category
+   * @param {string} categoryId - The ID of the category
+   * @returns {number} Percentage of completed questions (0-100)
+   */
   const getCategoryProgress = (categoryId) => {
     if (!userProgress[categoryId]) return 0;
     return Math.round((userProgress[categoryId].completed / userProgress[categoryId].total) * 100);
   };
 
+  /**
+   * Handles changes to question type filters
+   * Ensures only one type can be selected at a time
+   * @param {string} type - The type of questions to filter ('all', 'withAnnexes', 'withoutAnnexes')
+   */
   const handleQuestionTypeChange = (type) => {
-    // If any option is selected (except the one being clicked) and it's not "all", grey out other options
+    // Check if any option other than the current one is selected
     const hasSelectionOtherThanCurrent = Object.entries(filters.questionTypes)
       .some(([key, value]) => value && key !== type);
 
-    // If clicking a disabled option, do nothing
+    // Prevent selecting disabled options
     if (hasSelectionOtherThanCurrent && type !== 'all') {
       return;
     }
 
-    // Toggle the clicked option
+    // Update filter state
     setFilters(prev => ({
       ...prev,
       questionTypes: {
@@ -158,6 +198,9 @@ const Categories = () => {
     }));
   };
 
+  /**
+   * Reusable checkbox component for filter options
+   */
   const FilterOption = ({ label, checked, onChange }) => (
     <div className="flex items-center">
       <input
@@ -170,6 +213,7 @@ const Categories = () => {
     </div>
   );
 
+  // Show loading spinner while fetching data
   if (loading) {
     return (
       <div className="min-h-screen bg-dark flex items-center justify-center">
@@ -178,9 +222,10 @@ const Categories = () => {
     );
   }
 
-    return (
+  return (
     <div className="min-h-screen bg-dark p-4">
       <div className="max-w-6xl mx-auto relative">
+        {/* Dashboard Navigation Button */}
         <div className="absolute right-0 top-1">
           <button
             onClick={() => navigate('/dashboard')}
@@ -193,9 +238,10 @@ const Categories = () => {
           </button>
         </div>
     
+        {/* Page Header */}
         <h1 className="text-3xl text-gray-200 mb-8 text-center pt-2">Question Categories</h1>
 
-        {/* Mode Selection */}
+        {/* Mode Selection - Study or Exam */}
         <div className="grid grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
           <button
             onClick={() => setMode('study')}
@@ -219,7 +265,7 @@ const Categories = () => {
           </button>
         </div>
 
-        {/* Filter Options */}
+        {/* Filter Options Panel */}
         <div className="bg-surface-dark rounded-lg p-6 mb-8 max-w-2xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Question Type Selection */}
@@ -263,6 +309,7 @@ const Categories = () => {
               <label className="ml-3 text-gray-300">Without Annexes</label>
             </div>
 
+            {/* Additional Filter Options */}
             <FilterOption
               label="Only Real Exam Questions"
               checked={filters.realExamOnly}
@@ -311,6 +358,7 @@ const Categories = () => {
           </div>
         </div>
         
+        {/* Error Display */}
         {error && (
           <div className="bg-red-600/20 text-red-200 p-4 mb-6 rounded flex items-center justify-between">
             <span>{error}</span>
@@ -326,6 +374,7 @@ const Categories = () => {
           </div>
         )}
 
+        {/* Category Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category) => (
             <div 
@@ -333,13 +382,15 @@ const Categories = () => {
               className="bg-surface-dark rounded-lg overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-lg"
             >
               <div className="p-6">
+                {/* Category Header */}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-white">{category.title}</h2>
-                  <span className="text-sm text-gray-400">#{category.id}</span>
                 </div>
                 
+                {/* Category Description */}
                 <p className="text-gray-400 text-sm mb-6">{category.description}</p>
                 
+                {/* Progress and Start Button */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-dark rounded-full flex items-center justify-center">
