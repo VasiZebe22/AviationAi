@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import questionService from '../../services/questionService';
+import { categories } from '../Categories/Categories';
 
 const Questions = () => {
     const [questions, setQuestions] = useState([]);
@@ -21,6 +22,12 @@ const Questions = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const mode = location.state?.mode || 'study';
+
+    // Get category title from categoryId
+    const categoryTitle = useMemo(() => {
+        const category = categories.find(cat => cat.id === categoryId);
+        return category ? category.title : '';
+    }, [categoryId]);
 
     // Constants for pagination
     const QUESTIONS_PER_PAGE = 100;
@@ -256,6 +263,10 @@ const Questions = () => {
         navigate('/');
     }, [navigate]);
 
+    const handleCategoriesClick = useCallback(() => {
+        navigate('/practice');
+    }, [navigate]);
+
     const handleTestClick = useCallback(() => {
         navigate('/test');
     }, [navigate]);
@@ -296,8 +307,20 @@ const Questions = () => {
                 <div className="flex-1 flex flex-col p-6 overflow-y-auto">
                     {/* Timer and controls */}
                     <div className="flex justify-between items-center mb-6">
-                        <div className="text-2xl text-white font-light">
-                            {formatTime(timer)}
+                        <div className="flex items-center">
+                            <div className="text-2xl text-white font-light w-[100px]">
+                                {formatTime(timer)}
+                            </div>
+                            <div className="text-gray-400 ml-6 mt-3">
+                                <button 
+                                    onClick={handleCategoriesClick} 
+                                    className="text-accent-lilac hover:text-accent-lilac/90 transition-colors"
+                                >
+                                    Question Categories
+                                </button>
+                                <span className="mx-2 text-gray-600">/</span>
+                                <span className="text-white">{categoryTitle}</span>
+                            </div>
                         </div>
                         <div className="flex space-x-3">
                             <button onClick={() => setShowShortcuts(!showShortcuts)} className="px-4 py-2 bg-surface-dark/50 text-gray-400 rounded hover:bg-surface-dark/70 text-sm">
