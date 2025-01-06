@@ -232,15 +232,29 @@ const AiChat = () => {
     scrollToBottom();
   }, [history]);
 
-  const formatTimestamp = () => {
-    return new Date().toLocaleString();
+  const formatTimestamp = (timestamp) => {
+    try {
+      if (!timestamp) {
+        return new Date().toLocaleString();
+      }
+      // Handle both Date objects, ISO strings, and Firestore timestamps
+      const date = typeof timestamp === 'object' && timestamp?.toDate 
+        ? timestamp.toDate() 
+        : new Date(timestamp);
+      
+      return date.toLocaleString();
+    } catch (error) {
+      console.error('Error formatting timestamp:', error);
+      return new Date().toLocaleString();
+    }
   };
 
   const addMessage = (content, type = 'user') => {
+    const timestamp = new Date().toISOString();
     const newMessage = {
       type,
       content,
-      timestamp: formatTimestamp(),
+      timestamp,
       isTyping: type === 'assistant'
     };
     setHistory(prev => [...prev, newMessage]);
@@ -250,7 +264,7 @@ const AiChat = () => {
       setTimeout(() => {
         setHistory(prev => 
           prev.map(msg => 
-            msg.type === 'assistant' && msg.timestamp === newMessage.timestamp
+            msg.type === 'assistant' && msg.timestamp === timestamp
               ? { ...msg, isTyping: false }
               : msg
           )
@@ -385,7 +399,12 @@ const AiChat = () => {
     let localHistory = [];
 
     try {
-      const userMessage = { type: 'user', content: messageInput };
+      const currentTimestamp = new Date();
+      const userMessage = { 
+        type: 'user', 
+        content: messageInput,
+        timestamp: currentTimestamp.toISOString() // Store as ISO string for consistency
+      };
       localHistory = [...history, userMessage];
       
       setHistory(localHistory);
@@ -399,6 +418,7 @@ const AiChat = () => {
           title: messageInput.substring(0, 50),
           messages: localHistory,
           createdAt: serverTimestamp(),
+          clientCreatedAt: currentTimestamp.toISOString(), // Store as ISO string
           updatedAt: serverTimestamp(),
           starred: false
         };
@@ -409,7 +429,8 @@ const AiChat = () => {
         const newChat = {
           id: newChatId,
           ...chatData,
-          lastUpdated: new Date().toISOString()
+          createdAt: currentTimestamp.toISOString(), // Use ISO string
+          lastUpdated: currentTimestamp.toISOString()
         };
         
         setCurrentChat(newChat);
@@ -421,6 +442,11 @@ const AiChat = () => {
           messages: localHistory,
           updatedAt: serverTimestamp()
         });
+        // Update current chat messages
+        setCurrentChat(prev => ({
+          ...prev,
+          messages: localHistory
+        }));
       }
 
       // Get AI response
@@ -433,7 +459,11 @@ const AiChat = () => {
         throw new Error(`Failed to get AI response: ${err.message}`);
       }
 
-      const assistantMessage = { type: 'assistant', content: responseData.response };
+      const assistantMessage = { 
+        type: 'assistant', 
+        content: responseData.response,
+        timestamp: new Date().toISOString() // Store as ISO string
+      };
       const finalHistory = [...localHistory, assistantMessage];
 
       // Save AI response
@@ -783,8 +813,17 @@ const AiChat = () => {
   };
 
   const renderChatListItem = (chat) => {
-    // If chat has no timestamp and it's the current chat (new chat), use current time
-    const chatDate = chat?.createdAt?.toDate?.() || (currentChat === null ? new Date() : null);
+    // Try to get the date in order of preference:
+    // 1. Server timestamp (createdAt)
+    // 2. Client timestamp (clientCreatedAt)
+    // 3. Current time for brand new chats
+    const chatDate = 
+      (chat?.createdAt?.toDate?.()) || // Server timestamp
+      (chat?.createdAt instanceof Date ? chat.createdAt : null) || // Client timestamp
+      (chat?.createdAt) || // Fallback to server timestamp string
+      (chat?.clientCreatedAt instanceof Date ? chat.clientCreatedAt : null) || // Fallback to client timestamp
+      (currentChat === null ? new Date() : null); // Last resort for new chats
+    
     const formattedDate = chatDate ? formatTimestamp(chatDate) : 'Date not available';
     
     return (
@@ -1104,10 +1143,10 @@ const AiChat = () => {
         <div className="p-4 border-t border-dark-lightest mt-auto">
           <button
             onClick={() => navigate('/dashboard')}
-            className="w-full bg-accent-lilac text-white rounded-lg px-4 min-h-[44px] flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors duration-200"
+            className="w-full bg-accent-lilac text-white rounded-lg px-4 min-h-[46px] flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors duration-200"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             Dashboard
           </button>
