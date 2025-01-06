@@ -8,15 +8,11 @@ const { db } = require('../firebase');
 router.get('/category/:categoryId', async (req, res) => {
     try {
         const { categoryId } = req.params;
-        const { limit = 10, difficulty, lastDoc } = req.query;
+        const { limit = 10, lastDoc } = req.query;
         
         let query = db.collection('questions')
-            .where('categoryId', '==', categoryId)
+            .where('category.code', '==', categoryId)
             .limit(parseInt(limit));
-
-        if (difficulty) {
-            query = query.where('difficulty', '==', parseInt(difficulty));
-        }
 
         if (lastDoc) {
             const lastDocSnapshot = await db.collection('questions').doc(lastDoc).get();
@@ -53,13 +49,50 @@ router.get('/:questionId', async (req, res) => {
     }
 });
 
+// Get questions by subcategory
+router.get('/subcategory/:subcategoryCode', async (req, res) => {
+    try {
+        const { subcategoryCode } = req.params;
+        const { limit = 10, lastDoc } = req.query;
+        
+        let query = db.collection('questions')
+            .where('subcategories', 'array-contains', {
+                code: subcategoryCode
+            })
+            .limit(parseInt(limit));
+
+        if (lastDoc) {
+            const lastDocSnapshot = await db.collection('questions').doc(lastDoc).get();
+            query = query.startAfter(lastDocSnapshot);
+        }
+
+        const snapshot = await query.get();
+        const questions = [];
+        snapshot.forEach(doc => {
+            questions.push({ id: doc.id, ...doc.data() });
+        });
+
+        res.json({
+            questions,
+            lastDoc: questions.length > 0 ? questions[questions.length - 1].id : null
+        });
+    } catch (error) {
+        logger.error('Error fetching questions by subcategory:', error);
+        res.status(500).json({ error: 'Failed to fetch questions' });
+    }
+});
+
 // Create a new question (protected route)
 router.post('/', [
-    body('question_text').notEmpty().trim(),
+    body('question').notEmpty().trim(),
+    body('options').isObject().notEmpty(),
     body('correct_answer').notEmpty().trim(),
-    body('incorrect_answers').isArray({ min: 3, max: 3 }),
-    body('categoryId').notEmpty(),
-    body('difficulty').isInt({ min: 1, max: 5 }),
+    body('category').isObject().notEmpty(),
+    body('category.code').notEmpty().trim(),
+    body('category.name').notEmpty().trim(),
+    body('subcategories').isArray({ min: 1 }),
+    body('subcategories.*.code').notEmpty().trim(),
+    body('subcategories.*.name').notEmpty().trim(),
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -68,13 +101,19 @@ router.post('/', [
         }
 
         const questionData = {
-            question_text: req.body.question_text,
+            question: req.body.question,
+            options: req.body.options,
             correct_answer: req.body.correct_answer,
-            incorrect_answers: req.body.incorrect_answers,
-            categoryId: req.body.categoryId,
-            difficulty: req.body.difficulty,
+            category: {
+                code: req.body.category.code,
+                name: req.body.category.name
+            },
+            subcategories: req.body.subcategories.map(sub => ({
+                code: sub.code,
+                name: sub.name
+            })),
             explanation: req.body.explanation || '',
-            tags: req.body.tags || [],
+            learning_materials: req.body.learning_materials || [],
             created_at: new Date(),
             updated_at: new Date()
         };
@@ -105,24 +144,29 @@ router.get('/progress', async (req, res) => {
                 const categories = {};
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (!categories[data.categoryId]) {
-                        categories[data.categoryId] = { total: 0, completed: 0 };
+                    const categoryCode = data.category.code;
+                    if (!categories[categoryCode]) {
+                        categories[categoryCode] = { 
+                            total: 0, 
+                            completed: 0,
+                            name: data.category.name 
+                        };
                     }
-                    categories[data.categoryId].total++;
+                    categories[categoryCode].total++;
                 });
                 return categories;
             });
 
         // Merge with user progress
         const userProgress = progressDoc.data();
-        Object.keys(questionsByCategory).forEach(categoryId => {
+        Object.keys(questionsByCategory).forEach(categoryCode => {
             const categoryProgress = userProgress.questions 
                 ? Object.entries(userProgress.questions)
-                    .filter(([_, data]) => data.categoryId === categoryId && data.completed)
+                    .filter(([_, data]) => data.category?.code === categoryCode && data.completed)
                     .length
                 : 0;
             
-            questionsByCategory[categoryId].completed = categoryProgress;
+            questionsByCategory[categoryCode].completed = categoryProgress;
         });
 
         res.json({ progress: questionsByCategory });
@@ -139,6 +183,13 @@ router.post('/:questionId/progress', async (req, res) => {
         const { isCorrect } = req.body;
         const userId = req.user.uid; // From auth middleware
 
+        // Get the question to include category info in progress
+        const questionDoc = await db.collection('questions').doc(questionId).get();
+        if (!questionDoc.exists) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+        const questionData = questionDoc.data();
+
         const progressRef = db.collection('user_progress').doc(userId);
         await db.runTransaction(async (transaction) => {
             const progressDoc = await transaction.get(progressRef);
@@ -150,7 +201,10 @@ router.post('/:questionId/progress', async (req, res) => {
                         ((progressDoc.data()?.questions?.[questionId]?.attempts || 0) + 1) : 1,
                     correct: progressDoc.exists ? 
                         ((progressDoc.data()?.questions?.[questionId]?.correct || 0) + (isCorrect ? 1 : 0)) : 
-                        (isCorrect ? 1 : 0)
+                        (isCorrect ? 1 : 0),
+                    category: questionData.category,
+                    subcategories: questionData.subcategories,
+                    completed: true
                 }
             };
 

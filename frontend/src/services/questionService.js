@@ -3,28 +3,20 @@ import { collection, query, where, getDocs, doc, updateDoc, getDoc, addDoc, orde
 
 const questionService = {
     // Get questions by category
-    async getQuestionsByCategory(categoryId, filters = {}) {
+    async getQuestionsByCategory(categoryCode, filters = {}) {
         try {
             const user = auth.currentUser;
             if (!user) {
                 throw new Error('User not authenticated');
             }
 
-            // Start with basic query without ordering
+            // Start with basic query
             let q = query(
                 collection(db, 'questions'),
-                where('categoryId', '==', categoryId)
+                where('category.code', '==', categoryCode)
             );
 
             // Apply filters
-            if (filters.realExamOnly) {
-                q = query(q, where('is_real_exam', '==', true));
-            }
-
-            if (filters.reviewQuestions) {
-                q = query(q, where('needs_review', '==', true));
-            }
-
             if (filters.markedQuestions) {
                 q = query(q, where('is_marked', '==', true));
             }
@@ -41,11 +33,9 @@ const questionService = {
             const questions = querySnapshot.docs
                 .map(doc => ({
                     id: doc.id,
-                    ...doc.data(),
-                    options: [doc.data().correct_answer, ...(doc.data().incorrect_answers || [])].sort(() => Math.random() - 0.5)
+                    ...doc.data()
                 }))
                 .sort((a, b) => {
-                    // Client-side sorting by created_at
                     const dateA = a.created_at?.toDate?.() || new Date(a.created_at);
                     const dateB = b.created_at?.toDate?.() || new Date(b.created_at);
                     return dateB - dateA;
@@ -54,10 +44,41 @@ const questionService = {
             return questions;
         } catch (error) {
             console.error('Error fetching questions:', error);
-            // Check if it's an index error
             if (error.message?.includes('index')) {
                 throw new Error('Database configuration in progress. Please try again in a few minutes.');
             }
+            throw error;
+        }
+    },
+
+    // Get questions by subcategory
+    async getQuestionsBySubcategory(subcategoryCode) {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const q = query(
+                collection(db, 'questions'),
+                where('subcategories', 'array-contains', { code: subcategoryCode })
+            );
+
+            const querySnapshot = await getDocs(q);
+            const questions = querySnapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                .sort((a, b) => {
+                    const dateA = a.created_at?.toDate?.() || new Date(a.created_at);
+                    const dateB = b.created_at?.toDate?.() || new Date(b.created_at);
+                    return dateB - dateA;
+                });
+
+            return questions;
+        } catch (error) {
+            console.error('Error fetching questions by subcategory:', error);
             throw error;
         }
     },
@@ -74,65 +95,6 @@ const questionService = {
             }
         } catch (error) {
             console.error('Error fetching question:', error);
-            throw error;
-        }
-    },
-
-    // Get questions by topic
-    getQuestionsByTopic: async (topic, options = {}) => {
-        try {
-            const questionsRef = collection(db, 'questions');
-            const queryConstraints = [
-                where('topic', '==', topic),
-                orderBy('created_at', 'desc')
-            ];
-
-            if (options.difficulty) {
-                queryConstraints.splice(1, 0, where('difficulty', '==', options.difficulty));
-            }
-            if (options.limit) {
-                queryConstraints.push(limit(options.limit));
-            } else {
-                queryConstraints.push(limit(10));
-            }
-
-            const q = query(questionsRef, ...queryConstraints);
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                options: [doc.data().correct_answer, ...(doc.data().incorrect_answers || [])].sort(() => Math.random() - 0.5)
-            }));
-        } catch (error) {
-            console.error('Error in getQuestionsByTopic:', error);
-            throw error;
-        }
-    },
-
-    // Get questions by difficulty
-    getQuestionsByDifficulty: async (difficulty, options = {}) => {
-        try {
-            const questionsRef = collection(db, 'questions');
-            const queryConstraints = [
-                where('difficulty', '==', difficulty),
-                orderBy('created_at', 'desc')
-            ];
-
-            if (options.limit) {
-                queryConstraints.push(limit(options.limit));
-            } else {
-                queryConstraints.push(limit(10));
-            }
-
-            const q = query(questionsRef, ...queryConstraints);
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                options: [doc.data().correct_answer, ...(doc.data().incorrect_answers || [])].sort(() => Math.random() - 0.5)
-            }));
-        } catch (error) {
-            console.error('Error in getQuestionsByDifficulty:', error);
             throw error;
         }
     },
@@ -167,13 +129,14 @@ const questionService = {
                     timestamp: new Date()
                 });
             } catch (error) {
-                // If document doesn't exist, create it
                 if (error.code === 'not-found') {
                     await addDoc(collection(db, 'progress'), {
                         userId: user.uid,
                         questionId,
                         isCorrect,
-                        timestamp: new Date()
+                        timestamp: new Date(),
+                        category: questionDoc.data().category,
+                        subcategories: questionDoc.data().subcategories
                     });
                 } else {
                     throw error;
@@ -212,53 +175,91 @@ const questionService = {
             const noteRef = doc(db, 'notes', `${user.uid}_${questionId}`);
             await updateDoc(noteRef, {
                 content: note,
-                updatedAt: new Date()
+                updated_at: new Date()
             });
         } catch (error) {
-            console.error('Error saving note:', error);
-            throw error;
+            if (error.code === 'not-found') {
+                const notesCollection = collection(db, 'notes');
+                await addDoc(notesCollection, {
+                    userId: user.uid,
+                    questionId,
+                    content: note,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+            } else {
+                console.error('Error saving note:', error);
+                throw error;
+            }
         }
     },
 
     // Get user statistics
-    getUserStats: async (userId) => {
-        if (!userId) {
-            console.log('No userId provided to getUserStats');
-            return {
-                questionsAttempted: 0,
-                correctAnswers: 0,
-                incorrectAnswers: 0,
-                averageScore: 0,
-                categoryProgress: {}
-            };
-        }
-
+    async getUserStats() {
         try {
-            const statsRef = collection(db, 'user_stats');
-            const q = query(statsRef, where('userId', '==', userId));
-            const querySnapshot = await getDocs(q);
-            
-            if (querySnapshot.empty) {
-                return {
-                    questionsAttempted: 0,
-                    correctAnswers: 0,
-                    incorrectAnswers: 0,
-                    averageScore: 0,
-                    categoryProgress: {}
-                };
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
             }
 
-            return querySnapshot.docs[0].data();
-        } catch (error) {
-            console.error('Error fetching user stats:', error);
-            // Return default stats on error
-            return {
-                questionsAttempted: 0,
+            const progressSnapshot = await getDocs(
+                query(
+                    collection(db, 'progress'),
+                    where('userId', '==', user.uid)
+                )
+            );
+
+            const stats = {
+                totalQuestions: 0,
                 correctAnswers: 0,
                 incorrectAnswers: 0,
-                averageScore: 0,
-                categoryProgress: {}
+                byCategory: {},
+                bySubcategory: {}
             };
+
+            progressSnapshot.forEach(doc => {
+                const data = doc.data();
+                stats.totalQuestions++;
+                if (data.isCorrect) {
+                    stats.correctAnswers++;
+                } else {
+                    stats.incorrectAnswers++;
+                }
+
+                // Category stats
+                const categoryCode = data.category.code;
+                if (!stats.byCategory[categoryCode]) {
+                    stats.byCategory[categoryCode] = {
+                        name: data.category.name,
+                        total: 0,
+                        correct: 0
+                    };
+                }
+                stats.byCategory[categoryCode].total++;
+                if (data.isCorrect) {
+                    stats.byCategory[categoryCode].correct++;
+                }
+
+                // Subcategory stats
+                data.subcategories.forEach(sub => {
+                    if (!stats.bySubcategory[sub.code]) {
+                        stats.bySubcategory[sub.code] = {
+                            name: sub.name,
+                            total: 0,
+                            correct: 0
+                        };
+                    }
+                    stats.bySubcategory[sub.code].total++;
+                    if (data.isCorrect) {
+                        stats.bySubcategory[sub.code].correct++;
+                    }
+                });
+            });
+
+            return stats;
+        } catch (error) {
+            console.error('Error getting user stats:', error);
+            throw error;
         }
     }
 };

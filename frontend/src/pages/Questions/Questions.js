@@ -39,7 +39,7 @@ const Questions = () => {
 
     // Calculate pagination values
     const totalPages = useMemo(() => Math.ceil(questions.length / QUESTIONS_PER_PAGE), [questions.length]);
-    
+
     // Get questions for current page
     const currentPageQuestions = useMemo(() => {
         const start = currentPage * QUESTIONS_PER_PAGE;
@@ -72,6 +72,37 @@ const Questions = () => {
     // Get current question data
     const currentQuestionData = questions[currentQuestion] || null;
 
+    // Helper function to get question text (supports both old and new format)
+    const getQuestionText = useCallback((question) => {
+        return question.question || question.question_text || '';
+    }, []);
+
+    // Helper function to get question options (supports both old and new format)
+    const getQuestionOptions = useCallback((question) => {
+        if (question.options && typeof question.options === 'object') {
+            // New format: options is a map
+            return Object.entries(question.options).map(([key, value]) => ({
+                label: key,
+                text: value
+            }));
+        }
+        // Old format: array of options with correct_answer first
+        return (question.options || [question.correct_answer, ...(question.incorrect_answers || [])]).map((option, index) => ({
+            label: String.fromCharCode(65 + index), // A, B, C, D
+            text: option
+        }));
+    }, []);
+
+    // Helper function to check if answer is correct (supports both formats)
+    const isAnswerCorrect = useCallback((question, selectedOption) => {
+        if (typeof question.options === 'object') {
+            // New format
+            return selectedOption === question.correct_answer;
+        }
+        // Old format
+        return selectedOption === question.correct_answer;
+    }, []);
+
     // Timer effect
     useEffect(() => {
         const interval = setInterval(() => {
@@ -95,7 +126,7 @@ const Questions = () => {
                 ...filters,
                 mode
             });
-            
+
             if (fetchedQuestions.length === 0) {
                 setError('No questions found for this category.');
             } else {
@@ -119,7 +150,7 @@ const Questions = () => {
             return; // Don't allow changing answer if already answered
         }
 
-        const isCorrect = selectedOption === currentQuestionData.correct_answer;
+        const isCorrect = isAnswerCorrect(currentQuestionData, selectedOption);
         setAnsweredQuestions(prev => ({
             ...prev,
             [currentQuestionData.id]: selectedOption
@@ -143,7 +174,7 @@ const Questions = () => {
 
     const handleFlag = useCallback((color) => {
         if (!currentQuestionData) return;
-        
+
         questionService.updateFlag(currentQuestionData.id, color)
             .catch(error => {
                 if (error.message === 'User not authenticated') {
@@ -152,7 +183,7 @@ const Questions = () => {
                     console.error('Error updating flag:', error);
                 }
             });
-            
+
         setFlags(prev => ({
             ...prev,
             [currentQuestionData.id]: color
@@ -161,7 +192,7 @@ const Questions = () => {
 
     const handleSaveNote = useCallback((note) => {
         if (!currentQuestionData) return;
-        
+
         questionService.saveNote(currentQuestionData.id, note)
             .catch(error => {
                 if (error.message === 'User not authenticated') {
@@ -170,7 +201,7 @@ const Questions = () => {
                     console.error('Error saving note:', error);
                 }
             });
-            
+
         setNotes(prev => ({
             ...prev,
             [currentQuestionData.id]: note
@@ -180,7 +211,7 @@ const Questions = () => {
     const handleFinishTest = useCallback(async () => {
         if (!currentQuestionData) return;
         try {
-            await questionService.updateProgress(currentQuestionData.id, 
+            await questionService.updateProgress(currentQuestionData.id,
                 answeredQuestions[currentQuestionData.id] === currentQuestionData.correct_answer
             );
             navigate('/results', {
@@ -232,8 +263,8 @@ const Questions = () => {
                 const flagColors = ['green', 'yellow', 'red'];
                 const currentFlag = flags[currentQuestionData.id];
                 const currentIndex = flagColors.indexOf(currentFlag);
-                const nextColor = currentIndex === -1 ? flagColors[0] : 
-                                currentIndex === flagColors.length - 1 ? undefined : 
+                const nextColor = currentIndex === -1 ? flagColors[0] :
+                                currentIndex === flagColors.length - 1 ? undefined :
                                 flagColors[currentIndex + 1];
                 handleFlag(nextColor);
                 break;
@@ -242,10 +273,10 @@ const Questions = () => {
             case '3':
             case '4':
                 // Select answer options
-                const options = currentQuestionData.options;
+                const options = getQuestionOptions(currentQuestionData);
                 const index = parseInt(e.key) - 1;
                 if (index < options.length) {
-                    handleAnswerSelect(options[index]);
+                    handleAnswerSelect(options[index].text);
                 }
                 break;
             default:
@@ -312,8 +343,8 @@ const Questions = () => {
                                 {formatTime(timer)}
                             </div>
                             <div className="text-gray-400 ml-6 mt-3">
-                                <button 
-                                    onClick={handleCategoriesClick} 
+                                <button
+                                    onClick={handleCategoriesClick}
                                     className="text-accent-lilac hover:text-accent-lilac/90 transition-colors"
                                 >
                                     Question Categories
@@ -361,14 +392,14 @@ const Questions = () => {
                             {activeTab === 'question' && currentQuestionData && (
                                 <div className="space-y-6">
                                     <div className="text-white text-lg">
-                                        {currentQuestionData.question_text || currentQuestionData.question}
+                                        {getQuestionText(currentQuestionData)}
                                     </div>
                                     <div className="space-y-3">
-                                        {currentQuestionData.options.map((option, index) => {
+                                        {getQuestionOptions(currentQuestionData).map(({ label, text }) => {
                                             const isAnswered = answeredQuestions[currentQuestionData.id];
-                                            const isSelected = answeredQuestions[currentQuestionData.id] === option;
-                                            const isCorrect = option === currentQuestionData.correct_answer;
-                                            
+                                            const isSelected = answeredQuestions[currentQuestionData.id] === text;
+                                            const isCorrect = isAnswerCorrect(currentQuestionData, text);
+
                                             let buttonStyle = 'bg-surface-dark/50 text-gray-300 hover:bg-surface-dark';
                                             if (isAnswered) {
                                                 if (isSelected) {
@@ -380,24 +411,40 @@ const Questions = () => {
 
                                             return (
                                                 <button
-                                                    key={index}
-                                                    onClick={() => handleAnswerSelect(option)}
+                                                    key={label}
+                                                    onClick={() => handleAnswerSelect(text)}
                                                     disabled={isAnswered}
                                                     className={`w-full p-3 text-left rounded ${buttonStyle} ${isAnswered && !isSelected ? 'opacity-50' : ''}`}
                                                 >
-                                                    {option}
+                                                    <span className="font-semibold mr-2">{label}.</span>
+                                                    {text}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 </div>
                             )}
-                            {activeTab === 'explanation' && (
-                                <div className="text-gray-300">
-                                    {currentQuestionData?.explanation || 'No explanation available.'}
+
+                            {activeTab === 'explanation' && currentQuestionData && (
+                                <div className="text-gray-300 prose prose-invert max-w-none">
+                                    <div className="mb-6">
+                                        <h3 className="text-white text-lg font-semibold mb-2">Explanation</h3>
+                                        {currentQuestionData.explanation}
+                                    </div>
+                                    {currentQuestionData.learning_materials && currentQuestionData.learning_materials.length > 0 && (
+                                        <div>
+                                            <h3 className="text-white text-lg font-semibold mb-2">Learning Materials</h3>
+                                            <ul className="list-disc pl-5">
+                                                {currentQuestionData.learning_materials.map((material, index) => (
+                                                    <li key={index} className="mb-2">{material}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                            {activeTab === 'note' && (
+
+                            {activeTab === 'note' && currentQuestionData && (
                                 <textarea
                                     value={notes[currentQuestionData?.id] || ''}
                                     onChange={(e) => handleSaveNote(e.target.value)}
