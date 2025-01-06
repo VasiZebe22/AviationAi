@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import questionService from '../../services/questionService';
 import { categories } from '../Categories/Categories';
 
@@ -79,25 +80,33 @@ const Questions = () => {
 
     // Helper function to get question options (supports both old and new format)
     const getQuestionOptions = useCallback((question) => {
+        let options;
         if (question.options && typeof question.options === 'object') {
             // New format: options is a map
-            return Object.entries(question.options).map(([key, value]) => ({
+            options = Object.entries(question.options).map(([key, value]) => ({
                 label: key,
                 text: value
             }));
+        } else {
+            // Old format: array of options with correct_answer first
+            options = (question.options || [question.correct_answer, ...(question.incorrect_answers || [])]).map((option, index) => ({
+                label: String.fromCharCode(65 + index), // A, B, C, D
+                text: option
+            }));
         }
-        // Old format: array of options with correct_answer first
-        return (question.options || [question.correct_answer, ...(question.incorrect_answers || [])]).map((option, index) => ({
-            label: String.fromCharCode(65 + index), // A, B, C, D
-            text: option
-        }));
+        
+        // Sort options alphabetically by label (A, B, C, D)
+        return options.sort((a, b) => a.label.localeCompare(b.label));
     }, []);
 
     // Helper function to check if answer is correct (supports both formats)
     const isAnswerCorrect = useCallback((question, selectedOption) => {
         if (typeof question.options === 'object') {
-            // New format
-            return selectedOption === question.correct_answer;
+            // Find the label (A, B, C, D) for the selected option text
+            const selectedLabel = Object.entries(question.options)
+                .find(([_, value]) => value === selectedOption)?.[0];
+            // Compare the label with the correct_answer
+            return selectedLabel === question.correct_answer;
         }
         // Old format
         return selectedOption === question.correct_answer;
@@ -426,20 +435,18 @@ const Questions = () => {
                             )}
 
                             {activeTab === 'explanation' && currentQuestionData && (
-                                <div className="text-gray-300 prose prose-invert max-w-none">
-                                    <div className="mb-6">
-                                        <h3 className="text-white text-lg font-semibold mb-2">Explanation</h3>
+                                <div className="text-gray-300 space-y-4">
+                                    <div className="text-lg font-semibold mb-4">Explanation</div>
+                                    <ReactMarkdown className="prose prose-invert max-w-none">
                                         {currentQuestionData.explanation}
-                                    </div>
+                                    </ReactMarkdown>
                                     {currentQuestionData.learning_materials && currentQuestionData.learning_materials.length > 0 && (
-                                        <div>
-                                            <h3 className="text-white text-lg font-semibold mb-2">Learning Materials</h3>
-                                            <ul className="list-disc pl-5">
-                                                {currentQuestionData.learning_materials.map((material, index) => (
-                                                    <li key={index} className="mb-2">{material}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                                        <>
+                                            <div className="text-lg font-semibold mt-6 mb-4">Learning Materials</div>
+                                            <ReactMarkdown className="prose prose-invert max-w-none">
+                                                {currentQuestionData.learning_materials.join('\n\n')}
+                                            </ReactMarkdown>
+                                        </>
                                     )}
                                 </div>
                             )}
