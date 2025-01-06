@@ -34,6 +34,39 @@ const [correctAnswers, setCorrectAnswers] = useState({});
 - `answeredQuestions`: Object tracking which questions have been answered
 - `correctAnswers`: Object tracking which questions were answered correctly
 
+## Helper Functions
+
+### Question Text and Options
+```javascript
+const getQuestionText = useCallback((question) => {
+    return question.question || question.question_text || '';
+}, []);
+
+const getQuestionOptions = useCallback((question) => {
+    if (question.options && typeof question.options === 'object') {
+        // New format: options is a map
+        return Object.entries(question.options).map(([key, value]) => ({
+            label: key,
+            text: value
+        }));
+    }
+    // Old format: array of options with correct_answer first
+    return (question.options || [question.correct_answer, ...(question.incorrect_answers || [])]).map((option, index) => ({
+        label: String.fromCharCode(65 + index), // A, B, C, D
+        text: option
+    }));
+}, []);
+
+const isAnswerCorrect = useCallback((question, selectedOption) => {
+    if (typeof question.options === 'object') {
+        // New format
+        return selectedOption === question.correct_answer;
+    }
+    // Old format
+    return selectedOption === question.correct_answer;
+}, []);
+```
+
 ## Constants and Configuration
 ```javascript
 const QUESTIONS_PER_PAGE = 100;
@@ -99,3 +132,8 @@ useEffect(() => {
    - Category-based question fetching
    - Filter support
    - Mode-based fetching (study/test)
+
+4. Question Format Support
+   - Helper functions for handling both old and new formats
+   - Consistent option labeling (A, B, C, D)
+   - Backward compatibility maintenance

@@ -24,24 +24,26 @@ The Questions component is a React-based interactive quiz/test interface for ATP
    - Pagination system (100 questions per page)
 
 2. Answer Management
-   - Multiple choice answer selection
+   - Multiple choice answer selection (A, B, C, D format)
+   - Support for both old and new question formats
    - Immediate feedback on correct/incorrect answers
-   - Progress tracking
+   - Progress tracking with category and subcategory support
 
 3. Study Tools
    - Question flagging system (green, yellow, red)
    - Note-taking capability
-   - Explanation view
+   - Enhanced explanation view with learning materials
    - Keyboard shortcuts
 
 4. Test Management
    - Timer tracking
    - Test saving functionality
    - Test completion handling
+   - Category and subcategory progress tracking
 
 ## File Organization
 - Location: frontend/src/pages/Questions/Questions.js
-- Total Lines: 499
+- Total Lines: ~500
 - Dependencies:
   - React and React Router
   - questionService
@@ -58,3 +60,9 @@ The Questions component is a React-based interactive quiz/test interface for ATP
 - User authentication checks in place
 - Secure API calls through questionService
 - Protected routes and navigation
+
+## Question Format Support
+- Supports both legacy and new question formats:
+  - Legacy: Array-based options with correct_answer
+  - New: Map-based options (A, B, C, D) with category.code
+- Maintains backward compatibility while supporting new features

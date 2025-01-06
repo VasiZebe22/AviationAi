@@ -25,6 +25,59 @@
 </nav>
 ```
 
+## Question Display
+
+### Question Content
+```javascript
+<div className="flex-1 bg-surface-dark/50 rounded-lg p-6">
+    {/* Question tabs */}
+    <div className="flex space-x-1 mb-6">
+        <button
+            onClick={() => setActiveTab('question')}
+            className={`px-4 py-2 rounded text-sm ${activeTab === 'question' ? 'bg-accent-lilac text-white' : 'text-gray-400 hover:bg-surface-dark/50'}`}
+        >
+            Question
+        </button>
+        <button
+            onClick={() => setActiveTab('explanation')}
+            className={`px-4 py-2 rounded text-sm ${activeTab === 'explanation' ? 'bg-accent-lilac text-white' : 'text-gray-400 hover:bg-surface-dark/50'}`}
+        >
+            Explanation
+        </button>
+        <button
+            onClick={() => setActiveTab('note')}
+            className={`px-4 py-2 rounded text-sm ${activeTab === 'note' ? 'bg-accent-lilac text-white' : 'text-gray-400 hover:bg-surface-dark/50'}`}
+        >
+            Note
+        </button>
+    </div>
+
+    {/* Content area */}
+    <div className="flex-1">
+        {activeTab === 'question' && currentQuestionData && (
+            <div className="space-y-6">
+                <div className="text-white text-lg">
+                    {getQuestionText(currentQuestionData)}
+                </div>
+                <div className="space-y-3">
+                    {getQuestionOptions(currentQuestionData).map(({ label, text }) => (
+                        <button
+                            key={label}
+                            onClick={() => handleAnswerSelect(text)}
+                            disabled={answeredQuestions[currentQuestionData.id]}
+                            className={`w-full p-3 text-left rounded ${getOptionStyle(currentQuestionData, text)}`}
+                        >
+                            <span className="font-semibold mr-2">{label}.</span>
+                            {text}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        )}
+    </div>
+</div>
+```
+
 ## Question Grid
 
 ### Grid Navigation
@@ -62,15 +115,7 @@
             <button
                 key={index}
                 onClick={() => setCurrentQuestion(questionNumber)}
-                className={`aspect-square rounded-sm flex items-center justify-center text-[10px] ${
-                    questionNumber === currentQuestion
-                        ? 'bg-accent-lilac text-white'
-                        : answeredQuestions[questions[questionNumber].id]
-                            ? correctAnswers[questions[questionNumber].id]
-                                ? 'bg-green-600/70 text-white'
-                                : 'bg-red-600/70 text-white'
-                            : 'bg-surface-dark/50 text-gray-400 hover:bg-surface-dark'
-                }`}
+                className={getQuestionButtonStyle(questionNumber)}
             >
                 {questionNumber + 1}
             </button>
@@ -95,20 +140,22 @@
    - Clear question progress display
    - Easy access to main sections
    - Consistent styling
+   - Question ID display
 
-2. Question Grid
+2. Question Display
+   - Tabbed interface for content organization
+   - Enhanced option display with labels
+   - Support for both question formats
+   - Learning materials integration
+
+3. Question Grid
    - Visual progress tracking
    - Color-coded answer status
    - Efficient pagination
-   - Responsive layout
+   - Responsive grid layout
 
-3. Flag System
-   - Intuitive color coding
-   - Quick access buttons
-   - Visual feedback
-
-4. Styling
+4. UI Components
+   - Modern, clean design
    - Consistent color scheme
-   - Responsive design
-   - Clear visual hierarchy
-   - Hover states for better UX
+   - Responsive layout
+   - Accessibility features

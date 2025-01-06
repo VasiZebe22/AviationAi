@@ -1,15 +1,20 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const admin = require('firebase-admin');
 const fs = require('fs').promises;
 const path = require('path');
 const logger = require('../logger');
+
+// Debug environment variables
+console.log('Checking environment variables:');
+console.log('Project ID:', process.env.FIREBASE_PROJECT_ID);
+console.log('Client Email:', process.env.FIREBASE_CLIENT_EMAIL);
 
 // Initialize Firebase Admin SDK (it will use the existing config from ../.env)
 const serviceAccount = {
     type: process.env.FIREBASE_TYPE,
     project_id: process.env.FIREBASE_PROJECT_ID,
     private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY ? JSON.parse(JSON.stringify(process.env.FIREBASE_PRIVATE_KEY)) : undefined,
+    private_key: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
     client_email: process.env.FIREBASE_CLIENT_EMAIL,
     client_id: process.env.FIREBASE_CLIENT_ID,
     auth_uri: process.env.FIREBASE_AUTH_URI,
@@ -17,6 +22,17 @@ const serviceAccount = {
     auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
 };
+
+// Verify service account
+if (!serviceAccount.project_id) {
+    throw new Error('Missing FIREBASE_PROJECT_ID in environment variables');
+}
+if (!serviceAccount.private_key) {
+    throw new Error('Missing FIREBASE_PRIVATE_KEY in environment variables');
+}
+if (!serviceAccount.client_email) {
+    throw new Error('Missing FIREBASE_CLIENT_EMAIL in environment variables');
+}
 
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -27,106 +43,116 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 db.settings({ ignoreUndefinedProperties: true });
 
-async function readQuestionBank(questionBankPath) {
-    const categories = await fs.readdir(path.join(questionBankPath, 'categories'));
-    const allQuestions = [];
+async function backupExistingQuestions() {
+    try {
+        logger.info('Starting backup of existing questions...');
+        const snapshot = await db.collection('questions').get();
+        const backup = {
+            timestamp: new Date().toISOString(),
+            questions: []
+        };
 
-    for (const category of categories) {
-        const categoryPath = path.join(questionBankPath, 'categories', category);
-        const stat = await fs.stat(categoryPath);
+        snapshot.forEach(doc => {
+            backup.questions.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
 
-        if (stat.isDirectory()) {
-            try {
-                // Read metadata.json for category info
-                const metadataPath = path.join(categoryPath, 'metadata.json');
-                const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf8'));
+        // Save backup to a JSON file
+        const backupPath = path.join(__dirname, `../../backups/questions_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
+        await fs.mkdir(path.dirname(backupPath), { recursive: true });
+        await fs.writeFile(backupPath, JSON.stringify(backup, null, 2));
+        logger.info(`Backup completed: ${backupPath}`);
+        
+        // Delete existing collection in batches
+        const batchSize = 250;
+        const batches = [];
+        let batch = db.batch();
+        let count = 0;
 
-                // Read all question files in the category
-                const files = await fs.readdir(categoryPath);
-                for (const file of files) {
-                    if (file.endsWith('.json') && file !== 'metadata.json') {
-                        const questionPath = path.join(categoryPath, file);
-                        const questionData = JSON.parse(await fs.readFile(questionPath, 'utf8'));
-                        
-                        // Get subcategory from filename (e.g., "010-01.json" -> "010-01")
-                        const subcategoryId = file.replace('.json', '');
-                        const subcategoryInfo = metadata.subcategories[subcategoryId];
+        for (const doc of snapshot.docs) {
+            batch.delete(doc.ref);
+            count++;
 
-                        // Transform questions to match Firestore schema
-                        const transformedQuestions = transformQuestions(
-                            questionData, 
-                            category,
-                            metadata,
-                            subcategoryId,
-                            subcategoryInfo
-                        );
-                        allQuestions.push(...transformedQuestions);
-                    }
-                }
-            } catch (error) {
-                logger.error(`Error processing category ${category}:`, error);
+            if (count % batchSize === 0) {
+                batches.push(batch.commit());
+                batch = db.batch();
+                logger.info(`Queued deletion batch ${Math.ceil(count / batchSize)}`);
             }
+        }
+
+        // Commit any remaining deletions
+        if (count % batchSize !== 0) {
+            batches.push(batch.commit());
+        }
+
+        // Wait for all deletion batches to complete
+        await Promise.all(batches);
+        logger.info('Existing questions collection deleted');
+    } catch (error) {
+        logger.error('Backup failed:', error);
+        throw error;
+    }
+}
+
+async function readQuestionBank(questionsPath) {
+    const allQuestions = [];
+    const metadata = JSON.parse(await fs.readFile(path.join(questionsPath, 'metadata.json'), 'utf8'));
+
+    // Read all question files
+    const files = await fs.readdir(questionsPath);
+    for (const file of files) {
+        if (!file.endsWith('.json') || file === 'metadata.json') continue;
+
+        try {
+            const filePath = path.join(questionsPath, file);
+            const categoryData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+            
+            // Transform questions to match Firestore schema
+            const transformedQuestions = transformQuestions(categoryData.questions);
+            allQuestions.push(...transformedQuestions);
+            
+            logger.info(`Processed ${transformedQuestions.length} questions from ${file}`);
+        } catch (error) {
+            logger.error(`Error processing file ${file}:`, error);
         }
     }
 
     return allQuestions;
 }
 
-function transformQuestions(questionData, categoryId, metadata, subcategoryId, subcategoryInfo) {
-    if (!Array.isArray(questionData)) {
-        logger.warn(`Question data for ${categoryId}/${subcategoryId} is not an array`);
+function transformQuestions(questions) {
+    if (!Array.isArray(questions)) {
+        logger.warn('Questions data is not an array');
         return [];
     }
 
-    return questionData
+    return questions
         .filter(q => q && typeof q === 'object')
         .map(q => {
             try {
-                // Get question text
-                const questionText = q.content?.question;
-                if (!questionText) {
-                    logger.warn(`Skipping question ${q.id} in ${categoryId}/${subcategoryId} - missing question text`);
+                if (!q.question || !q.options || !q.correct_answer) {
+                    logger.warn(`Skipping question ${q.id} - missing required fields`);
                     return null;
                 }
 
-                // Get correct answer and options
-                const correctLetter = q.content?.correct;
-                if (!correctLetter || !q.content?.options?.[correctLetter]) {
-                    logger.warn(`Skipping question ${q.id} in ${categoryId}/${subcategoryId} - missing correct answer`);
-                    return null;
-                }
-
-                // Get correct answer text and incorrect answers
-                const correctAnswer = q.content.options[correctLetter];
-                const incorrectAnswers = Object.entries(q.content.options)
-                    .filter(([key]) => key !== correctLetter)
-                    .map(([_, value]) => value);
-
+                // Transform to Firestore schema
                 return {
-                    question_id: q.id,
-                    question_text: questionText,
-                    correct_answer: correctAnswer,
-                    incorrect_answers: incorrectAnswers,
-                    explanation: q.learning?.explanation || '',
-                    categoryId: q.category,
-                    category_name: metadata.name || '',
-                    subcategory: {
-                        id: q.subcategory,
-                        name: subcategoryInfo?.name || '',
-                        topics: [q.metadata?.topic || '']
+                    id: q.id,
+                    category: {
+                        code: q.category.code,
+                        name: q.category.name
                     },
-                    difficulty: q.metadata?.difficulty || 3,
-                    tags: [
-                        ...(Array.isArray(q.metadata?.keywords) ? q.metadata.keywords : []),
-                        ...(Array.isArray(subcategoryInfo?.keywords) ? subcategoryInfo.keywords.slice(0, 5) : [])
-                    ],
-                    metadata: {
-                        source: 'question_bank',
-                        last_updated: metadata.last_updated || new Date().toISOString(),
-                        topic: q.metadata?.topic || '',
-                        key_points: q.learning?.key_points || [],
-                        reference: q.learning?.reference || ''
-                    },
+                    subcategories: q.subcategories.map(sub => ({
+                        code: sub.code,
+                        name: sub.name
+                    })),
+                    question: q.question,
+                    options: q.options,
+                    correct_answer: q.correct_answer,
+                    explanation: q.explanation || '',
+                    learning_materials: q.learning_materials || [],
                     created_at: admin.firestore.FieldValue.serverTimestamp(),
                     updated_at: admin.firestore.FieldValue.serverTimestamp()
                 };
@@ -135,126 +161,52 @@ function transformQuestions(questionData, categoryId, metadata, subcategoryId, s
                 return null;
             }
         })
-        .filter(q => q !== null); // Remove any invalid questions
+        .filter(Boolean); // Remove null values
 }
 
 async function migrateToFirestore(questions) {
-    const batch_size = 500; // Firestore batch limit
-    let successCount = 0;
-    let skipCount = 0;
-    let errorCount = 0;
-    let currentBatch = 1;
-    const totalBatches = Math.ceil(questions.length / batch_size);
+    const batchSize = 400; // Firestore has a limit of 500 operations per batch
+    let batch = db.batch();
+    let count = 0;
+    let batchCount = 0;
+    const questionsRef = db.collection('questions');
 
-    for (let i = 0; i < questions.length; i += batch_size) {
-        const batch = db.batch();
-        const currentQuestions = questions.slice(i, i + batch_size);
-        
-        logger.info(`Processing batch ${currentBatch}/${totalBatches} (${currentQuestions.length} questions)`);
+    logger.info(`Starting migration of ${questions.length} questions`);
 
-        // Check existing questions first
-        const existingDocs = await Promise.all(
-            currentQuestions.map(q => 
-                db.collection('questions').doc(q.question_id).get()
-            )
-        );
+    for (const question of questions) {
+        const docRef = questionsRef.doc(question.id);
+        batch.set(docRef, question);
+        count++;
 
-        const questionsToUpload = currentQuestions.filter((question, index) => {
-            const existingDoc = existingDocs[index];
-            if (!existingDoc.exists) {
-                return true; // Question doesn't exist, upload it
-            }
-
-            const existingData = existingDoc.data();
-            // Compare relevant fields to check if update is needed
-            const needsUpdate = 
-                existingData.question_text !== question.question_text ||
-                existingData.correct_answer !== question.correct_answer ||
-                JSON.stringify(existingData.incorrect_answers) !== JSON.stringify(question.incorrect_answers) ||
-                existingData.explanation !== question.explanation;
-
-            if (!needsUpdate) {
-                skipCount++;
-                logger.info(`Skipping question ${question.question_id} - already exists and up to date`);
-            }
-            return needsUpdate;
-        });
-
-        if (questionsToUpload.length === 0) {
-            logger.info(`Skipping batch ${currentBatch}/${totalBatches} - all questions up to date`);
-            currentBatch++;
-            continue;
-        }
-
-        logger.info(`Found ${questionsToUpload.length} questions to upload in batch ${currentBatch}`);
-
-        questionsToUpload.forEach((question, index) => {
-            const docRef = db.collection('questions').doc(question.question_id);
-            try {
-                batch.set(docRef, question);
-                logger.info(`Added question ${question.question_id} to batch (${index + 1}/${questionsToUpload.length})`);
-            } catch (error) {
-                logger.error(`Failed to add question ${question.question_id} to batch:`, error);
-                errorCount++;
-            }
-        });
-
-        try {
+        if (count % batchSize === 0) {
             await batch.commit();
-            successCount += questionsToUpload.length;
-            logger.info(`Successfully committed batch ${currentBatch}/${totalBatches}`);
-        } catch (error) {
-            errorCount += questionsToUpload.length;
-            logger.error(`Error in batch ${currentBatch}/${totalBatches}:`, error);
+            logger.info(`Migrated batch ${++batchCount} (${count} questions)`);
+            batch = db.batch();
         }
-        
-        currentBatch++;
     }
 
-    return { successCount, errorCount, skipCount };
+    // Commit any remaining questions
+    if (count % batchSize !== 0) {
+        await batch.commit();
+        logger.info(`Migrated final batch (${count} questions total)`);
+    }
+
+    logger.info(`Migration complete. Total questions: ${count}, Total batches: ${batchCount + 1}`);
 }
 
 async function main() {
     try {
-        const questionBankPath = path.join(__dirname, '../../QuestionBank');
-        logger.info('Starting question migration...');
-        logger.info(`Reading questions from: ${questionBankPath}`);
+        logger.info('Starting migration process...');
         
-        const questions = await readQuestionBank(questionBankPath);
-        const totalQuestions = questions.length;
-        logger.info(`Found ${totalQuestions} questions to migrate`);
+        // Backup and delete existing questions
+        await backupExistingQuestions();
         
-        if (totalQuestions === 0) {
-            logger.warn('No questions found to migrate. Check the following:');
-            logger.warn('1. Question bank path is correct');
-            logger.warn('2. Questions are in the correct format');
-            logger.warn('3. All required fields are present');
-            return;
-        }
-
-        const { successCount, errorCount, skipCount } = await migrateToFirestore(questions);
+        // Read and migrate new questions
+        const questions = await readQuestionBank(path.join(__dirname, '../../Questions updated'));
+        await migrateToFirestore(questions);
         
-        // Clear some space in the console
-        console.log('\n\n');
-        
-        // Create a summary table
-        console.log('='.repeat(50));
-        console.log('MIGRATION SUMMARY');
-        console.log('='.repeat(50));
-        console.log(`New Questions Added    : ${successCount}`);
-        console.log(`Already Exists        : ${skipCount}`);
-        console.log(`Failed to Migrate     : ${errorCount}`);
-        console.log('-'.repeat(50));
-        console.log(`Total Questions       : ${totalQuestions}`);
-        console.log('='.repeat(50));
-        
-        if (errorCount > 0) {
-            console.log('\nWarning: Some questions failed to migrate. Check the logs above for details.');
-        }
-        
-        if (successCount === 0 && errorCount === 0) {
-            console.log('\nNote: All questions were already in the database. No changes were made.');
-        }
+        logger.info('Migration completed successfully');
+        process.exit(0);
     } catch (error) {
         logger.error('Migration failed:', error);
         process.exit(1);

@@ -49,16 +49,16 @@ const handleKeyPress = useCallback((e) => {
         case '3':
         case '4':
             // Select answer options
-            const options = currentQuestionData.options;
+            const options = getQuestionOptions(currentQuestionData);
             const index = parseInt(e.key) - 1;
             if (index < options.length) {
-                handleAnswerSelect(options[index]);
+                handleAnswerSelect(options[index].text);
             }
             break;
         default:
             break;
     }
-}, [currentQuestion, questions.length, flags, currentQuestionData, handleAnswerSelect, handleFlag]);
+}, [currentQuestion, questions.length, flags, currentQuestionData, handleAnswerSelect, handleFlag, getQuestionOptions]);
 ```
 
 ## Navigation Handlers
@@ -99,8 +99,6 @@ const handleSearchClick = useCallback(() => {
 ```
 
 ## Test Completion Handler
-
-### Finish Test
 ```javascript
 const handleFinishTest = useCallback(async () => {
     if (!currentQuestionData) return;
@@ -124,18 +122,27 @@ const handleFinishTest = useCallback(async () => {
 ```
 
 ## Key Features
-1. Keyboard Shortcuts
-   - Question navigation (←/→)
-   - Tab switching (e/n)
-   - Flag toggling (f)
-   - Answer selection (1-4)
+1. Keyboard Navigation
+   - Arrow keys for question navigation
+   - Number keys (1-4) for answer selection
+   - Shortcut keys for explanation (e) and notes (n)
+   - Flag toggling with 'f' key
+   - Format-agnostic option selection
 
 2. Navigation System
-   - Centralized navigation handling
-   - Consistent routing patterns
-   - Error handling
+   - Direct access to main sections
+   - Category-based navigation
+   - Test mode switching
+   - Search functionality
 
 3. Test Management
+   - Progress saving
    - Score calculation
-   - Progress tracking
-   - Result submission
+   - Timer tracking
+   - Error handling
+
+4. User Experience
+   - Intuitive keyboard shortcuts
+   - Smooth navigation flow
+   - Immediate feedback
+   - Progress persistence
