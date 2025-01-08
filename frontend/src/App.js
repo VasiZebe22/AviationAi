@@ -18,7 +18,6 @@ const AiChat = React.lazy(() => import("./components/AiChat/AiChat"));
 const ProfileEdit = React.lazy(() => import("./components/Profile/ProfileEdit"));
 const Questions = React.lazy(() => import("./pages/Questions/Questions"));
 const Categories = React.lazy(() => import("./pages/Categories"));
-const TestConfig = React.lazy(() => import("./pages/TestConfig/TestConfig"));
 const Results = React.lazy(() => import("./pages/Results/Results"));
 
 // Protected Route component
@@ -117,16 +116,6 @@ function AppRoutes() {
                         <ProtectedRoute>
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Questions />
-                            </Suspense>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route 
-                    path="/test"
-                    element={
-                        <ProtectedRoute>
-                            <Suspense fallback={<LoadingSpinner />}>
-                                <TestConfig />
                             </Suspense>
                         </ProtectedRoute>
                     }
