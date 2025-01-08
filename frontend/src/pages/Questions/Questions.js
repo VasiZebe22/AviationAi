@@ -104,38 +104,41 @@ const Questions = () => {
         return { text };
     }, []);
 
-    // Load images when question changes
+    // Load question image when needed
     useEffect(() => {
-        const loadImages = async () => {
-            if (currentQuestionData?.id) {
-                console.log('Loading images for question:', currentQuestionData.id);
-                // Reset URLs first
+        const loadQuestionImage = async () => {
+            if (currentQuestionData?.id && activeTab === 'question') {
                 setQuestionImageUrl(null);
-                setExplanationImageUrl(null);
-
                 try {
-                    // Load question image
                     const questionPath = `figures/${currentQuestionData.id}_question_0.png`;
-                    console.log('Attempting to load question image:', questionPath);
                     const qImageUrl = await getImageFromStorage(questionPath);
-                    console.log('Question image URL:', qImageUrl);
                     setQuestionImageUrl(qImageUrl);
-
-                    // Load explanation image
-                    const explanationPath = `figures/${currentQuestionData.id}_explanation_0.png`;
-                    console.log('Attempting to load explanation image:', explanationPath);
-                    const eImageUrl = await getImageFromStorage(explanationPath);
-                    console.log('Explanation image URL:', eImageUrl);
-                    setExplanationImageUrl(eImageUrl);
                 } catch (error) {
-                    console.error('Error loading images:', error);
-                    console.error('Error details:', error.code, error.message);
+                    console.error('Error loading question image:', error);
                 }
             }
         };
 
-        loadImages();
-    }, [currentQuestionData]);
+        loadQuestionImage();
+    }, [currentQuestionData, activeTab]);
+
+    // Load explanation image only when explanation tab is active
+    useEffect(() => {
+        const loadExplanationImage = async () => {
+            if (currentQuestionData?.id && activeTab === 'explanation') {
+                setExplanationImageUrl(null);
+                try {
+                    const explanationPath = `figures/${currentQuestionData.id}_explanation_0.png`;
+                    const eImageUrl = await getImageFromStorage(explanationPath);
+                    setExplanationImageUrl(eImageUrl);
+                } catch (error) {
+                    console.error('Error loading explanation image:', error);
+                }
+            }
+        };
+
+        loadExplanationImage();
+    }, [currentQuestionData, activeTab]);
 
     // Helper function to get question options (supports both old and new format)
     const getQuestionOptions = useCallback((question) => {
@@ -206,6 +209,15 @@ const Questions = () => {
             } else {
                 setQuestions(fetchedQuestions);
                 setCurrentQuestion(0);
+                
+                // Fetch flags and notes for all questions
+                const questionIds = fetchedQuestions.map(q => q.id);
+                const [fetchedFlags, fetchedNotes] = await Promise.all([
+                    questionService.getFlags(questionIds),
+                    questionService.getNotes(questionIds)
+                ]);
+                setFlags(fetchedFlags);
+                setNotes(fetchedNotes);
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -389,10 +401,21 @@ const Questions = () => {
             {/* Navbar */}
             <nav className="bg-surface-dark/30 border-b border-gray-800/50">
                 <div className="flex justify-between items-center h-14 px-6">
-                    <div className="flex items-center space-x-4">
-                        <span className="text-accent-lilac font-semibold tracking-wide">ATPL Questions</span>
-                        <span className="text-gray-600">|</span>
-                        <span className="text-gray-400 text-sm">No. Q-{currentQuestionData?.id || ''}</span>
+                        <div className="flex items-center space-x-4">
+                            <span className="text-accent-lilac font-semibold tracking-wide">ATPL Questions</span>
+                            <span className="text-gray-600">|</span>
+                            <span className="text-gray-400 text-sm">
+                                No. Q-{currentQuestionData?.id || ''}
+                                {currentQuestionData && flags[currentQuestionData.id] && (
+                                    <span 
+                                        className={`inline-block w-2 h-2 ml-2 rounded-full ${
+                                            flags[currentQuestionData.id] === 'green' ? 'bg-green-600' :
+                                            flags[currentQuestionData.id] === 'yellow' ? 'bg-yellow-500' :
+                                            flags[currentQuestionData.id] === 'red' ? 'bg-red-600' : ''
+                                        }`}
+                                    />
+                                )}
+                            </span>
                         <span className="text-gray-600">|</span>
                         <span className="text-gray-400 text-sm">{currentQuestion + 1} / {questions.length}</span>
                     </div>
@@ -438,7 +461,18 @@ const Questions = () => {
                     </div>
 
                     {/* Question content */}
-                    <div className="flex-1 bg-surface-dark/50 rounded-lg p-6">
+                    <div className="flex-1 bg-surface-dark/50 rounded-lg p-6 relative">
+                        {flags[currentQuestionData?.id] && (
+                            <div className="absolute top-4 right-4">
+                                <div 
+                                    className={`w-4 h-4 rounded-full ${
+                                        flags[currentQuestionData.id] === 'green' ? 'bg-green-600' :
+                                        flags[currentQuestionData.id] === 'yellow' ? 'bg-yellow-500' :
+                                        flags[currentQuestionData.id] === 'red' ? 'bg-red-600' : ''
+                                    }`}
+                                />
+                            </div>
+                        )}
                         {/* Question tabs */}
                         <div className="flex space-x-1 mb-6">
                             <button
@@ -466,13 +500,6 @@ const Questions = () => {
                             {activeTab === 'question' && currentQuestionData && (
                                 <div className="space-y-6">
                                     <div className="text-white text-lg">
-                                        {/* Debug info */}
-                                        <div className="text-xs text-gray-500 mb-2">
-                                            Debug: {JSON.stringify({
-                                                question_image: currentQuestionData.question_image,
-                                                imageUrl: getQuestionText(currentQuestionData).imageUrl
-                                            })}
-                                        </div>
                                         <ReactMarkdown>{getQuestionText(currentQuestionData).text}</ReactMarkdown>
                                         {questionImageUrl && (
                                             <div className="mt-4">
@@ -581,14 +608,20 @@ const Questions = () => {
                                     <button
                                         key={index}
                                         onClick={() => setCurrentQuestion(questionNumber)}
-                                        className={`aspect-square rounded-sm flex items-center justify-center text-[10px] ${
+                                        className={`aspect-square rounded-sm flex items-center justify-center text-[10px] relative ${
                                             questionNumber === currentQuestion
                                                 ? 'bg-accent-lilac text-white'
                                                 : answeredQuestions[questions[questionNumber].id]
                                                     ? correctAnswers[questions[questionNumber].id]
                                                         ? 'bg-green-600/70 text-white'
                                                         : 'bg-red-600/70 text-white'
-                                                    : 'bg-surface-dark/50 text-gray-400 hover:bg-surface-dark'
+                                                    : flags[questions[questionNumber].id] === 'green'
+                                                        ? 'bg-green-600/30 text-gray-300'
+                                                        : flags[questions[questionNumber].id] === 'yellow'
+                                                            ? 'bg-yellow-500/30 text-gray-300'
+                                                            : flags[questions[questionNumber].id] === 'red'
+                                                                ? 'bg-red-600/30 text-gray-300'
+                                                                : 'bg-surface-dark/50 text-gray-400 hover:bg-surface-dark'
                                         }`}
                                     >
                                         {questionNumber + 1}

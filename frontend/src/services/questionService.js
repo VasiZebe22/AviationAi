@@ -1,5 +1,5 @@
 import { db, auth } from './firebase';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc, addDoc, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy, limit } from 'firebase/firestore';
 
 const questionService = {
     // Get questions by category
@@ -139,8 +139,8 @@ const questionService = {
                         attempts: (progressDoc.data().attempts || 0) + 1
                     });
                 } else {
-                    // Create new progress document
-                    await addDoc(collection(db, 'progress'), {
+                    // Create new progress document with specified ID
+                    await setDoc(progressRef, {
                         ...progressData,
                         attempts: 1
                     });
@@ -163,8 +163,26 @@ const questionService = {
                 throw new Error('User not authenticated');
             }
 
-            const questionRef = doc(db, 'questions', questionId);
-            await updateDoc(questionRef, { flag });
+            // Use a consistent document reference with compound ID
+            const flagRef = doc(db, 'flags', `${user.uid}_${questionId}`);
+            
+            if (flag) {
+                // Set or update flag
+                await setDoc(flagRef, {
+                    userId: user.uid,
+                    questionId,
+                    flag,
+                    updated_at: new Date()
+                });
+            } else {
+                // Remove flag if flag value is undefined/null
+                await setDoc(flagRef, {
+                    userId: user.uid,
+                    questionId,
+                    flag: null,
+                    updated_at: new Date()
+                });
+            }
         } catch (error) {
             console.error('Error updating flag:', error);
             throw error;
@@ -179,25 +197,31 @@ const questionService = {
         }
 
         try {
+            // Use a consistent document reference with compound ID
             const noteRef = doc(db, 'notes', `${user.uid}_${questionId}`);
-            await updateDoc(noteRef, {
-                content: note,
-                updated_at: new Date()
-            });
-        } catch (error) {
-            if (error.code === 'not-found') {
-                const notesCollection = collection(db, 'notes');
-                await addDoc(notesCollection, {
+            
+            // Check if document exists
+            const noteDoc = await getDoc(noteRef);
+            
+            if (noteDoc.exists()) {
+                // Update existing note
+                await updateDoc(noteRef, {
+                    content: note,
+                    updated_at: new Date()
+                });
+            } else {
+                // Create new note with specified ID
+                await setDoc(noteRef, {
                     userId: user.uid,
                     questionId,
                     content: note,
                     created_at: new Date(),
                     updated_at: new Date()
                 });
-            } else {
-                console.error('Error saving note:', error);
-                throw error;
             }
+        } catch (error) {
+            console.error('Error saving note:', error);
+            throw error;
         }
     },
 
@@ -266,6 +290,64 @@ const questionService = {
             return stats;
         } catch (error) {
             console.error('Error getting user stats:', error);
+            throw error;
+        }
+    },
+
+    // Get flags for questions
+    async getFlags(questionIds) {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            // Create an array of document references for all question flags
+            const flagRefs = questionIds.map(qId => doc(db, 'flags', `${user.uid}_${qId}`));
+            
+            // Get all flags in parallel
+            const flagDocs = await Promise.all(flagRefs.map(ref => getDoc(ref)));
+            
+            // Convert to a map of questionId -> flag color
+            const flags = {};
+            flagDocs.forEach((doc, index) => {
+                if (doc.exists() && doc.data().flag) {
+                    flags[questionIds[index]] = doc.data().flag;
+                }
+            });
+
+            return flags;
+        } catch (error) {
+            console.error('Error fetching flags:', error);
+            throw error;
+        }
+    },
+
+    // Get notes for questions
+    async getNotes(questionIds) {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            // Create an array of document references for all question notes
+            const noteRefs = questionIds.map(qId => doc(db, 'notes', `${user.uid}_${qId}`));
+            
+            // Get all notes in parallel
+            const noteDocs = await Promise.all(noteRefs.map(ref => getDoc(ref)));
+            
+            // Convert to a map of questionId -> note content
+            const notes = {};
+            noteDocs.forEach((doc, index) => {
+                if (doc.exists() && doc.data().content) {
+                    notes[questionIds[index]] = doc.data().content;
+                }
+            });
+
+            return notes;
+        } catch (error) {
+            console.error('Error fetching notes:', error);
             throw error;
         }
     }
