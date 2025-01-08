@@ -73,9 +73,34 @@ const Questions = () => {
     // Get current question data
     const currentQuestionData = questions[currentQuestion] || null;
 
+    // Log only image-related data when question changes
+    useEffect(() => {
+        if (currentQuestionData) {
+            // Only log if there are image fields
+            if (currentQuestionData.question_image || currentQuestionData.explanation_image) {
+                console.log('Question Images:', {
+                    id: currentQuestionData.id,
+                    questionImage: currentQuestionData.question_image || 'none',
+                    explanationImage: currentQuestionData.explanation_image || 'none'
+                });
+            }
+        }
+    }, [currentQuestionData]);
+
     // Helper function to get question text (supports both old and new format)
     const getQuestionText = useCallback((question) => {
-        return question.question || question.question_text || '';
+        if (!question) return { text: '', imageUrl: null };
+        const text = question.question || question.question_text || '';
+        const imageUrl = question.id ? `/figures/${question.id}_question_0.png` : null;
+        return { text, imageUrl };
+    }, []);
+
+    // Helper function to get explanation content
+    const getExplanationContent = useCallback((question) => {
+        if (!question) return { text: '', imageUrl: null };
+        const text = question.explanation || '';
+        const imageUrl = question.id ? `/figures/${question.id}_explanation_0.png` : null;
+        return { text, imageUrl };
     }, []);
 
     // Helper function to get question options (supports both old and new format)
@@ -110,6 +135,12 @@ const Questions = () => {
         }
         // Old format
         return selectedOption === question.correct_answer;
+    }, []);
+
+    // Image error handler
+    const handleImageError = useCallback((e) => {
+        e.target.style.display = 'none';
+        console.log('Image failed to load:', e.target.src);
     }, []);
 
     // Timer effect
@@ -401,7 +432,24 @@ const Questions = () => {
                             {activeTab === 'question' && currentQuestionData && (
                                 <div className="space-y-6">
                                     <div className="text-white text-lg">
-                                        {getQuestionText(currentQuestionData)}
+                                        {/* Debug info */}
+                                        <div className="text-xs text-gray-500 mb-2">
+                                            Debug: {JSON.stringify({
+                                                question_image: currentQuestionData.question_image,
+                                                imageUrl: getQuestionText(currentQuestionData).imageUrl
+                                            })}
+                                        </div>
+                                        <ReactMarkdown>{getQuestionText(currentQuestionData).text}</ReactMarkdown>
+                                        {getQuestionText(currentQuestionData).imageUrl && (
+                                            <div className="mt-4">
+                                                <img 
+                                                    src={getQuestionText(currentQuestionData).imageUrl} 
+                                                    alt="Question illustration" 
+                                                    className="max-w-full h-auto rounded-lg"
+                                                    onError={handleImageError}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="space-y-3">
                                         {getQuestionOptions(currentQuestionData).map(({ label, text }) => {
@@ -437,16 +485,16 @@ const Questions = () => {
                             {activeTab === 'explanation' && currentQuestionData && (
                                 <div className="text-gray-300 space-y-4">
                                     <div className="text-lg font-semibold mb-4">Explanation</div>
-                                    <ReactMarkdown className="prose prose-invert max-w-none">
-                                        {currentQuestionData.explanation}
-                                    </ReactMarkdown>
-                                    {currentQuestionData.learning_materials && currentQuestionData.learning_materials.length > 0 && (
-                                        <>
-                                            <div className="text-lg font-semibold mt-6 mb-4">Learning Materials</div>
-                                            <ReactMarkdown className="prose prose-invert max-w-none">
-                                                {currentQuestionData.learning_materials.join('\n\n')}
-                                            </ReactMarkdown>
-                                        </>
+                                    <ReactMarkdown>{getExplanationContent(currentQuestionData).text}</ReactMarkdown>
+                                    {getExplanationContent(currentQuestionData).imageUrl && (
+                                        <div className="mt-4">
+                                            <img 
+                                                src={getExplanationContent(currentQuestionData).imageUrl} 
+                                                alt="Explanation illustration" 
+                                                className="max-w-full h-auto rounded-lg"
+                                                onError={handleImageError}
+                                            />
+                                        </div>
                                     )}
                                 </div>
                             )}

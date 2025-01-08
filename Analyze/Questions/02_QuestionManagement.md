@@ -12,7 +12,17 @@ const currentQuestionData = questions[currentQuestion] || null;
 {activeTab === 'question' && currentQuestionData && (
     <div className="space-y-6">
         <div className="text-white text-lg">
-            {getQuestionText(currentQuestionData)}
+            <ReactMarkdown>{getQuestionText(currentQuestionData).text}</ReactMarkdown>
+            {getQuestionText(currentQuestionData).imageUrl && (
+                <div className="mt-4">
+                    <img 
+                        src={getQuestionText(currentQuestionData).imageUrl}
+                        alt="Question illustration" 
+                        className="max-w-full h-auto rounded-lg"
+                        onError={handleImageError}
+                    />
+                </div>
+            )}
         </div>
         <div className="space-y-3">
             {getQuestionOptions(currentQuestionData).map(({ label, text }) => {
@@ -49,11 +59,19 @@ const currentQuestionData = questions[currentQuestion] || null;
 ### Explanation Display
 ```javascript
 {activeTab === 'explanation' && currentQuestionData && (
-    <div className="text-gray-300 prose prose-invert max-w-none">
-        <div className="mb-6">
-            <h3 className="text-white text-lg font-semibold mb-2">Explanation</h3>
-            {currentQuestionData.explanation}
-        </div>
+    <div className="text-gray-300 space-y-4">
+        <div className="text-lg font-semibold mb-4">Explanation</div>
+        <ReactMarkdown>{getExplanationContent(currentQuestionData).text}</ReactMarkdown>
+        {getExplanationContent(currentQuestionData).imageUrl && (
+            <div className="mt-4">
+                <img 
+                    src={getExplanationContent(currentQuestionData).imageUrl}
+                    alt="Explanation illustration" 
+                    className="max-w-full h-auto rounded-lg"
+                    onError={handleImageError}
+                />
+            </div>
+        )}
         {currentQuestionData.learning_materials && currentQuestionData.learning_materials.length > 0 && (
             <div>
                 <h3 className="text-white text-lg font-semibold mb-2">Learning Materials</h3>

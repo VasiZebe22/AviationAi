@@ -66,3 +66,12 @@ The Questions component is a React-based interactive quiz/test interface for ATP
   - Legacy: Array-based options with correct_answer
   - New: Map-based options (A, B, C, D) with category.code
 - Maintains backward compatibility while supporting new features
+
+## Image Support
+- Automatic image handling based on question ID
+- Images stored in `/figures` directory
+- Naming convention:
+  - Question images: `[question_id]_question_0.png`
+  - Explanation images: `[question_id]_explanation_0.png`
+- Graceful fallback for missing images
+- Error handling for failed image loads

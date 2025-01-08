@@ -17,7 +17,10 @@ const formatTime = useCallback((seconds) => {
 ### Question Text Helper
 ```javascript
 const getQuestionText = useCallback((question) => {
-    return question.question || question.question_text || '';
+    if (!question) return { text: '', imageUrl: null };
+    const text = question.question || question.question_text || '';
+    const imageUrl = question.id ? `/figures/${question.id}_question_0.png` : null;
+    return { text, imageUrl };
 }, []);
 ```
 
@@ -92,6 +95,26 @@ const getQuestionButtonStyle = useCallback((questionNumber) => {
 }, [questions, currentQuestion, answeredQuestions, correctAnswers]);
 ```
 
+## Image Handling Helpers
+
+### Explanation Content and Image Helper
+```javascript
+const getExplanationContent = useCallback((question) => {
+    if (!question) return { text: '', imageUrl: null };
+    const text = question.explanation || '';
+    const imageUrl = question.id ? `/figures/${question.id}_explanation_0.png` : null;
+    return { text, imageUrl };
+}, []);
+```
+
+### Image Error Handler
+```javascript
+const handleImageError = useCallback((e) => {
+    e.target.style.display = 'none';
+    console.log('Image failed to load:', e.target.src);
+}, []);
+```
+
 ## Key Features
 1. Time Management
    - Precise time tracking
@@ -99,19 +122,12 @@ const getQuestionButtonStyle = useCallback((questionNumber) => {
    - Zero-padded numbers
 
 2. Question Format Support
-   - Backward compatibility
-   - Format detection
-   - Consistent output structure
-   - Label generation (A, B, C, D)
+   - Handles both legacy and new question formats
+   - Consistent option formatting
+   - Dynamic styling based on answer status
 
-3. Style Management
-   - Dynamic style generation
-   - State-based styling
-   - Consistent UI feedback
-   - Accessibility support
-
-4. Helper Functions
-   - Modular design
-   - Reusable components
-   - Performance optimization
-   - Clear documentation
+3. Image Management
+   - Automatic image path generation based on question ID
+   - Graceful handling of missing images
+   - Support for both question and explanation images
+   - Error handling for failed image loads

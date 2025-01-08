@@ -41,6 +41,8 @@ const questionService = {
                     return dateB - dateA;
                 });
 
+            console.log(`Retrieved ${questions.length} questions from Firebase`);
+
             return questions;
         } catch (error) {
             console.error('Error fetching questions:', error);
@@ -75,6 +77,8 @@ const questionService = {
                     const dateB = b.created_at?.toDate?.() || new Date(b.created_at);
                     return dateB - dateA;
                 });
+
+            console.log(`Retrieved ${questions.length} questions from Firebase`);
 
             return questions;
         } catch (error) {
@@ -114,33 +118,36 @@ const questionService = {
                 throw new Error('Question not found');
             }
 
-            await updateDoc(questionRef, {
-                is_correct: isCorrect,
-                is_seen: true,
-                last_attempted: new Date(),
-                attempts: (questionDoc.data().attempts || 0) + 1
-            });
-
-            // Create or update progress document
+            // Create or update progress document with all user-specific data
             const progressRef = doc(db, 'progress', `${user.uid}_${questionId}`);
+            const progressData = {
+                userId: user.uid,
+                questionId,
+                isCorrect,
+                isSeen: true,
+                lastAttempted: new Date(),
+                category: questionDoc.data().category,
+                subcategories: questionDoc.data().subcategories
+            };
+
             try {
-                await updateDoc(progressRef, {
-                    isCorrect,
-                    timestamp: new Date()
-                });
-            } catch (error) {
-                if (error.code === 'not-found') {
-                    await addDoc(collection(db, 'progress'), {
-                        userId: user.uid,
-                        questionId,
-                        isCorrect,
-                        timestamp: new Date(),
-                        category: questionDoc.data().category,
-                        subcategories: questionDoc.data().subcategories
+                // Try to update existing progress
+                const progressDoc = await getDoc(progressRef);
+                if (progressDoc.exists()) {
+                    await updateDoc(progressRef, {
+                        ...progressData,
+                        attempts: (progressDoc.data().attempts || 0) + 1
                     });
                 } else {
-                    throw error;
+                    // Create new progress document
+                    await addDoc(collection(db, 'progress'), {
+                        ...progressData,
+                        attempts: 1
+                    });
                 }
+            } catch (error) {
+                console.error('Error updating progress:', error);
+                throw error;
             }
         } catch (error) {
             console.error('Error updating progress:', error);
@@ -166,12 +173,12 @@ const questionService = {
 
     // Save note
     async saveNote(questionId, note) {
-        try {
-            const user = auth.currentUser;
-            if (!user) {
-                throw new Error('User not authenticated');
-            }
+        const user = auth.currentUser;
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
 
+        try {
             const noteRef = doc(db, 'notes', `${user.uid}_${questionId}`);
             await updateDoc(noteRef, {
                 content: note,
