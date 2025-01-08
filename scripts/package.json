@@ -1,10 +1,10 @@
 {
-  "name": "firebase-scripts",
+  "name": "aviation-ai-scripts",
   "version": "1.0.0",
-  "description": "Scripts for Firebase management",
-  "main": "create-indexes.js",
+  "description": "Utility scripts for Aviation AI",
+  "type": "commonjs",
   "dependencies": {
-    "dotenv": "^16.3.1",
-    "firebase-admin": "^11.11.0"
+    "firebase-admin": "^11.10.1",
+    "dotenv": "^16.3.1"
   }
 }

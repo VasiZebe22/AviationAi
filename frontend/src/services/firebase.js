@@ -17,6 +17,7 @@ import {
     limit 
 } from 'firebase/firestore';
 import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
+import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -36,6 +37,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const firebaseDatabase = getDatabase(app);
+const storage = getStorage(app);
+
+// Helper function to get image URL from Firebase Storage
+export const getImageFromStorage = async (imagePath) => {
+    try {
+        const imageRef = storageRef(storage, imagePath);
+        return await getDownloadURL(imageRef);
+    } catch (error) {
+        console.error('Error getting image URL:', error);
+        return null;
+    }
+};
 
 // Create required indexes for questions collection
 const createQuestionsIndexes = async () => {
@@ -226,4 +239,4 @@ export const onAuthChange = (callback) => {
 // Export session management functions
 export { monitorSession, removeSession };
 
-export { auth, db, firebaseDatabase };
+export { auth, db, firebaseDatabase, storage };

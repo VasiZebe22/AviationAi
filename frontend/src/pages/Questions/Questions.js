@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import questionService from '../../services/questionService';
+import { getImageFromStorage } from '../../services/firebase';
 import { categories } from '../Categories/Categories';
 
 const Questions = () => {
@@ -13,6 +14,8 @@ const Questions = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [flags, setFlags] = useState({});
+    const [questionImageUrl, setQuestionImageUrl] = useState(null);
+    const [explanationImageUrl, setExplanationImageUrl] = useState(null);
     const [notes, setNotes] = useState({});
     const [showExplanation, setShowExplanation] = useState(false);
     const [showShortcuts, setShowShortcuts] = useState(false);
@@ -89,19 +92,50 @@ const Questions = () => {
 
     // Helper function to get question text (supports both old and new format)
     const getQuestionText = useCallback((question) => {
-        if (!question) return { text: '', imageUrl: null };
+        if (!question) return { text: '' };
         const text = question.question || question.question_text || '';
-        const imageUrl = question.id ? `/figures/${question.id}_question_0.png` : null;
-        return { text, imageUrl };
+        return { text };
     }, []);
 
     // Helper function to get explanation content
     const getExplanationContent = useCallback((question) => {
-        if (!question) return { text: '', imageUrl: null };
+        if (!question) return { text: '' };
         const text = question.explanation || '';
-        const imageUrl = question.id ? `/figures/${question.id}_explanation_0.png` : null;
-        return { text, imageUrl };
+        return { text };
     }, []);
+
+    // Load images when question changes
+    useEffect(() => {
+        const loadImages = async () => {
+            if (currentQuestionData?.id) {
+                console.log('Loading images for question:', currentQuestionData.id);
+                // Reset URLs first
+                setQuestionImageUrl(null);
+                setExplanationImageUrl(null);
+
+                try {
+                    // Load question image
+                    const questionPath = `figures/${currentQuestionData.id}_question_0.png`;
+                    console.log('Attempting to load question image:', questionPath);
+                    const qImageUrl = await getImageFromStorage(questionPath);
+                    console.log('Question image URL:', qImageUrl);
+                    setQuestionImageUrl(qImageUrl);
+
+                    // Load explanation image
+                    const explanationPath = `figures/${currentQuestionData.id}_explanation_0.png`;
+                    console.log('Attempting to load explanation image:', explanationPath);
+                    const eImageUrl = await getImageFromStorage(explanationPath);
+                    console.log('Explanation image URL:', eImageUrl);
+                    setExplanationImageUrl(eImageUrl);
+                } catch (error) {
+                    console.error('Error loading images:', error);
+                    console.error('Error details:', error.code, error.message);
+                }
+            }
+        };
+
+        loadImages();
+    }, [currentQuestionData]);
 
     // Helper function to get question options (supports both old and new format)
     const getQuestionOptions = useCallback((question) => {
@@ -440,10 +474,10 @@ const Questions = () => {
                                             })}
                                         </div>
                                         <ReactMarkdown>{getQuestionText(currentQuestionData).text}</ReactMarkdown>
-                                        {getQuestionText(currentQuestionData).imageUrl && (
+                                        {questionImageUrl && (
                                             <div className="mt-4">
                                                 <img 
-                                                    src={getQuestionText(currentQuestionData).imageUrl} 
+                                                    src={questionImageUrl} 
                                                     alt="Question illustration" 
                                                     className="max-w-full h-auto rounded-lg"
                                                     onError={handleImageError}
@@ -486,10 +520,10 @@ const Questions = () => {
                                 <div className="text-gray-300 space-y-4">
                                     <div className="text-lg font-semibold mb-4">Explanation</div>
                                     <ReactMarkdown>{getExplanationContent(currentQuestionData).text}</ReactMarkdown>
-                                    {getExplanationContent(currentQuestionData).imageUrl && (
+                                    {explanationImageUrl && (
                                         <div className="mt-4">
                                             <img 
-                                                src={getExplanationContent(currentQuestionData).imageUrl} 
+                                                src={explanationImageUrl} 
                                                 alt="Explanation illustration" 
                                                 className="max-w-full h-auto rounded-lg"
                                                 onError={handleImageError}
