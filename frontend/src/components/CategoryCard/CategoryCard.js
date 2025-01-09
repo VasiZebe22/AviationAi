@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 /**
@@ -38,13 +38,30 @@ const CategoryCard = ({
     onSubcategoryChange(category.id, subcategoryCode);
   };
 
+  // Ref for measuring expanded content height
+  const expandedContentRef = useRef(null);
+  const [expandedHeight, setExpandedHeight] = useState('0px');
+
+  useEffect(() => {
+    if (isExpanded && expandedContentRef.current) {
+      const height = expandedContentRef.current.offsetHeight;
+      setExpandedHeight(`${height}px`);
+    }
+  }, [isExpanded]);
+
   return (
-    <div className="relative">
+    <div className="relative isolate" style={{ zIndex: isExpanded ? 999 : 1 }}>
       <div 
-        className={`bg-surface-dark rounded-lg overflow-visible transition-all duration-300 ease-in-out ${
-          isExpanded ? 'ring-1 ring-accent-lilac/20' : ''
+        className={`absolute inset-0 rounded-lg transition-all duration-300 ease-in-out ${
+          isExpanded ? 'shadow-[0_0_0_1px_rgba(139,92,246,0.6),0_0_8px_1px_rgba(139,92,246,0.25)]' : ''
         }`}
-      >
+        style={{ 
+          height: isExpanded ? `calc(100% + ${expandedHeight} - 0.875rem)` : '100%', 
+          transition: 'height 300ms ease-in-out',
+          bottom: 0
+        }}
+      />
+      <div className="relative z-10 bg-surface-dark rounded-lg overflow-visible">
         {/* Main Card Content */}
         <div 
           className="p-6 cursor-pointer"
@@ -93,11 +110,15 @@ const CategoryCard = ({
 
         {/* Expandable Subcategories Section */}
         <div 
-          className={`absolute left-0 right-0 z-10 bg-surface-dark rounded-b-lg border-t border-gray-700/50 shadow-lg transition-all duration-300 ease-in-out ${
-            isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+          className={`absolute left-0 right-0 transition-all duration-300 ease-in-out ${
+            isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
           }`}
+          style={{ 
+            top: 'calc(100% - 0.875rem)', 
+            height: isExpanded ? 'auto' : 0
+          }}
         >
-          <div className="p-6">
+          <div ref={expandedContentRef} className="p-6 bg-surface-dark rounded-b-lg relative z-[100] border-t border-dark/10">
             <h3 className="text-sm font-medium text-gray-300 mb-4">Subcategories</h3>
             <div className="flex flex-wrap gap-2">
               {category.subcategories?.map((subcategory) => {
