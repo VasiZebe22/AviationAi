@@ -204,10 +204,20 @@ const Questions = () => {
                 mode
             });
 
-            if (fetchedQuestions.length === 0) {
+            // Filter questions by selected subcategories if any are selected
+            const selectedSubcats = location.state?.selectedSubcategories || [];
+            const filteredQuestions = selectedSubcats.length > 0
+                ? fetchedQuestions.filter(question => 
+                    question.subcategories?.some(sub => 
+                        selectedSubcats.includes(sub.code)
+                    )
+                )
+                : fetchedQuestions;
+
+            if (filteredQuestions.length === 0) {
                 setError('No questions found for this category.');
             } else {
-                setQuestions(fetchedQuestions);
+                setQuestions(filteredQuestions);
                 setCurrentQuestion(0);
                 
                 // Fetch flags and notes for all questions
