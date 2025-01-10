@@ -13,6 +13,7 @@ import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 const CategoryCard = ({ 
   category, 
   progress, 
+  completion,
   onStart, 
   selectedSubcategories,
   onSubcategoryChange 
@@ -84,11 +85,14 @@ const CategoryCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-dark rounded-full flex items-center justify-center">
-                <span className="text-accent-lilac font-semibold">
-                  {progress}%
+                <span className={`${progress === 'NaN' ? 'text-gray-500' : 'text-accent-lilac'} font-semibold`}>
+                  {progress === 'NaN' ? '0%' : `${progress}%`}
                 </span>
               </div>
-              <span className="ml-3 text-gray-400 text-sm">Completed</span>
+              <div className="ml-3 flex flex-col">
+                <span className="text-gray-400 text-sm">Completed</span>
+                <span className="text-gray-500 text-xs">{completion}</span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {selectedSubcategories?.length > 0 && (

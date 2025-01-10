@@ -1,5 +1,5 @@
 import { db, auth } from './firebase';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy } from 'firebase/firestore';
 
 const questionService = {
     // Get questions by category
@@ -10,13 +10,47 @@ const questionService = {
                 throw new Error('User not authenticated');
             }
 
-            // Start with basic query
-            let q = query(
-                collection(db, 'questions'),
-                where('category.code', '==', categoryCode)
-            );
+            // First get wrong answers from progress collection if filter is applied
+            let questionIds = [];
+            if (filters.incorrectlyAnswered) {
+                const progressSnapshot = await getDocs(
+                    query(
+                        collection(db, 'progress'),
+                        where('userId', '==', user.uid)
+                    )
+                );
 
-            // Apply filters
+                // Create a map to track the latest attempt for each question
+                const latestAttempts = new Map();
+                
+                // Process all attempts to find the latest one for each question
+                progressSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const existingAttempt = latestAttempts.get(data.questionId);
+                    
+                    if (!existingAttempt || data.lastAttempted.toDate() > existingAttempt.lastAttempted.toDate()) {
+                        latestAttempts.set(data.questionId, data);
+                    }
+                });
+
+                // Get IDs of questions that are still incorrect in their latest attempt
+                questionIds = Array.from(latestAttempts.values())
+                    .filter(data => !data.isCorrect)
+                    .map(data => data.questionId);
+            }
+
+            // Build query
+            let q;
+            if (categoryCode === 'all') {
+                q = query(collection(db, 'questions'));
+            } else {
+                q = query(
+                    collection(db, 'questions'),
+                    where('category.code', '==', categoryCode)
+                );
+            }
+
+            // Apply additional filters
             if (filters.markedQuestions) {
                 q = query(q, where('is_marked', '==', true));
             }
@@ -25,12 +59,9 @@ const questionService = {
                 q = query(q, where('is_seen', '==', false));
             }
 
-            if (filters.incorrectlyAnswered) {
-                q = query(q, where('is_correct', '==', false));
-            }
-
+            // Get questions and sort them
             const querySnapshot = await getDocs(q);
-            const questions = querySnapshot.docs
+            let questions = querySnapshot.docs
                 .map(doc => ({
                     id: doc.id,
                     ...doc.data()
@@ -40,6 +71,11 @@ const questionService = {
                     const dateB = b.created_at?.toDate?.() || new Date(b.created_at);
                     return dateB - dateA;
                 });
+
+            // Filter by wrong answers if needed
+            if (filters.incorrectlyAnswered && questionIds.length > 0) {
+                questions = questions.filter(q => questionIds.includes(q.id));
+            }
 
             console.log(`Retrieved ${questions.length} questions from Firebase`);
 
@@ -103,8 +139,56 @@ const questionService = {
         }
     },
 
+    calculateSkillScores: function(attempts) {
+        if (!attempts.length) return 0;
+
+        // Basic correct rate (40%)
+        const correctRate = attempts.filter(a => a.isCorrect).length / attempts.length;
+
+        // Consistency score (30%) - based on improvement
+        const consistencyScore = (() => {
+            if (attempts.length < 2) return 0;
+            const recentAttempts = attempts.slice(-5); // Look at last 5 attempts
+            let improvements = 0;
+            for (let i = 1; i < recentAttempts.length; i++) {
+                if (!recentAttempts[i-1].isCorrect && recentAttempts[i].isCorrect) {
+                    improvements++;
+                }
+            }
+            return improvements / (recentAttempts.length - 1);
+        })();
+
+        // Time improvement score (15%)
+        const timeScore = (() => {
+            if (attempts.length < 2) return 0;
+            const times = attempts.map(a => a.answerTime);
+            const averageTime = times.reduce((a, b) => a + b, 0) / times.length;
+            const recentTime = times.slice(-3).reduce((a, b) => a + b, 0) / 3;
+            return recentTime < averageTime ? 1 : averageTime / recentTime;
+        })();
+
+        // Retention score (15%)
+        const retentionScore = (() => {
+            if (attempts.length < 2) return 0;
+            const correctAfterGap = attempts.filter((a, i) => {
+                if (i === 0) return false;
+                const timeDiff = a.lastAttempted - attempts[i-1].lastAttempted;
+                const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+                return daysDiff > 1 && a.isCorrect;
+            }).length;
+            return correctAfterGap / (attempts.length - 1);
+        })();
+
+        return (
+            (correctRate * 0.4) +
+            (consistencyScore * 0.3) +
+            (timeScore * 0.15) +
+            (retentionScore * 0.15)
+        ) * 100;
+    },
+
     // Update progress
-    async updateProgress(questionId, isCorrect) {
+    async updateProgress(questionId, isCorrect, answerTime = 0) {
         try {
             const user = auth.currentUser;
             if (!user) {
@@ -118,8 +202,11 @@ const questionService = {
                 throw new Error('Question not found');
             }
 
-            // Create or update progress document with all user-specific data
+            // Get previous attempts
             const progressRef = doc(db, 'progress', `${user.uid}_${questionId}`);
+            const progressDoc = await getDoc(progressRef);
+            
+            // Create progress data
             const progressData = {
                 userId: user.uid,
                 questionId,
@@ -127,28 +214,12 @@ const questionService = {
                 isSeen: true,
                 lastAttempted: new Date(),
                 category: questionDoc.data().category,
-                subcategories: questionDoc.data().subcategories
+                subcategories: questionDoc.data().subcategories || [],
+                attempts: progressDoc.exists() ? (progressDoc.data().attempts || 0) + 1 : 1
             };
 
-            try {
-                // Try to update existing progress
-                const progressDoc = await getDoc(progressRef);
-                if (progressDoc.exists()) {
-                    await updateDoc(progressRef, {
-                        ...progressData,
-                        attempts: (progressDoc.data().attempts || 0) + 1
-                    });
-                } else {
-                    // Create new progress document with specified ID
-                    await setDoc(progressRef, {
-                        ...progressData,
-                        attempts: 1
-                    });
-                }
-            } catch (error) {
-                console.error('Error updating progress:', error);
-                throw error;
-            }
+            // Update or create progress document
+            await setDoc(progressRef, progressData);
         } catch (error) {
             console.error('Error updating progress:', error);
             throw error;
@@ -225,14 +296,15 @@ const questionService = {
         }
     },
 
-    // Get user statistics
-    async getUserStats() {
+    // Get basic stats (correct/incorrect counts)
+    async getBasicStats() {
         try {
             const user = auth.currentUser;
             if (!user) {
                 throw new Error('User not authenticated');
             }
 
+            // Only get latest attempt for each question
             const progressSnapshot = await getDocs(
                 query(
                     collection(db, 'progress'),
@@ -240,54 +312,287 @@ const questionService = {
                 )
             );
 
-            const stats = {
-                totalQuestions: 0,
-                correctAnswers: 0,
-                incorrectAnswers: 0,
-                byCategory: {},
-                bySubcategory: {}
-            };
-
+            // Track latest attempt per question
+            const latestAttempts = new Map();
             progressSnapshot.forEach(doc => {
                 const data = doc.data();
-                stats.totalQuestions++;
+                const existingAttempt = latestAttempts.get(data.questionId);
+                if (!existingAttempt || data.lastAttempted.toDate() > existingAttempt.lastAttempted.toDate()) {
+                    latestAttempts.set(data.questionId, data);
+                }
+            });
+
+            // Get all questions first to know total available
+            const questionsSnapshot = await getDocs(collection(db, 'questions'));
+            const questionsByCategory = new Map();
+            
+            // Group questions by category
+            questionsSnapshot.forEach(doc => {
+                const data = doc.data();
+                const categoryCode = data.category.code;
+                if (!questionsByCategory.has(categoryCode)) {
+                    questionsByCategory.set(categoryCode, {
+                        name: data.category.name,
+                        total: 0,
+                        attempted: 0,
+                        correct: 0
+                    });
+                }
+                questionsByCategory.get(categoryCode).total++;
+            });
+
+            // Calculate stats
+            const stats = {
+                totalQuestions: questionsSnapshot.size,
+                totalAttempted: latestAttempts.size,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                byCategory: {}
+            };
+
+            // Process attempts
+            latestAttempts.forEach(data => {
+                const categoryCode = data.category.code;
+                if (!stats.byCategory[categoryCode]) {
+                    const categoryData = questionsByCategory.get(categoryCode) || {
+                        name: data.category.name,
+                        total: 0,
+                        attempted: 0,
+                        correct: 0
+                    };
+                    stats.byCategory[categoryCode] = categoryData;
+                }
+                
+                stats.byCategory[categoryCode].attempted++;
                 if (data.isCorrect) {
+                    stats.byCategory[categoryCode].correct++;
                     stats.correctAnswers++;
                 } else {
                     stats.incorrectAnswers++;
                 }
-
-                // Category stats
-                const categoryCode = data.category.code;
-                if (!stats.byCategory[categoryCode]) {
-                    stats.byCategory[categoryCode] = {
-                        name: data.category.name,
-                        total: 0,
-                        correct: 0
-                    };
-                }
-                stats.byCategory[categoryCode].total++;
-                if (data.isCorrect) {
-                    stats.byCategory[categoryCode].correct++;
-                }
-
-                // Subcategory stats
-                data.subcategories.forEach(sub => {
-                    if (!stats.bySubcategory[sub.code]) {
-                        stats.bySubcategory[sub.code] = {
-                            name: sub.name,
-                            total: 0,
-                            correct: 0
-                        };
-                    }
-                    stats.bySubcategory[sub.code].total++;
-                    if (data.isCorrect) {
-                        stats.bySubcategory[sub.code].correct++;
-                    }
-                });
             });
 
             return stats;
+        } catch (error) {
+            console.error('Error getting basic stats:', error);
+            throw error;
+        }
+    },
+
+    // Get skill scores based on recent attempts
+    async getSkillScores() {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            // Get recent attempts for skill calculation
+            const progressSnapshot = await getDocs(
+                query(
+                    collection(db, 'progress'),
+                    where('userId', '==', user.uid),
+                    where('lastAttempted', '>=', thirtyDaysAgo),
+                    orderBy('lastAttempted', 'desc')
+                )
+            );
+
+            // Group attempts by category
+            const attemptsByCategory = new Map();
+            progressSnapshot.docs.forEach(doc => {
+                const data = doc.data();
+                const categoryCode = data.category.code;
+                if (!attemptsByCategory.has(categoryCode)) {
+                    attemptsByCategory.set(categoryCode, []);
+                }
+                attemptsByCategory.get(categoryCode).push({
+                    ...data,
+                    lastAttempted: data.lastAttempted.toDate()
+                });
+            });
+
+            // Calculate skill scores
+            const skillScores = {};
+            attemptsByCategory.forEach((attempts, categoryCode) => {
+                skillScores[categoryCode] = this.calculateSkillScores(attempts);
+            });
+
+            return skillScores;
+        } catch (error) {
+            console.error('Error getting skill scores:', error);
+            throw error;
+        }
+    },
+
+    // Get monthly progress data (last 6 months)
+    async getMonthlyProgress() {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+            const progressSnapshot = await getDocs(
+                query(
+                    collection(db, 'progress'),
+                    where('userId', '==', user.uid),
+                    where('lastAttempted', '>=', sixMonthsAgo),
+                    orderBy('lastAttempted', 'desc')
+                )
+            );
+
+            // Create a map to track questions completed per month
+            const monthlyProgress = new Map();
+            
+            progressSnapshot.forEach(doc => {
+                const data = doc.data();
+                const date = data.lastAttempted.toDate();
+                const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+                
+                // Only count each question once per month (latest attempt in that month)
+                const existing = monthlyProgress.get(monthKey) || new Map();
+                const existingAttempt = existing.get(data.questionId);
+                
+                if (!existingAttempt || data.lastAttempted.toDate() > existingAttempt.lastAttempted.toDate()) {
+                    existing.set(data.questionId, data);
+                    monthlyProgress.set(monthKey, existing);
+                }
+            });
+
+            // Convert to array of monthly totals
+            const sortedMonths = Array.from(monthlyProgress.entries())
+                .sort(([a], [b]) => a.localeCompare(b))
+                .slice(-6); // Get last 6 months
+
+            // Group questions by category
+            const categories = new Map();
+            progressSnapshot.forEach(doc => {
+                const data = doc.data();
+                const category = data.category;
+                if (!categories.has(category.code)) {
+                    categories.set(category.code, {
+                        code: category.code,
+                        name: category.name
+                    });
+                }
+            });
+
+            // Create monthly stats for each category
+            const monthlyStats = sortedMonths.map(([month, questions]) => {
+                const questionsArray = Array.from(questions.values());
+                const byCategory = new Map();
+
+                // Initialize stats for each category
+                categories.forEach(category => {
+                    byCategory.set(category.code, {
+                        name: category.name,
+                        correct: 0,
+                        incorrect: 0
+                    });
+                });
+
+                // Count correct/incorrect for each category
+                questionsArray.forEach(q => {
+                    const categoryStats = byCategory.get(q.category.code);
+                    if (categoryStats) {
+                        if (q.isCorrect) {
+                            categoryStats.correct++;
+                        } else {
+                            categoryStats.incorrect++;
+                        }
+                    }
+                });
+
+                return {
+                    month,
+                    total: questions.size,
+                    correct: questionsArray.filter(q => q.isCorrect).length,
+                    incorrect: questionsArray.filter(q => !q.isCorrect).length,
+                    byCategory: Array.from(byCategory.entries()).map(([code, stats]) => ({
+                        code,
+                        ...stats
+                    }))
+                };
+            });
+
+            return {
+                months: monthlyStats,
+                categories: Array.from(categories.values())
+            };
+        } catch (error) {
+            console.error('Error getting monthly progress:', error);
+            throw error;
+        }
+    },
+
+    // Get study time for the last 7 days
+    async getRecentStudyTime() {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            const progressSnapshot = await getDocs(
+                query(
+                    collection(db, 'progress'),
+                    where('userId', '==', user.uid),
+                    where('lastAttempted', '>=', sevenDaysAgo),
+                    orderBy('lastAttempted', 'desc')
+                )
+            );
+
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dailyTime = new Array(7).fill(0);
+            
+            progressSnapshot.forEach(doc => {
+                const data = doc.data();
+                const date = data.lastAttempted.toDate();
+                const dayIndex = date.getDay();
+                dailyTime[dayIndex] += (data.answerTime || 0) / 3600;
+            });
+
+            return {
+                labels: dayNames,
+                data: dailyTime.map(time => Math.round(time * 10) / 10) // Round to 1 decimal
+            };
+        } catch (error) {
+            console.error('Error getting study time:', error);
+            throw error;
+        }
+    },
+
+    // Get dashboard stats (combines all stat functions)
+    async getDashboardStats() {
+        try {
+            const [basicStats, skillScores, monthlyProgress, studyTime] = await Promise.all([
+                this.getBasicStats(),
+                this.getSkillScores(),
+                this.getMonthlyProgress(),
+                this.getRecentStudyTime()
+            ]);
+
+            // Merge skill scores into category stats
+            Object.entries(skillScores).forEach(([categoryCode, skillScore]) => {
+                if (basicStats.byCategory[categoryCode]) {
+                    basicStats.byCategory[categoryCode].skillScore = skillScore;
+                }
+            });
+
+            return {
+                ...basicStats,
+                monthlyProgress,
+                studyTime
+            };
         } catch (error) {
             console.error('Error getting user stats:', error);
             throw error;
@@ -348,6 +653,86 @@ const questionService = {
             return notes;
         } catch (error) {
             console.error('Error fetching notes:', error);
+            throw error;
+        }
+    },
+
+    // Reset study time stats for the last 7 days
+    async resetStudyTime() {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            // Get recent progress docs to reset
+            const progressSnapshot = await getDocs(
+                query(
+                    collection(db, 'progress'),
+                    where('userId', '==', user.uid),
+                    where('lastAttempted', '>=', sevenDaysAgo)
+                )
+            );
+
+            // Reset answerTime to 0 for each doc
+            const batch = db.batch();
+            progressSnapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { answerTime: 0 });
+            });
+
+            await batch.commit();
+            return true;
+        } catch (error) {
+            console.error('Error resetting study time:', error);
+            throw error;
+        }
+    },
+
+    // Reset all user progress and associated data
+    async resetAllProgress() {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            // Get all user's data from different collections
+            const [progressSnapshot, flagsSnapshot, notesSnapshot] = await Promise.all([
+                getDocs(query(collection(db, 'progress'), where('userId', '==', user.uid))),
+                getDocs(query(collection(db, 'flags'), where('userId', '==', user.uid))),
+                getDocs(query(collection(db, 'notes'), where('userId', '==', user.uid)))
+            ]);
+
+            // Combine all documents that need to be deleted
+            const allDocs = [
+                ...progressSnapshot.docs,
+                ...flagsSnapshot.docs,
+                ...notesSnapshot.docs
+            ];
+
+            // Process deletions in batches
+            const batchSize = 450; // Firestore limit is 500, leave room for safety
+            const batches = [];
+            
+            for (let i = 0; i < allDocs.length; i += batchSize) {
+                const batch = db.batch();
+                const chunk = allDocs.slice(i, i + batchSize);
+                
+                chunk.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                batches.push(batch.commit());
+            }
+
+            // Wait for all batches to complete
+            await Promise.all(batches);
+            return true;
+        } catch (error) {
+            console.error('Error resetting progress:', error);
             throw error;
         }
     }

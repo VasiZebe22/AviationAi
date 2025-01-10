@@ -256,8 +256,16 @@ const Categories = () => {
   const fetchUserProgress = async () => {
     try {
       setLoading(true);
-      const response = await questionService.getUserStats();
-      setUserProgress(response.progress || {});
+      const stats = await questionService.getBasicStats();
+      const progressByCategory = {};
+      Object.entries(stats.byCategory).forEach(([code, data]) => {
+        progressByCategory[code] = {
+          total: data.total,
+          attempted: data.attempted,
+          correct: data.correct
+        };
+      });
+      setUserProgress(progressByCategory);
     } catch (err) {
       console.error('Error fetching progress:', err);
       setError(err.message);
@@ -287,8 +295,15 @@ const Categories = () => {
    * @returns {number} Percentage of completed questions (0-100)
    */
   const getCategoryProgress = (categoryId) => {
-    if (!userProgress[categoryId]) return 0;
-    return Math.round((userProgress[categoryId].completed / userProgress[categoryId].total) * 100);
+    const progress = userProgress[categoryId];
+    if (!progress || !progress.total) return 'NaN';
+    return Math.round((progress.attempted / progress.total) * 100);
+  };
+
+  const getCategoryCompletion = (categoryId) => {
+    const progress = userProgress[categoryId];
+    if (!progress) return 'No Questions Attempted';
+    return `${progress.attempted}/${progress.total} Questions`;
   };
 
   /**
@@ -540,6 +555,7 @@ const Categories = () => {
               key={category.id}
               category={category}
               progress={getCategoryProgress(category.id)}
+              completion={getCategoryCompletion(category.id)}
               onStart={handleCategoryStart}
               selectedSubcategories={selectedSubcategories[category.id]}
               onSubcategoryChange={handleSubcategoryChange}
