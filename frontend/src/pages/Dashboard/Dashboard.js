@@ -5,22 +5,148 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  RadialLinearScale,
+  ArcElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line, Doughnut, Radar, Bar } from 'react-chartjs-2';
+import questionService from '../../services/questionService';
 
-const DashboardCard = ({ title, children, className = '' }) => (
-  <motion.div
-    className={`bg-surface-dark rounded-lg shadow-lg backdrop-blur-sm bg-opacity-90 ${className}`}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-  >
-    <div className="border-b border-dark-lightest px-5 py-4">
-      <h2 className="text-sm font-medium tracking-wide text-gray-300 uppercase">{title}</h2>
-    </div>
-    <div className="p-5">
-      {children}
-    </div>
-  </motion.div>
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  RadialLinearScale,
+  ArcElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
 );
+
+const DashboardCard = ({ title, children, className = '', dashboard = null }) => {
+  const handleResetStudyTime = async () => {
+    if (!dashboard) return;
+    const { showToast, setIsLoading, setProgressData } = dashboard;
+
+    if (window.confirm('Are you sure you want to reset your study time stats? This cannot be undone.')) {
+      try {
+        setIsLoading(true);
+        await questionService.resetStudyTime();
+        showToast('success', 'Study time stats have been reset');
+        // Refresh all dashboard data to ensure consistency
+        const stats = await questionService.getDashboardStats();
+        setProgressData(prev => ({
+          ...prev,
+          studyTime: stats.studyTime
+        }));
+      } catch (error) {
+        showToast('error', 'Failed to reset study time stats');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleResetAllProgress = async () => {
+    if (!dashboard) return;
+    const { showToast, setIsLoading, setProgressData } = dashboard;
+
+    if (window.confirm('Are you sure you want to reset all progress? This action cannot be undone and will delete all your progress data.')) {
+      try {
+        setIsLoading(true);
+        await questionService.resetAllProgress();
+        showToast('success', 'All progress has been reset');
+        
+        // Refresh all dashboard data
+        const stats = await questionService.getDashboardStats();
+        setProgressData({
+          monthlyProgress: stats.monthlyProgress,
+          performance: {
+            correct: stats.correctAnswers,
+            incorrect: stats.incorrectAnswers
+          },
+          categoryProgress: Object.entries(stats.byCategory).map(([code, data]) => ({
+            code,
+            name: data.name,
+            total: data.total,
+            correct: data.correct,
+            percentage: Math.round((data.correct / data.total) * 100) || 0
+          })),
+          skillsBreakdown: Object.entries(stats.byCategory)
+            .filter(([_, data]) => data.skillScore !== undefined)
+            .map(([code, data]) => ({
+              code,
+              name: data.name,
+              skillScore: data.skillScore || 0
+            })),
+          byCategory: stats.byCategory,
+          studyTime: stats.studyTime
+        });
+      } catch (error) {
+        showToast('error', 'Failed to reset progress');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      className={`bg-surface-dark rounded-lg shadow-lg backdrop-blur-sm bg-opacity-90 ${className}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="border-b border-dark-lightest px-5 py-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-sm font-medium tracking-wide text-gray-300 uppercase">{title}</h2>
+          {title === "Learning Progress" && dashboard && (
+            <div className="relative group">
+              <button className="p-1 text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </button>
+              <div className="absolute hidden group-hover:block right-0 mt-2 w-48 bg-dark-lighter rounded-lg shadow-lg border border-gray-700 z-50">
+                <div className="py-1">
+                  <button
+                    onClick={handleResetStudyTime}
+                    className="w-full px-4 py-2 text-sm text-gray-300 hover:bg-dark-lightest hover:text-white text-left"
+                  >
+                    Reset Study Time Stats
+                  </button>
+                  <button
+                    onClick={handleResetAllProgress}
+                    className="w-full px-4 py-2 text-sm text-red-400 hover:bg-dark-lightest hover:text-red-300 text-left"
+                  >
+                    Reset All Progress
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="p-5">
+        {children}
+      </div>
+    </motion.div>
+  );
+};
 
 const StatItem = ({ value, label, trend }) => (
   <div className="flex flex-col p-4 bg-dark bg-opacity-50 rounded-lg">
@@ -181,7 +307,10 @@ const Dashboard = () => {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState(null);
+  const [progressData, setProgressData] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedOverviewCategory, setSelectedOverviewCategory] = useState('all');
+  const [selectedPerformanceCategory, setSelectedPerformanceCategory] = useState('all');
 
   useEffect(() => {
     if (!currentUser) {
@@ -189,9 +318,10 @@ const Dashboard = () => {
       return;
     }
 
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await new Promise(resolve => 
+        // Fetch user data
+        const userResponse = await new Promise(resolve => 
           setTimeout(() => resolve({
             name: currentUser?.displayName || "User",
             email: currentUser?.email || "",
@@ -208,7 +338,37 @@ const Dashboard = () => {
             ]
           }), 1000)
         );
-        setUserData(response);
+        setUserData(userResponse);
+
+        // Fetch all dashboard stats at once
+        const stats = await questionService.getDashboardStats();
+        
+        // Process stats for charts
+        const progressStats = {
+          monthlyProgress: stats.monthlyProgress,
+          performance: {
+            correct: stats.correctAnswers,
+            incorrect: stats.incorrectAnswers
+          },
+          categoryProgress: Object.entries(stats.byCategory).map(([code, data]) => ({
+            code,
+            name: data.name,
+            total: data.total,
+            correct: data.correct,
+            percentage: Math.round((data.correct / data.total) * 100) || 0
+          })),
+          skillsBreakdown: Object.entries(stats.byCategory)
+            .filter(([_, data]) => data.skillScore !== undefined)
+            .map(([code, data]) => ({
+              code,
+              name: data.name,
+              skillScore: data.skillScore || 0
+            })),
+          byCategory: stats.byCategory,
+          studyTime: stats.studyTime
+        };
+
+        setProgressData(progressStats);
         setIsLoading(false);
       } catch (err) {
         setError("Failed to load user data");
@@ -216,7 +376,7 @@ const Dashboard = () => {
       }
     };
 
-    fetchUserData();
+    fetchData();
   }, [currentUser, navigate]);
 
   const handleLogout = async () => {
@@ -284,6 +444,319 @@ const Dashboard = () => {
               Sign Out
             </button>
           </div>
+
+          {/* Progress Section */}
+          <DashboardCard 
+            title="Learning Progress" 
+            className="lg:col-span-3"
+            dashboard={{
+              showToast,
+              setIsLoading,
+              setProgressData
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Learning Overview Chart */}
+              <div className="lg:col-span-2 bg-surface-dark/30 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-300">Learning Overview</h3>
+                  <select
+                    className="bg-dark text-gray-300 text-sm rounded px-3 py-1 border border-gray-700 w-36"
+                    onChange={(e) => setSelectedOverviewCategory(e.target.value)}
+                    value={selectedOverviewCategory}
+                  >
+                    <option value="all">All Categories</option>
+                    {progressData?.monthlyProgress.categories.map(cat => (
+                      <option key={cat.code} value={cat.code}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="h-[200px]">
+                  <Line
+                    data={{
+                      labels: progressData?.monthlyProgress.months.map(m => {
+                        const [year, month] = m.month.split('-');
+                        return new Date(year, month - 1).toLocaleString('default', { month: 'short' });
+                      }) || [],
+                      datasets: [
+                        {
+                          label: 'Correct Answers',
+                          data: progressData?.monthlyProgress.months.map(m => {
+                            if (selectedOverviewCategory === 'all') {
+                              return m.correct;
+                            }
+                            const categoryData = m.byCategory.find(c => c.code === selectedOverviewCategory);
+                            return categoryData ? categoryData.correct : 0;
+                          }) || [],
+                          borderColor: '#10B981', // green
+                          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                          fill: true,
+                          tension: 0.4
+                        },
+                        {
+                          label: 'Incorrect Answers',
+                          data: progressData?.monthlyProgress.months.map(m => {
+                            if (selectedOverviewCategory === 'all') {
+                              return m.incorrect;
+                            }
+                            const categoryData = m.byCategory.find(c => c.code === selectedOverviewCategory);
+                            return categoryData ? categoryData.incorrect : 0;
+                          }) || [],
+                          borderColor: '#EF4444', // red
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          fill: true,
+                          tension: 0.4
+                        }
+                      ]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                          },
+                          ticks: {
+                            color: '#9CA3AF'
+                          }
+                        },
+                        x: {
+                          grid: {
+                            display: false
+                          },
+                          ticks: {
+                            color: '#9CA3AF'
+                          }
+                        }
+                      },
+                      plugins: {
+                        legend: {
+                          display: true,
+                          position: 'top',
+                          labels: {
+                            color: '#9CA3AF',
+                            usePointStyle: true,
+                            padding: 20
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Average Performance */}
+              <div className="bg-surface-dark/30 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-300">Average Performance</h3>
+                  <select
+                    className="bg-dark text-gray-300 text-sm rounded px-3 py-1 border border-gray-700 w-36"
+                    onChange={(e) => setSelectedPerformanceCategory(e.target.value)}
+                    value={selectedPerformanceCategory}
+                  >
+                    <option value="all">All Categories</option>
+                    {progressData?.monthlyProgress.categories.map(cat => (
+                      <option key={cat.code} value={cat.code}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="h-[200px] flex items-center justify-center">
+                  <Doughnut
+                    data={{
+                      labels: ['Correct', 'Incorrect'],
+                      datasets: [{
+                        data: [
+                          selectedPerformanceCategory === 'all' 
+                            ? progressData?.performance.correct || 0
+                            : progressData?.byCategory[selectedPerformanceCategory]?.correct || 0,
+                          selectedPerformanceCategory === 'all'
+                            ? progressData?.performance.incorrect || 0
+                            : (progressData?.byCategory[selectedPerformanceCategory]?.total || 0) - (progressData?.byCategory[selectedPerformanceCategory]?.correct || 0)
+                        ],
+                        backgroundColor: [
+                          '#8B5CF6',
+                          'rgba(139, 92, 246, 0.1)'
+                        ],
+                        borderWidth: 0
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      cutout: '75%',
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      }
+                    }}
+                  />
+                  <div className="absolute text-2xl font-bold text-white">
+                    {progressData ? 
+                      selectedPerformanceCategory === 'all' 
+                        ? Math.round((progressData.performance.correct / (progressData.performance.correct + progressData.performance.incorrect)) * 100)
+                        : Math.round((progressData.byCategory[selectedPerformanceCategory]?.correct || 0) / (progressData.byCategory[selectedPerformanceCategory]?.total || 1) * 100)
+                    : 0}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Skills Analysis */}
+              <div className="bg-surface-dark/30 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-300">Skills Analysis</h3>
+                  <div className="group relative">
+                    <div className="text-xs text-gray-400 cursor-help">Based on multiple factors</div>
+                    <div className="absolute hidden group-hover:block w-64 p-4 mt-2 right-0 bg-dark-lighter rounded-lg shadow-lg border border-gray-700 z-10">
+                      <div className="text-xs space-y-2">
+                        <div className="font-medium text-gray-300 mb-2">Skill Score Components:</div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-gray-400">Accuracy (40%): Basic correct rate</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-gray-400">Consistency (30%): Recent improvements</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                          <span className="text-gray-400">Speed (15%): Answer time progress</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <span className="text-gray-400">Retention (15%): Long-term memory</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="h-[200px]">
+                  <Radar
+                    data={{
+                      labels: progressData?.skillsBreakdown.map(skill => skill.name) || [],
+                      datasets: [{
+                        label: 'Skill Level',
+                        data: progressData?.skillsBreakdown.map(skill => skill.skillScore) || [],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)', // green
+                        borderColor: '#10B981',
+                        pointBackgroundColor: '#10B981',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10B981',
+                        borderWidth: 2
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        r: {
+                          angleLines: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                          },
+                          grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                          },
+                          pointLabels: {
+                            color: '#9CA3AF'
+                          },
+                          ticks: {
+                            display: false
+                          }
+                        }
+                      },
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Study Time */}
+              <div className="bg-surface-dark/30 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-4">Daily Study Time</h3>
+                <div className="h-[200px]">
+                  <Bar
+                    data={{
+                      labels: progressData?.studyTime?.labels || [],
+                      datasets: [{
+                        label: 'Hours',
+                        data: progressData?.studyTime?.data.map(time => Math.round(time * 10) / 10) || [],
+                        backgroundColor: '#8B5CF6'
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                          },
+                          ticks: {
+                            color: '#9CA3AF'
+                          }
+                        },
+                        x: {
+                          grid: {
+                            display: false
+                          },
+                          ticks: {
+                            color: '#9CA3AF'
+                          }
+                        }
+                      },
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Wrong Answers */}
+              <div className="bg-surface-dark/30 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-4">Questions to Review</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl font-bold text-red-500">
+                      {progressData?.performance.incorrect || 0}
+                    </span>
+                    <span className="text-sm text-gray-400">Questions</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigate('/questions/all', { 
+                        state: { 
+                          mode: 'practice',
+                          filters: { 
+                            incorrectlyAnswered: true
+                          },
+                          title: 'Practice Wrong Answers'
+                        } 
+                      });
+                    }}
+                    className="w-full px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm transition-colors duration-200 flex items-center justify-between"
+                  >
+                    <span>Practice Wrong Answers</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                  <div className="text-xs text-gray-500">
+                    Focus on these questions to improve your performance
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DashboardCard>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
