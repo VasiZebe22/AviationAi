@@ -1,77 +1,52 @@
-# Questions Component Documentation
+# Questions Feature Overview
 
-## Overview
-The Questions component is a React-based interactive quiz/test interface for ATPL (Airline Transport Pilot License) questions. It provides a comprehensive interface for users to practice and test their knowledge of aviation-related topics.
+The Questions feature is organized following a feature-first architecture pattern, with all related components and hooks contained within the feature directory.
 
-## Component Structure
+## Directory Structure
+```
+frontend/src/pages/Questions/
+├── Questions.js              # Main container component
+├── components/              # Feature-specific components
+│   ├── QuestionContent.js   # Renders question text and options
+│   ├── QuestionControls.js  # Navigation and flag controls
+│   ├── QuestionExplanation.js # Explanation view
+│   ├── QuestionGrid.js      # Question number grid
+│   ├── QuestionNotes.js     # Notes functionality
+│   └── QuestionTabs.js      # Tab navigation
+└── hooks/                   # Feature-specific hooks
+    ├── useQuestionImages.js # Image handling logic
+    ├── useQuestionNavigation.js # Keyboard navigation
+    └── useTimer.js          # Timer functionality
+```
 
-### State Management
-- Uses React hooks (useState, useEffect, useCallback, useMemo) for efficient state management
-- Manages multiple states including:
-  - questions: Array of question objects
-  - currentQuestion: Current question index
-  - selectedAnswer: User's selected answer
-  - timer: Test duration timer
-  - flags: Question flagging system
-  - notes: User notes for questions
-  - answeredQuestions: Track answered questions
-  - correctAnswers: Track correct/incorrect answers
+## Architecture Decisions
 
-### Key Features
-1. Question Navigation
-   - Arrow key navigation between questions
-   - Grid-based question overview
-   - Pagination system (100 questions per page)
+1. **Feature-First Organization**
+   - All components and hooks specific to the Questions feature are contained within the feature directory
+   - This promotes encapsulation and maintainability
+   - Makes the feature self-contained and easier to understand
 
-2. Answer Management
-   - Multiple choice answer selection (A, B, C, D format)
-   - Support for both old and new question formats
-   - Immediate feedback on correct/incorrect answers
-   - Progress tracking with category and subcategory support
+2. **Component Separation**
+   - Components are split based on distinct responsibilities
+   - Each component handles a specific aspect of the question interface
+   - Promotes single responsibility principle and maintainability
 
-3. Study Tools
-   - Question flagging system (green, yellow, red)
-   - Note-taking capability
-   - Enhanced explanation view with learning materials
-   - Keyboard shortcuts
+3. **Custom Hooks**
+   - Complex logic is extracted into custom hooks
+   - Promotes reusability within the feature
+   - Makes the main component cleaner and more focused on composition
 
-4. Test Management
-   - Timer tracking
-   - Test saving functionality
-   - Test completion handling
-   - Category and subcategory progress tracking
+4. **State Management**
+   - Main state is managed in Questions.js
+   - Passed down to child components via props
+   - Complex state logic extracted into hooks where appropriate
 
-## File Organization
-- Location: frontend/src/pages/Questions/Questions.js
-- Total Lines: ~500
-- Dependencies:
-  - React and React Router
-  - questionService
-  - Categories component
-
-## Component Files
-1. [State and Initialization](./01_StateAndInitialization.md)
-2. [Question Management](./02_QuestionManagement.md)
-3. [User Interaction Handlers](./03_UserInteractionHandlers.md)
-4. [Navigation and UI](./04_NavigationAndUI.md)
-5. [Utility Functions](./05_UtilityFunctions.md)
-
-## Security Considerations
-- User authentication checks in place
-- Secure API calls through questionService
-- Protected routes and navigation
-
-## Question Format Support
-- Supports both legacy and new question formats:
-  - Legacy: Array-based options with correct_answer
-  - New: Map-based options (A, B, C, D) with category.code
-- Maintains backward compatibility while supporting new features
-
-## Image Support
-- Automatic image handling based on question ID
-- Images stored in `/figures` directory
-- Naming convention:
-  - Question images: `[question_id]_question_0.png`
-  - Explanation images: `[question_id]_explanation_0.png`
-- Graceful fallback for missing images
-- Error handling for failed image loads
+## Key Features
+- Question display and navigation
+- Answer selection and validation
+- Timer functionality
+- Question flagging system
+- Notes system
+- Grid-based question overview
+- Keyboard navigation support
+- Optimized image handling with availability flags
