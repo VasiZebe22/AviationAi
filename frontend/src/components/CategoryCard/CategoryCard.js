@@ -98,7 +98,7 @@ const CategoryCard = ({
               {selectedSubcategories?.length > 0 && (
                 <div className="px-2 py-0.5 bg-accent-lilac/20 rounded-full">
                   <span className="text-accent-lilac text-sm font-medium">
-                    {selectedSubcategories.length} selected
+                    {selectedSubcategories.length}
                   </span>
                 </div>
               )}
@@ -131,8 +131,7 @@ const CategoryCard = ({
                   <button
                     key={subcategory.code}
                     onClick={() => handleSubcategorySelect(subcategory.code)}
-                    className={`
-                      group flex items-center gap-2 px-3 py-1.5 rounded-full text-sm 
+                    className={`group flex items-center gap-2 px-3 py-1.5 rounded-full text-sm 
                       transition-all duration-200 ease-in-out
                       ${isSelected 
                         ? 'bg-accent-lilac/20 text-accent-lilac ring-1 ring-accent-lilac/50' 

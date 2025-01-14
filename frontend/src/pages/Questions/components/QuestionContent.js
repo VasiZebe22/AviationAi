@@ -18,7 +18,7 @@ const QuestionContent = ({
             <div className="text-white text-lg">
                 <ReactMarkdown>{getQuestionText(questionData).text}</ReactMarkdown>
                 {questionImageUrl && (
-                    <div className="mt-4">
+                    <div className="mt-4 max-w-2xl mx-auto">
                         <img 
                             src={questionImageUrl} 
                             alt="Question illustration" 

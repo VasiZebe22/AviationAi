@@ -114,7 +114,6 @@ const Questions = () => {
         return { text };
     }, []);
 
-
     // Helper function to get question options (supports both old and new format)
     const getQuestionOptions = useCallback((question) => {
         let options;
@@ -155,7 +154,6 @@ const Questions = () => {
         console.log('Image failed to load:', e.target.src);
     }, []);
 
-
     const fetchQuestions = useCallback(async () => {
         try {
             setLoading(true);
@@ -181,14 +179,28 @@ const Questions = () => {
                 setQuestions(filteredQuestions);
                 setCurrentQuestion(0);
                 
-                // Fetch flags and notes for all questions
-                const questionIds = fetchedQuestions.map(q => q.id);
-                const [fetchedFlags, fetchedNotes] = await Promise.all([
-                    questionService.getFlags(questionIds),
-                    questionService.getNotes(questionIds)
-                ]);
-                setFlags(fetchedFlags);
-                setNotes(fetchedNotes);
+                // Fetch flags and notes for visible questions only
+                const fetchFlagsAndNotes = async () => {
+                    if (!filteredQuestions.length) return;
+                    
+                    // Only fetch for the current page of questions (e.g., 10 at a time)
+                    const visibleQuestions = filteredQuestions.slice(0, 10);
+                    const visibleQuestionIds = visibleQuestions.map(q => q.id);
+                    
+                    try {
+                        const [fetchedFlags, fetchedNotes] = await Promise.all([
+                            questionService.getFlags(visibleQuestionIds),
+                            questionService.getNotes(visibleQuestionIds)
+                        ]);
+                        
+                        setFlags(prev => ({ ...prev, ...fetchedFlags }));
+                        setNotes(prev => ({ ...prev, ...fetchedNotes }));
+                    } catch (error) {
+                        console.error('Error fetching flags/notes:', error);
+                    }
+                };
+
+                fetchFlagsAndNotes();
             }
         } catch (error) {
             console.error('Error fetching questions:', error);
