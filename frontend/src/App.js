@@ -19,6 +19,7 @@ const ProfileEdit = React.lazy(() => import("./components/Profile/ProfileEdit"))
 const Questions = React.lazy(() => import("./pages/Questions/Questions"));
 const Categories = React.lazy(() => import("./pages/Categories"));
 const Results = React.lazy(() => import("./pages/Results/Results"));
+const SavedTests = React.lazy(() => import("./pages/SavedTests/SavedTests"));
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -120,12 +121,22 @@ function AppRoutes() {
                         </ProtectedRoute>
                     }
                 />
-                <Route 
+                <Route
                     path="/results"
                     element={
                         <ProtectedRoute>
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Results />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/saved-tests"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <SavedTests />
                             </Suspense>
                         </ProtectedRoute>
                     }

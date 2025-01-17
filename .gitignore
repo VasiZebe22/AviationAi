@@ -38,3 +38,4 @@ yarn-error.log*
 .aider*
 cline_docs/
 scripts/
+.clinerules

@@ -1,5 +1,5 @@
 import { db, auth } from './firebase';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy, deleteDoc } from 'firebase/firestore';
 
 const questionService = {
     // Get questions by category
@@ -657,6 +657,34 @@ const questionService = {
         }
     },
 
+    // Delete saved test
+    async deleteSavedTest(testId) {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const testRef = doc(db, 'saved_tests', testId);
+            const testDoc = await getDoc(testRef);
+
+            if (!testDoc.exists()) {
+                throw new Error('Saved test not found');
+            }
+
+            // Verify ownership
+            if (testDoc.data().userId !== user.uid) {
+                throw new Error('Unauthorized access to saved test');
+            }
+
+            await deleteDoc(testRef);
+            return true;
+        } catch (error) {
+            console.error('Error deleting saved test:', error);
+            throw error;
+        }
+    },
+
     // Reset study time stats for the last 7 days
     async resetStudyTime() {
         try {
@@ -733,6 +761,86 @@ const questionService = {
             return true;
         } catch (error) {
             console.error('Error resetting progress:', error);
+            throw error;
+        }
+    },
+
+    // Save current test state
+    async saveTestState(testData) {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const savedTestRef = doc(collection(db, 'saved_tests'));
+            await setDoc(savedTestRef, {
+                userId: user.uid,
+                categoryId: testData.categoryId,
+                currentQuestion: testData.currentQuestion,
+                timer: testData.timer,
+                answeredQuestions: testData.answeredQuestions,
+                filters: testData.filters || {},
+                selectedSubcategories: testData.selectedSubcategories || [],
+                savedAt: new Date()
+            });
+
+            return savedTestRef.id;
+        } catch (error) {
+            console.error('Error saving test state:', error);
+            throw error;
+        }
+    },
+
+    // Get saved test state
+    async getSavedTest(testId) {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const testRef = doc(db, 'saved_tests', testId);
+            const testDoc = await getDoc(testRef);
+
+            if (!testDoc.exists()) {
+                throw new Error('Saved test not found');
+            }
+
+            const testData = testDoc.data();
+            if (testData.userId !== user.uid) {
+                throw new Error('Unauthorized access to saved test');
+            }
+
+            return testData;
+        } catch (error) {
+            console.error('Error loading test state:', error);
+            throw error;
+        }
+    },
+
+    // Get all saved tests for current user
+    async getSavedTests() {
+        try {
+            const user = auth.currentUser;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const savedTestsSnapshot = await getDocs(
+                query(
+                    collection(db, 'saved_tests'),
+                    where('userId', '==', user.uid),
+                    orderBy('savedAt', 'desc')
+                )
+            );
+
+            return savedTestsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error('Error fetching saved tests:', error);
             throw error;
         }
     }

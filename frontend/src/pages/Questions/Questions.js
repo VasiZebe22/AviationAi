@@ -10,6 +10,7 @@ import QuestionNotes from './components/QuestionNotes';
 import QuestionTabs from './components/QuestionTabs';
 import QuestionGrid from './components/QuestionGrid';
 import QuestionControls from './components/QuestionControls';
+import SaveTestButton from './components/SaveTestButton';
 
 // Hooks
 import useQuestionImages from './hooks/useQuestionImages';
@@ -17,11 +18,16 @@ import useQuestionNavigation from './hooks/useQuestionNavigation';
 import useTimer from './hooks/useTimer';
 
 const Questions = () => {
+    // Router hooks
+    const { categoryId } = useParams();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // State hooks
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState('');
     const [activeTab, setActiveTab] = useState('question');
-    const { timer, formatTime } = useTimer();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [flags, setFlags] = useState({});
@@ -31,10 +37,11 @@ const Questions = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [answeredQuestions, setAnsweredQuestions] = useState({});
     const [correctAnswers, setCorrectAnswers] = useState({});
-    const { categoryId } = useParams();
-    const navigate = useNavigate();
-    const location = useLocation();
+
+    // Derived state
     const mode = location.state?.mode || 'study';
+    const savedTimer = location.state?.savedTestData?.timer || 0;
+    const { timer, formatTime } = useTimer(savedTimer);
 
     // Get category title from categoryId
     const categoryTitle = useMemo(() => {
@@ -209,6 +216,25 @@ const Questions = () => {
             setLoading(false);
         }
     }, [categoryId, filters, mode]);
+
+    // Load saved test state if available
+    useEffect(() => {
+        const savedTestData = location.state?.savedTestData;
+        if (savedTestData && questions.length > 0) {
+            setCurrentQuestion(savedTestData.currentQuestion || 0);
+            setAnsweredQuestions(savedTestData.answeredQuestions || {});
+
+            // Rebuild correctAnswers state for saved answers
+            const newCorrectAnswers = {};
+            Object.entries(savedTestData.answeredQuestions || {}).forEach(([questionId, selectedAnswer]) => {
+                const question = questions.find(q => q.id === questionId);
+                if (question) {
+                    newCorrectAnswers[questionId] = isAnswerCorrect(question, selectedAnswer);
+                }
+            });
+            setCorrectAnswers(newCorrectAnswers);
+        }
+    }, [location.state?.savedTestData, questions, isAnswerCorrect]);
 
     useEffect(() => {
         fetchQuestions();
@@ -385,9 +411,16 @@ const Questions = () => {
                             </div>
                         </div>
                         <div className="flex space-x-3">
-                            <button onClick={() => setShowShortcuts(!showShortcuts)} className="px-4 py-2 bg-surface-dark/50 text-gray-400 rounded hover:bg-surface-dark/70 text-sm">
-                                Save Test
-                            </button>
+                            <SaveTestButton
+                                categoryId={categoryId}
+                                mode={mode}
+                                currentQuestion={currentQuestion}
+                                timer={timer}
+                                answeredQuestions={answeredQuestions}
+                                filters={location.state?.filters}
+                                selectedSubcategories={location.state?.selectedSubcategories}
+                                setError={setError}
+                            />
                             <button onClick={handleFinishTest} className="px-4 py-2 bg-accent-lilac text-white rounded hover:bg-accent-lilac/90 text-sm">
                                 Finish Test
                             </button>
