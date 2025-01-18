@@ -20,6 +20,7 @@ const Questions = React.lazy(() => import("./pages/Questions/Questions"));
 const Categories = React.lazy(() => import("./pages/Categories"));
 const Results = React.lazy(() => import("./pages/Results/Results"));
 const SavedTests = React.lazy(() => import("./pages/SavedTests/SavedTests"));
+const ActivityCenter = React.lazy(() => import("./components/ActivityCenter/ActivityCenter"));
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -140,6 +141,20 @@ function AppRoutes() {
                             </Suspense>
                         </ProtectedRoute>
                     }
+                />
+                <Route
+                    path="/activity"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <ActivityCenter />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="*"
+                    element={<Navigate to="/" />}
                 />
             </Routes>
             <ToastContainer

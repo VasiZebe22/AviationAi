@@ -26,6 +26,7 @@ import PerformanceChart from '../../components/Dashboard/charts/PerformanceChart
 import SkillsAnalysisChart from '../../components/Dashboard/charts/SkillsAnalysisChart';
 import StudyTimeChart from '../../components/Dashboard/charts/StudyTimeChart';
 import QuestionsToReview from '../../components/Dashboard/QuestionsToReview';
+import RecentSavedTests from '../../components/Dashboard/RecentSavedTests';
 import questionService from '../../services/questionService';
 
 // Register Chart.js components
@@ -280,7 +281,7 @@ const Dashboard = () => {
               <div className="space-y-2">
                 <button
                   onClick={() => navigate('/chat')}
-                  className="w-full px-4 py-2.5 bg-accent-lilac text-xs font-medium text-white rounded-md hover:bg-accent-lilac-dark transition-colors duration-200 flex items-center justify-center space-x-2"
+                  className="w-full px-4 py-2.5 bg-accent-lilac text-xs font-medium text-white rounded-md hover:bg-accent-lilac-light transition-colors duration-200 flex items-center justify-center space-x-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -296,6 +297,21 @@ const Dashboard = () => {
                   </svg>
                   <span>Explore Features</span>
                 </button>
+
+                {/* Recent Saved Tests Section */}
+                <div className="mt-4 pt-4 border-t border-dark-lighter">
+                  <h3 className="text-xs font-medium text-gray-400 mb-3">Recent Tests</h3>
+                  <RecentSavedTests />
+                  <button
+                    onClick={() => navigate('/saved-tests')}
+                    className="w-full mt-2 px-4 py-2 text-xs text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center justify-center"
+                  >
+                    View All Saved Tests
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </DashboardCard>
 

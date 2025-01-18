@@ -337,7 +337,7 @@ const Questions = () => {
 
     // Navigation handlers
     const handleDashboardClick = useCallback(() => {
-        navigate('/');
+        navigate('/dashboard');
     }, [navigate]);
 
     const handleCategoriesClick = useCallback(() => {

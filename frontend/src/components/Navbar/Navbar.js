@@ -56,19 +56,33 @@ const Navbar = () => {
                         ) : (
                             <>
                                 <button 
-                                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
+                                        location.pathname === '/dashboard' ? 'text-accent-lilac-light font-medium' : ''
+                                    }`}
                                     onClick={() => navigate('/dashboard')}
                                 >
                                     Dashboard
                                 </button>
                                 <button 
-                                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
+                                        location.pathname === '/chat' ? 'text-accent-lilac-light font-medium' : ''
+                                    }`}
                                     onClick={() => navigate('/chat')}
                                 >
                                     AI Chat
                                 </button>
                                 <button 
-                                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
+                                        location.pathname === '/activity' ? 'text-accent-lilac-light font-medium' : ''
+                                    }`}
+                                    onClick={() => navigate('/activity')}
+                                >
+                                    Activity Center
+                                </button>
+                                <button 
+                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
+                                        location.pathname === '/profile' ? 'text-accent-lilac-light font-medium' : ''
+                                    }`}
                                     onClick={() => navigate('/profile')}
                                 >
                                     Profile
@@ -78,12 +92,16 @@ const Navbar = () => {
                     </nav>
 
                     <div className="flex items-center">
-                        <button
-                            onClick={handleButtonClick}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent-lilac hover:bg-accent-lilac-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-lilac transition-colors duration-200"
-                        >
-                            {currentUser ? 'Go to Dashboard' : 'Get Started'}
-                        </button>
+                        {(!currentUser || (location.pathname !== '/dashboard' && 
+                          location.pathname !== '/activity' && 
+                          location.pathname !== '/practice')) && (
+                            <button
+                                onClick={handleButtonClick}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent-lilac hover:bg-accent-lilac-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-lilac transition-colors duration-200"
+                            >
+                                {currentUser ? 'Go to Dashboard' : 'Get Started'}
+                            </button>
+                        )}
                     </div>
 
                     {/* Mobile menu button */}

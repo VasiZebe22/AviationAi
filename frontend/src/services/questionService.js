@@ -773,17 +773,37 @@ const questionService = {
                 throw new Error('User not authenticated');
             }
 
-            const savedTestRef = doc(collection(db, 'saved_tests'));
+            // Get total questions for this category/filters combination
+            let totalQuestions = 0;
+            const questionsSnapshot = await getDocs(
+                query(
+                    collection(db, 'questions'),
+                    where('category.code', '==', testData.categoryId)
+                )
+            );
+            totalQuestions = questionsSnapshot.size;
+
+            // If this is an update to an existing test, use that ID
+            const savedTestRef = testData.savedTestId ? 
+                doc(db, 'saved_tests', testData.savedTestId) : 
+                doc(collection(db, 'saved_tests'));
+
+            // Ensure answeredQuestions is an object
+            const answeredQuestions = typeof testData.answeredQuestions === 'object' ? 
+                testData.answeredQuestions : {};
+
             await setDoc(savedTestRef, {
                 userId: user.uid,
                 categoryId: testData.categoryId,
                 currentQuestion: testData.currentQuestion,
                 timer: testData.timer,
-                answeredQuestions: testData.answeredQuestions,
+                answeredQuestions: answeredQuestions,
                 filters: testData.filters || {},
                 selectedSubcategories: testData.selectedSubcategories || [],
-                savedAt: new Date()
-            });
+                savedAt: new Date(),
+                totalQuestions: totalQuestions,
+                mode: testData.mode || 'study'
+            }, { merge: true });
 
             return savedTestRef.id;
         } catch (error) {

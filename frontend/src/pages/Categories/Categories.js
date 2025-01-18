@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import questionService from '../../services/questionService';
 import CategoryCard from '../../components/CategoryCard';
 import SavedTestsModal from '../../components/SavedTests/SavedTestsModal';
+import Navbar from '../../components/Navbar/Navbar';
 
 /**
  * Array of ATPL question categories with their metadata
@@ -363,225 +364,205 @@ const Categories = () => {
   }
 
   return (
-    <div className="min-h-screen bg-dark p-4">
-      <div className="max-w-6xl mx-auto relative">
-        {/* Navigation Buttons */}
-        <div className="absolute right-0 top-1 flex gap-3">
-          <button
-            onClick={() => setIsSavedTestsOpen(true)}
-            className="px-6 py-2.5 bg-accent-lilac text-white rounded-lg hover:bg-accent-lilac/90 transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-            </svg>
-            Saved Tests
-          </button>
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-dark pt-16">
+        <div className="max-w-6xl mx-auto p-4 relative">
+          {/* Saved Tests Modal */}
+          <SavedTestsModal
+            isOpen={isSavedTestsOpen}
+            onClose={() => setIsSavedTestsOpen(false)}
+          />
+      
+          {/* Add spacing without the header */}
+          <div className="h-8"></div>
 
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-6 py-2.5 bg-accent-lilac text-white rounded-lg hover:bg-accent-lilac/90 transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Dashboard
-          </button>
-        </div>
-
-        {/* Saved Tests Modal */}
-        <SavedTestsModal
-          isOpen={isSavedTestsOpen}
-          onClose={() => setIsSavedTestsOpen(false)}
-        />
-    
-        {/* Page Header */}
-        <h1 className="text-3xl text-gray-200 mb-8 text-center pt-2">Question Categories</h1>
-
-        {/* Mode Selection - Study or Exam */}
-        <div className="grid grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
-          <button
-            onClick={() => setMode('study')}
-            className={`p-4 rounded-lg text-center transition-colors ${
-              mode === 'study'
-                ? 'bg-accent-lilac text-white'
-                : 'bg-surface-dark text-gray-300 hover:bg-dark-lighter'
-            }`}
-          >
-            STUDY
-          </button>
-          <button
-            onClick={() => setMode('exam')}
-            className={`p-4 rounded-lg text-center transition-colors ${
-              mode === 'exam'
-                ? 'bg-accent-lilac text-white'
-                : 'bg-surface-dark text-gray-300 hover:bg-dark-lighter'
-            }`}
-          >
-            EXAM
-          </button>
-        </div>
-
-        {/* Filter Options Panel */}
-        <div className="bg-surface-dark rounded-lg p-6 mb-8 max-w-2xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Question Type Selection */}
-            <div 
-              className={`flex items-center ${(filters.questionTypes.withAnnexes || filters.questionTypes.withoutAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-              onClick={() => handleQuestionTypeChange('all')}
-            >
-              <input
-                type="checkbox"
-                checked={filters.questionTypes.all}
-                onChange={() => {}}
-                disabled={filters.questionTypes.withAnnexes || filters.questionTypes.withoutAnnexes}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">All Questions</label>
-            </div>
-            <div 
-              className={`flex items-center ${(filters.questionTypes.all || filters.questionTypes.withoutAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-              onClick={() => handleQuestionTypeChange('withAnnexes')}
-            >
-              <input
-                type="checkbox"
-                checked={filters.questionTypes.withAnnexes}
-                onChange={() => {}}
-                disabled={filters.questionTypes.all || filters.questionTypes.withoutAnnexes}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">With Annexes</label>
-            </div>
-            <div 
-              className={`flex items-center ${(filters.questionTypes.all || filters.questionTypes.withAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-              onClick={() => handleQuestionTypeChange('withoutAnnexes')}
-            >
-              <input
-                type="checkbox"
-                checked={filters.questionTypes.withoutAnnexes}
-                onChange={() => {}}
-                disabled={filters.questionTypes.all || filters.questionTypes.withAnnexes}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Without Annexes</label>
-            </div>
-
-            {/* Additional Filter Options */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.realExamOnly}
-                onChange={(e) => setFilters({ ...filters, realExamOnly: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Only Real Exam Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.reviewQuestions}
-                onChange={(e) => setFilters({ ...filters, reviewQuestions: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Review Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.markedQuestions}
-                onChange={(e) => setFilters({ ...filters, markedQuestions: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Marked Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.unseenQuestions}
-                onChange={(e) => setFilters({ ...filters, unseenQuestions: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Previously Unseen Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.incorrectlyAnswered}
-                onChange={(e) => setFilters({ ...filters, incorrectlyAnswered: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Incorrectly answered</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.greenFlagged}
-                onChange={(e) => setFilters({ ...filters, greenFlagged: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Green Flagged Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.yellowFlagged}
-                onChange={(e) => setFilters({ ...filters, yellowFlagged: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Yellow Flagged Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.redFlagged}
-                onChange={(e) => setFilters({ ...filters, redFlagged: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Red Flagged Questions</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={filters.showCorrectAnswers}
-                onChange={(e) => setFilters({ ...filters, showCorrectAnswers: e.target.checked })}
-                className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-              />
-              <label className="ml-3 text-gray-300">Study Test with correct answers</label>
-            </div>
-          </div>
-        </div>
-        
-        {/* Error Display */}
-        {error && (
-          <div className="bg-red-600/20 text-red-200 p-4 mb-6 rounded flex items-center justify-between">
-            <span>{error}</span>
+          {/* Mode Selection - Study or Exam */}
+          <div className="grid grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
             <button
-              onClick={() => {
-                setError(null);
-                fetchUserProgress();
-              }}
-              className="text-sm bg-red-600/30 hover:bg-red-600/50 px-3 py-1 rounded"
+              onClick={() => setMode('study')}
+              className={`p-4 rounded-lg text-center transition-colors ${
+                mode === 'study'
+                  ? 'bg-accent-lilac text-white'
+                  : 'bg-surface-dark text-gray-300 hover:bg-dark-lighter'
+              }`}
             >
-              Try Again
+              STUDY
+            </button>
+            <button
+              onClick={() => setMode('exam')}
+              className={`p-4 rounded-lg text-center transition-colors ${
+                mode === 'exam'
+                  ? 'bg-accent-lilac text-white'
+                  : 'bg-surface-dark text-gray-300 hover:bg-dark-lighter'
+              }`}
+            >
+              EXAM
             </button>
           </div>
-        )}
 
-        {/* Category Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative isolate">
-          {categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              progress={getCategoryProgress(category.id)}
-              completion={getCategoryCompletion(category.id)}
-              onStart={handleCategoryStart}
-              selectedSubcategories={selectedSubcategories[category.id]}
-              onSubcategoryChange={handleSubcategoryChange}
-            />
-          ))}
+          {/* Filter Options Panel */}
+          <div className="bg-surface-dark rounded-lg p-6 mb-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Question Type Selection */}
+              <div 
+                className={`flex items-center ${(filters.questionTypes.withAnnexes || filters.questionTypes.withoutAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                onClick={() => handleQuestionTypeChange('all')}
+              >
+                <input
+                  type="checkbox"
+                  checked={filters.questionTypes.all}
+                  onChange={() => {}}
+                  disabled={filters.questionTypes.withAnnexes || filters.questionTypes.withoutAnnexes}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">All Questions</label>
+              </div>
+              <div 
+                className={`flex items-center ${(filters.questionTypes.all || filters.questionTypes.withoutAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                onClick={() => handleQuestionTypeChange('withAnnexes')}
+              >
+                <input
+                  type="checkbox"
+                  checked={filters.questionTypes.withAnnexes}
+                  onChange={() => {}}
+                  disabled={filters.questionTypes.all || filters.questionTypes.withoutAnnexes}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">With Annexes</label>
+              </div>
+              <div 
+                className={`flex items-center ${(filters.questionTypes.all || filters.questionTypes.withAnnexes) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                onClick={() => handleQuestionTypeChange('withoutAnnexes')}
+              >
+                <input
+                  type="checkbox"
+                  checked={filters.questionTypes.withoutAnnexes}
+                  onChange={() => {}}
+                  disabled={filters.questionTypes.all || filters.questionTypes.withAnnexes}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Without Annexes</label>
+              </div>
+
+              {/* Additional Filter Options */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.realExamOnly}
+                  onChange={(e) => setFilters({ ...filters, realExamOnly: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Only Real Exam Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.reviewQuestions}
+                  onChange={(e) => setFilters({ ...filters, reviewQuestions: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Review Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.markedQuestions}
+                  onChange={(e) => setFilters({ ...filters, markedQuestions: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Marked Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.unseenQuestions}
+                  onChange={(e) => setFilters({ ...filters, unseenQuestions: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Previously Unseen Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.incorrectlyAnswered}
+                  onChange={(e) => setFilters({ ...filters, incorrectlyAnswered: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Incorrectly answered</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.greenFlagged}
+                  onChange={(e) => setFilters({ ...filters, greenFlagged: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Green Flagged Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.yellowFlagged}
+                  onChange={(e) => setFilters({ ...filters, yellowFlagged: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Yellow Flagged Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.redFlagged}
+                  onChange={(e) => setFilters({ ...filters, redFlagged: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Red Flagged Questions</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={filters.showCorrectAnswers}
+                  onChange={(e) => setFilters({ ...filters, showCorrectAnswers: e.target.checked })}
+                  className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
+                />
+                <label className="ml-3 text-gray-300">Study Test with correct answers</label>
+              </div>
+            </div>
+          </div>
+        
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-600/20 text-red-200 p-4 mb-6 rounded flex items-center justify-between">
+              <span>{error}</span>
+              <button
+                onClick={() => {
+                  setError(null);
+                  fetchUserProgress();
+                }}
+                className="text-sm bg-red-600/30 hover:bg-red-600/50 px-3 py-1 rounded"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* Category Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative isolate">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                progress={getCategoryProgress(category.id)}
+                completion={getCategoryCompletion(category.id)}
+                onStart={handleCategoryStart}
+                selectedSubcategories={selectedSubcategories[category.id]}
+                onSubcategoryChange={handleSubcategoryChange}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
