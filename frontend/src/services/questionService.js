@@ -773,7 +773,7 @@ const questionService = {
                 throw new Error('User not authenticated');
             }
 
-            // Get total questions for this category/filters combination
+            // Get total questions for this category/subcategories combination
             let totalQuestions = 0;
             const questionsSnapshot = await getDocs(
                 query(
@@ -781,7 +781,19 @@ const questionService = {
                     where('category.code', '==', testData.categoryId)
                 )
             );
-            totalQuestions = questionsSnapshot.size;
+
+            // If subcategories are selected, filter questions to only count those in selected subcategories
+            if (testData.selectedSubcategories && testData.selectedSubcategories.length > 0) {
+                const questions = questionsSnapshot.docs.map(doc => doc.data());
+                totalQuestions = questions.filter(question => 
+                    question.subcategories && 
+                    question.subcategories.some(sub => 
+                        testData.selectedSubcategories.includes(sub.code)
+                    )
+                ).length;
+            } else {
+                totalQuestions = questionsSnapshot.size;
+            }
 
             // If this is an update to an existing test, use that ID
             const savedTestRef = testData.savedTestId ? 
