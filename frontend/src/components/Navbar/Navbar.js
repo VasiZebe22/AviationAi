@@ -79,14 +79,6 @@ const Navbar = () => {
                                 >
                                     Activity Center
                                 </button>
-                                <button 
-                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
-                                        location.pathname === '/profile' ? 'text-accent-lilac-light font-medium' : ''
-                                    }`}
-                                    onClick={() => navigate('/profile')}
-                                >
-                                    Profile
-                                </button>
                             </>
                         )}
                     </nav>

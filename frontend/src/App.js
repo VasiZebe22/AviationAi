@@ -15,7 +15,6 @@ const Login = React.lazy(() => import("./pages/Login/Login"));
 const Signup = React.lazy(() => import("./pages/Signup/SignupPage"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard/Dashboard"));
 const AiChat = React.lazy(() => import("./components/AiChat/AiChat"));
-const ProfileEdit = React.lazy(() => import("./components/Profile/ProfileEdit"));
 const Questions = React.lazy(() => import("./pages/Questions/Questions"));
 const Categories = React.lazy(() => import("./pages/Categories"));
 const Results = React.lazy(() => import("./pages/Results/Results"));
@@ -88,16 +87,6 @@ function AppRoutes() {
                         <ProtectedRoute>
                             <Suspense fallback={<LoadingSpinner />}>
                                 <AiChat />
-                            </Suspense>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/profile"
-                    element={
-                        <ProtectedRoute>
-                            <Suspense fallback={<LoadingSpinner />}>
-                                <ProfileEdit />
                             </Suspense>
                         </ProtectedRoute>
                     }

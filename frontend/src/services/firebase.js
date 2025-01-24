@@ -5,7 +5,11 @@ import {
     createUserWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
-    sendEmailVerification
+    sendEmailVerification,
+    updateProfile,
+    updatePassword,
+    EmailAuthProvider,
+    reauthenticateWithCredential
 } from 'firebase/auth';
 import { 
     getFirestore, 
@@ -13,8 +17,7 @@ import {
     collection, 
     where, 
     orderBy, 
-    getDocs,
-    limit 
+    getDocs
 } from 'firebase/firestore';
 import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage';
@@ -215,6 +218,44 @@ export const logout = async () => {
         await signOut(auth);
     } catch (error) {
         console.error('Logout error:', error);
+        throw error;
+    }
+};
+
+// Update user profile
+export const updateUserProfile = async (displayName) => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error('No user is currently signed in');
+
+        await updateProfile(user, {
+            displayName: displayName
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+    }
+};
+
+// Update user password
+export const updateUserPassword = async (currentPassword, newPassword) => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error('No user is currently signed in');
+
+        // Re-authenticate user before password change
+        const credential = EmailAuthProvider.credential(
+            user.email,
+            currentPassword
+        );
+        await reauthenticateWithCredential(user, credential);
+        
+        // Update password
+        await updatePassword(user, newPassword);
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating password:', error);
         throw error;
     }
 };
