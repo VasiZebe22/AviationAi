@@ -2,6 +2,21 @@ import React from 'react';
 import { Radar } from 'react-chartjs-2';
 
 const SkillsAnalysisChart = ({ progressData }) => {
+  // Filter out categories with 0 skill score and format their names
+  const skillData = progressData?.skillsBreakdown
+    ?.filter(skill => skill.skillScore > 0)
+    ?.map(skill => ({
+      ...skill,
+      // Format long category names to fit better
+      displayName: skill.name
+        .split(',')[0] // Take only the first part if there's a comma
+        .replace('Flight Planning Monitoring', 'Flight Planning')
+        .replace('Airframe, Systems, Electrics, Power', 'Aircraft Systems')
+        .replace('Radio Navigation', 'Radio Nav')
+    })) || [];
+
+  const hasData = skillData.length > 0;
+
   return (
     <div className="bg-surface-dark/30 rounded-lg p-4">
       <div className="flex justify-between items-center mb-4">
@@ -31,47 +46,98 @@ const SkillsAnalysisChart = ({ progressData }) => {
           </div>
         </div>
       </div>
-      <div className="h-[200px]">
-        <Radar
-          data={{
-            labels: progressData?.skillsBreakdown.map(skill => skill.name) || [],
-            datasets: [{
-              label: 'Skill Level',
-              data: progressData?.skillsBreakdown.map(skill => skill.skillScore) || [],
-              backgroundColor: 'rgba(16, 185, 129, 0.2)', // green
-              borderColor: '#10B981',
-              pointBackgroundColor: '#10B981',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: '#10B981',
-              borderWidth: 2
-            }]
-          }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              r: {
-                angleLines: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                },
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                },
-                pointLabels: {
-                  color: '#9CA3AF'
-                },
-                ticks: {
+      <div className="h-[200px] flex items-center justify-center">
+        {!hasData ? (
+          <div className="text-center">
+            <p className="text-sm text-gray-400">No skill data available yet.</p>
+            <p className="text-xs mt-1 text-gray-500">Complete more questions to see your skill analysis.</p>
+          </div>
+        ) : (
+          <Radar
+            data={{
+              labels: skillData.map(skill => skill.displayName),
+              datasets: [{
+                label: 'Skill Level',
+                data: skillData.map(skill => Math.round(skill.skillScore)),
+                backgroundColor: 'rgba(16, 185, 129, 0.2)', // green
+                borderColor: '#10B981',
+                pointBackgroundColor: '#10B981',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#10B981',
+                borderWidth: 2
+              }]
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                r: {
+                  angleLines: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                  },
+                  grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                  },
+                  pointLabels: {
+                    color: '#9CA3AF',
+                    font: {
+                      size: 11
+                    },
+                    callback: function(value) {
+                      // Break long labels into multiple lines
+                      const maxLength = 15;
+                      if (value.length <= maxLength) return value;
+                      
+                      const words = value.split(' ');
+                      let lines = [''];
+                      let lineIndex = 0;
+                      
+                      words.forEach(word => {
+                        if ((lines[lineIndex] + ' ' + word).length <= maxLength) {
+                          lines[lineIndex] += (lines[lineIndex] ? ' ' : '') + word;
+                        } else {
+                          lineIndex++;
+                          lines[lineIndex] = word;
+                        }
+                      });
+                      
+                      return lines;
+                    }
+                  },
+                  ticks: {
+                    display: false,
+                    beginAtZero: true,
+                    min: 0,
+                    max: 100,
+                    stepSize: 20
+                  },
+                  suggestedMin: 0,
+                  suggestedMax: 100
+                }
+              },
+              plugins: {
+                legend: {
                   display: false
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                  titleFont: {
+                    size: 12
+                  },
+                  bodyFont: {
+                    size: 11
+                  },
+                  padding: 8,
+                  callbacks: {
+                    label: function(context) {
+                      return `Skill Level: ${Math.round(context.raw)}%`;
+                    }
+                  }
                 }
               }
-            },
-            plugins: {
-              legend: {
-                display: false
-              }
-            }
-          }}
-        />
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -101,16 +101,14 @@ const Dashboard = () => {
             percentage: Math.round((data.correct / data.total) * 100) || 0
           })),
           skillsBreakdown: Object.entries(stats.byCategory)
-            .filter(([_, data]) => data.skillScore !== undefined)
             .map(([code, data]) => ({
-              code,
               name: data.name,
               skillScore: data.skillScore || 0
             })),
           byCategory: stats.byCategory,
           studyTime: stats.studyTime
         };
-
+        
         setProgressData(progressStats);
         setIsLoading(false);
       } catch (err) {
