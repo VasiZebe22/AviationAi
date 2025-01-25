@@ -13,27 +13,74 @@ const QuestionGrid = ({
     const QUESTIONS_PER_PAGE = 100;
     const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
 
+    // Handle navigation with question update
+    const handleNavigation = (newPage) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            // Calculate the first question of the new page
+            const firstQuestionOnNewPage = newPage * QUESTIONS_PER_PAGE;
+            // Update both the page and current question
+            handlePageChange(newPage);
+            setCurrentQuestion(firstQuestionOnNewPage);
+        }
+    };
+
+    // Navigation arrow components
+    const NavigationArrow = ({ direction, onClick, disabled, double = false }) => (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`px-3 py-1.5 rounded-md transition-all duration-200 ${
+                disabled 
+                    ? 'text-gray-600/50 pointer-events-none' 
+                    : 'text-gray-400 hover:text-white hover:bg-surface-dark'
+            }`}
+            title={`${direction === 'left' ? (double ? 'First' : 'Previous') : (double ? 'Last' : 'Next')} page`}
+        >
+            <span className="font-light text-lg tracking-tighter">
+                {direction === 'left' 
+                    ? (double ? '«' : '‹')
+                    : (double ? '»' : '›')
+                }
+            </span>
+        </button>
+    );
+
+    const canGoNext = currentPage < totalPages - 1;
+    const canGoPrev = currentPage > 0;
+
     return (
         <div className="flex-1 flex flex-col">
             {/* Grid navigation */}
             <div className="flex justify-between items-center mb-4">
-                <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className={`p-2 rounded ${currentPage === 0 ? 'text-gray-600' : 'text-gray-400 hover:text-white'}`}
-                >
-                    ←
-                </button>
+                <div className="flex gap-1">
+                    <NavigationArrow
+                        direction="left"
+                        onClick={() => handleNavigation(0)}
+                        disabled={!canGoPrev}
+                        double
+                    />
+                    <NavigationArrow
+                        direction="left"
+                        onClick={() => handleNavigation(currentPage - 1)}
+                        disabled={!canGoPrev}
+                    />
+                </div>
                 <span className="text-gray-400 text-sm">
                     {currentPage * 100 + 1}-{Math.min((currentPage + 1) * 100, questions.length)} of {questions.length}
                 </span>
-                <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage >= Math.ceil(questions.length / 100) - 1}
-                    className={`p-2 rounded ${currentPage >= Math.ceil(questions.length / 100) - 1 ? 'text-gray-600' : 'text-gray-400 hover:text-white'}`}
-                >
-                    →
-                </button>
+                <div className="flex gap-1">
+                    <NavigationArrow
+                        direction="right"
+                        onClick={() => handleNavigation(currentPage + 1)}
+                        disabled={!canGoNext}
+                    />
+                    <NavigationArrow
+                        direction="right"
+                        onClick={() => handleNavigation(totalPages - 1)}
+                        disabled={!canGoNext}
+                        double
+                    />
+                </div>
             </div>
 
             {/* Question numbers grid */}
