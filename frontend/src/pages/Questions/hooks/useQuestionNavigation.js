@@ -8,7 +8,10 @@ export const useQuestionNavigation = ({
     setActiveTab,
     handleFlag,
     handleAnswerSelect,
-    getQuestionOptions
+    getQuestionOptions,
+    handleKeyboardSelect,
+    answeredQuestions,
+    currentQuestionData
 }) => {
     const handleKeyPress = useCallback((e) => {
         // Prevent handling if user is typing in a text field
@@ -54,17 +57,13 @@ export const useQuestionNavigation = ({
             case '2':
             case '3':
             case '4':
-                // Select answer options
-                const options = getQuestionOptions(questions[currentQuestion]);
-                const index = parseInt(e.key) - 1;
-                if (index < options.length) {
-                    handleAnswerSelect(options[index].text);
-                }
+                // Handle number key presses for answer selection
+                handleKeyboardSelect(parseInt(e.key));
                 break;
             default:
                 break;
         }
-    }, [currentQuestion, questions, setCurrentQuestion, activeTab, setActiveTab, handleFlag, handleAnswerSelect, getQuestionOptions]);
+    }, [currentQuestion, questions, setCurrentQuestion, activeTab, setActiveTab, handleFlag, handleKeyboardSelect]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyPress);

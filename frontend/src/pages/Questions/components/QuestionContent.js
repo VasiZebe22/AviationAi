@@ -31,8 +31,8 @@ const QuestionContent = ({
             <div className="space-y-3">
                 {getQuestionOptions(questionData).map(({ label, text }) => {
                     const isAnswered = answeredQuestions[questionData.id];
-                    const isSelected = answeredQuestions[questionData.id] === text;
-                    const isCorrect = isAnswerCorrect(questionData, text);
+                    const isSelected = answeredQuestions[questionData.id] === label;
+                    const isCorrect = isAnswerCorrect(questionData, label);
 
                     let buttonStyle = 'bg-surface-dark/50 text-gray-300 hover:bg-surface-dark';
                     if (isAnswered) {
@@ -46,12 +46,11 @@ const QuestionContent = ({
                     return (
                         <button
                             key={label}
-                            onClick={() => handleAnswerSelect(text)}
+                            onClick={() => handleAnswerSelect({ letter: label, text })}
                             disabled={isAnswered}
                             className={`w-full p-3 text-left rounded ${buttonStyle} ${isAnswered && !isSelected ? 'opacity-50' : ''}`}
                         >
-                            <span className="font-semibold mr-2">{label}.</span>
-                            {text}
+                            <span className="font-medium">{label}:</span> {text}
                         </button>
                     );
                 })}

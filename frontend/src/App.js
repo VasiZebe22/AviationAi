@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import './styles/global.css';
 import './styles/utilities.css';
+import './styles/markdown.css';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";

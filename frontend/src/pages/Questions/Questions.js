@@ -121,17 +121,20 @@ const Questions = () => {
         return { text };
     }, []);
 
-    // Helper function to get question options (supports both old and new format)
+    // Get question options in a consistent format
     const getQuestionOptions = useCallback((question) => {
-        let options;
+        if (!question) return [];
+        
+        let options = [];
+        
+        // Handle current format where options is a map of letters to texts
         if (question.options && typeof question.options === 'object') {
-            // New format: options is a map
-            options = Object.entries(question.options).map(([key, value]) => ({
-                label: key,
-                text: value
+            options = Object.entries(question.options).map(([letter, text]) => ({
+                label: letter,
+                text: text
             }));
         } else {
-            // Old format: array of options with correct_answer first
+            // Fallback for old format (array of options)
             options = (question.options || [question.correct_answer, ...(question.incorrect_answers || [])]).map((option, index) => ({
                 label: String.fromCharCode(65 + index), // A, B, C, D
                 text: option
@@ -142,18 +145,40 @@ const Questions = () => {
         return options.sort((a, b) => a.label.localeCompare(b.label));
     }, []);
 
-    // Helper function to check if answer is correct (supports both formats)
-    const isAnswerCorrect = useCallback((question, selectedOption) => {
-        if (typeof question.options === 'object') {
-            // Find the label (A, B, C, D) for the selected option text
-            const selectedLabel = Object.entries(question.options)
-                .find(([_, value]) => value === selectedOption)?.[0];
-            // Compare the label with the correct_answer
-            return selectedLabel === question.correct_answer;
-        }
-        // Old format
-        return selectedOption === question.correct_answer;
+    // Check if answer is correct
+    const isAnswerCorrect = useCallback((question, selectedAnswer) => {
+        if (!question) return false;
+        return selectedAnswer === question.correct_answer;
     }, []);
+
+    // Handle answer selection
+    const handleAnswerSelect = useCallback((selectedAnswer) => {
+        if (!currentQuestionData) return;
+
+        const isCorrect = isAnswerCorrect(currentQuestionData, selectedAnswer.letter);
+
+        // Store only the letter in answeredQuestions
+        setAnsweredQuestions(prev => ({
+            ...prev,
+            [currentQuestionData.id]: selectedAnswer.letter
+        }));
+        
+        setCorrectAnswers(prev => ({
+            ...prev,
+            [currentQuestionData.id]: isCorrect
+        }));
+
+        // Update the question status in the database
+        questionService.updateProgress(currentQuestionData.id, isCorrect)
+            .catch(error => {
+                if (error.message === 'User not authenticated') {
+                    navigate('/login');
+                } else {
+                    console.error('Error updating progress:', error);
+                    // Still show the answer result even if saving fails
+                }
+            });
+    }, [currentQuestionData, answeredQuestions, navigate]);
 
     // Image error handler
     const handleImageError = useCallback((e) => {
@@ -240,33 +265,6 @@ const Questions = () => {
         fetchQuestions();
     }, [fetchQuestions]);
 
-    const handleAnswerSelect = useCallback((selectedOption) => {
-        if (answeredQuestions[currentQuestionData.id]) {
-            return; // Don't allow changing answer if already answered
-        }
-
-        const isCorrect = isAnswerCorrect(currentQuestionData, selectedOption);
-        setAnsweredQuestions(prev => ({
-            ...prev,
-            [currentQuestionData.id]: selectedOption
-        }));
-        setCorrectAnswers(prev => ({
-            ...prev,
-            [currentQuestionData.id]: isCorrect
-        }));
-
-        // Update the question status in the database
-        questionService.updateProgress(currentQuestionData.id, isCorrect)
-            .catch(error => {
-                if (error.message === 'User not authenticated') {
-                    navigate('/login');
-                } else {
-                    console.error('Error updating progress:', error);
-                    // Still show the answer result even if saving fails
-                }
-            });
-    }, [currentQuestionData, answeredQuestions, navigate]);
-
     const handleFlag = useCallback((color) => {
         if (!currentQuestionData) return;
 
@@ -309,12 +307,33 @@ const Questions = () => {
             await questionService.updateProgress(currentQuestionData.id,
                 answeredQuestions[currentQuestionData.id] === currentQuestionData.correct_answer
             );
+
+            // Only include questions that were actually answered, storing only the option letters
+            const questionResults = questions
+                .filter(question => answeredQuestions[question.id] !== undefined)
+                .map(question => {
+                    // Get just the option letter from the answer
+                    const userAnswerMatch = answeredQuestions[question.id].match(/^([A-D]):/);
+                    const userAnswer = userAnswerMatch ? userAnswerMatch[1] : answeredQuestions[question.id];
+                    
+                    return {
+                        questionId: question.id,
+                        userAnswer: userAnswer, // Just 'A', 'B', 'C', or 'D'
+                        isCorrect: correctAnswers[question.id] || false
+                    };
+                });
+
+            // Calculate score based on answered questions only
+            const answeredTotal = questionResults.length;
+            const correctTotal = questionResults.filter(q => q.isCorrect).length;
+
             navigate('/results', {
                 state: {
                     categoryId,
-                    score: Object.values(correctAnswers).filter(Boolean).length,
-                    total: questions.length,
-                    time: timer
+                    score: correctTotal,
+                    total: answeredTotal,
+                    time: timer,
+                    questionResults: questionResults
                 }
             });
         } catch (err) {
@@ -328,11 +347,23 @@ const Questions = () => {
         currentQuestion,
         questions,
         setCurrentQuestion,
-        activeTab,
-        setActiveTab,
-        handleFlag,
         handleAnswerSelect,
-        getQuestionOptions
+        answeredQuestions,
+        currentQuestionData,
+        handleKeyboardSelect: (number) => {
+            if (!currentQuestionData || answeredQuestions[currentQuestionData.id]) return;
+            
+            // Convert number (1-4) to letter (A-D)
+            const letterMap = { 1: 'A', 2: 'B', 3: 'C', 4: 'D' };
+            const letter = letterMap[number];
+            
+            if (letter && currentQuestionData.options[letter]) {
+                handleAnswerSelect({
+                    letter,
+                    text: currentQuestionData.options[letter]
+                });
+            }
+        }
     });
 
     // Navigation handlers

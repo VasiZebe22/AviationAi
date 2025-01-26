@@ -1,11 +1,22 @@
 import { db, auth } from './firebase';
-import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc, orderBy, deleteDoc, addDoc } from 'firebase/firestore';
 
 const questionService = {
+    // Helper method to get current user
+    getCurrentUser() {
+        const user = auth.currentUser;
+        return user ? {
+            uid: user.uid,
+            email: user.email,
+            isAnonymous: user.isAnonymous,
+            emailVerified: user.emailVerified
+        } : null;
+    },
+
     // Get questions by category
     async getQuestionsByCategory(categoryCode, filters = {}) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -79,7 +90,12 @@ const questionService = {
 
             return questions;
         } catch (error) {
-            console.error('Error fetching questions:', error);
+            console.error('Error fetching questions:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             if (error.message?.includes('index')) {
                 throw new Error('Database configuration in progress. Please try again in a few minutes.');
             }
@@ -90,7 +106,7 @@ const questionService = {
     // Get questions by subcategory
     async getQuestionsBySubcategory(subcategoryCode) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -114,7 +130,12 @@ const questionService = {
 
             return questions;
         } catch (error) {
-            console.error('Error fetching questions by subcategory:', error);
+            console.error('Error fetching questions by subcategory:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -122,6 +143,11 @@ const questionService = {
     // Get a single question
     getQuestion: async (questionId) => {
         try {
+            const user = this.getCurrentUser();
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
             const questionRef = doc(db, 'questions', questionId);
             const docSnap = await getDoc(questionRef);
             if (docSnap.exists()) {
@@ -130,7 +156,26 @@ const questionService = {
                 throw new Error('Question not found');
             }
         } catch (error) {
-            console.error('Error fetching question:', error);
+            console.error('Error fetching question:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            throw error;
+        }
+    },
+
+    // Get question by ID
+    async getQuestion(questionId) {
+        try {
+            const questionDoc = await getDoc(doc(db, 'questions', questionId));
+            if (!questionDoc.exists()) {
+                throw new Error(`Question ${questionId} not found`);
+            }
+            return questionDoc.data();
+        } catch (error) {
+            console.error('Error getting question:', error);
             throw error;
         }
     },
@@ -235,7 +280,7 @@ const questionService = {
     // Get skill scores based on recent attempts
     async getSkillScores() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -272,7 +317,12 @@ const questionService = {
 
             return skillScores;
         } catch (error) {
-            console.error('Error getting skill scores:', error);
+            console.error('Error getting skill scores:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -280,7 +330,7 @@ const questionService = {
     // Update progress
     async updateProgress(questionId, isCorrect, answerTime = 0) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -331,7 +381,12 @@ const questionService = {
             // Update or create progress document
             await setDoc(progressRef, progressData);
         } catch (error) {
-            console.error('Error updating progress:', error);
+            console.error('Error updating progress:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -339,7 +394,7 @@ const questionService = {
     // Update flag
     async updateFlag(questionId, flag) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -365,14 +420,19 @@ const questionService = {
                 });
             }
         } catch (error) {
-            console.error('Error updating flag:', error);
+            console.error('Error updating flag:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
 
     // Save note
     async saveNote(questionId, note) {
-        const user = auth.currentUser;
+        const user = this.getCurrentUser();
         if (!user) {
             throw new Error('User not authenticated');
         }
@@ -401,7 +461,12 @@ const questionService = {
                 });
             }
         } catch (error) {
-            console.error('Error saving note:', error);
+            console.error('Error saving note:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -409,10 +474,42 @@ const questionService = {
     // Get basic stats (correct/incorrect counts)
     async getBasicStats() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
+
+            // Initialize stats object with default values
+            const stats = {
+                totalQuestions: 0,
+                totalAttempted: 0,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                byCategory: {}
+            };
+
+            // Get all questions first to know total available
+            const questionsSnapshot = await getDocs(collection(db, 'questions'));
+            
+            // Initialize stats.byCategory with default values for each category
+            questionsSnapshot.forEach(doc => {
+                const data = doc.data();
+                const categoryCode = data.category?.code;
+                
+                if (categoryCode && !stats.byCategory[categoryCode]) {
+                    stats.byCategory[categoryCode] = {
+                        name: data.category.name,
+                        total: 0,
+                        attempted: 0,
+                        correct: 0
+                    };
+                }
+                
+                if (categoryCode) {
+                    stats.byCategory[categoryCode].total++;
+                    stats.totalQuestions++;
+                }
+            });
 
             // Only get latest attempt for each question
             const progressSnapshot = await getDocs(
@@ -432,51 +529,20 @@ const questionService = {
                 }
             });
 
-            // Get all questions first to know total available
-            const questionsSnapshot = await getDocs(collection(db, 'questions'));
-            const questionsByCategory = new Map();
-            
-            // Group questions by category
-            questionsSnapshot.forEach(doc => {
-                const data = doc.data();
-                const categoryCode = data.category.code;
-                if (!questionsByCategory.has(categoryCode)) {
-                    questionsByCategory.set(categoryCode, {
-                        name: data.category.name,
-                        total: 0,
-                        attempted: 0,
-                        correct: 0
-                    });
-                }
-                questionsByCategory.get(categoryCode).total++;
-            });
-
-            // Calculate stats
-            const stats = {
-                totalQuestions: questionsSnapshot.size,
-                totalAttempted: latestAttempts.size,
-                correctAnswers: 0,
-                incorrectAnswers: 0,
-                byCategory: {}
-            };
-
-            // Process attempts
+            // Process attempts and update stats
             latestAttempts.forEach(data => {
-                const categoryCode = data.category.code;
-                if (!stats.byCategory[categoryCode]) {
-                    const categoryData = questionsByCategory.get(categoryCode) || {
-                        name: data.category.name,
-                        total: 0,
-                        attempted: 0,
-                        correct: 0
-                    };
-                    stats.byCategory[categoryCode] = categoryData;
-                }
-                
+                const question = questionsSnapshot.docs.find(doc => doc.id === data.questionId);
+                if (!question) return;
+
+                const categoryCode = question.data().category?.code;
+                if (!categoryCode || !stats.byCategory[categoryCode]) return;
+
+                stats.totalAttempted++;
                 stats.byCategory[categoryCode].attempted++;
+                
                 if (data.isCorrect) {
-                    stats.byCategory[categoryCode].correct++;
                     stats.correctAnswers++;
+                    stats.byCategory[categoryCode].correct++;
                 } else {
                     stats.incorrectAnswers++;
                 }
@@ -484,15 +550,27 @@ const questionService = {
 
             return stats;
         } catch (error) {
-            console.error('Error getting basic stats:', error);
-            throw error;
+            console.error('Error getting basic stats:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            // Return default stats object instead of throwing
+            return {
+                totalQuestions: 0,
+                totalAttempted: 0,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                byCategory: {}
+            };
         }
     },
 
     // Get monthly progress data (last 6 months)
     async getMonthlyProgress() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -588,7 +666,12 @@ const questionService = {
                 categories: Array.from(categories.values())
             };
         } catch (error) {
-            console.error('Error getting monthly progress:', error);
+            console.error('Error getting monthly progress:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -596,7 +679,7 @@ const questionService = {
     // Get study time for the last 7 days
     async getRecentStudyTime() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -628,7 +711,12 @@ const questionService = {
                 data: dailyTime.map(time => Math.round(time * 10) / 10) // Round to 1 decimal
             };
         } catch (error) {
-            console.error('Error getting study time:', error);
+            console.error('Error getting study time:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -638,9 +726,9 @@ const questionService = {
         try {
             const [basicStats, skillScores, monthlyProgress, studyTime] = await Promise.all([
                 this.getBasicStats(),
-                this.getSkillScores(),
-                this.getMonthlyProgress(),
-                this.getRecentStudyTime()
+                this.getSkillScores().catch(() => ({})),
+                this.getMonthlyProgress().catch(() => ({})),
+                this.getRecentStudyTime().catch(() => ({ totalTime: 0, dailyTime: {} }))
             ]);
 
             // Merge skill scores into category stats
@@ -651,7 +739,7 @@ const questionService = {
             });
 
             // Ensure all categories have a skill score (even if 0)
-            Object.keys(basicStats.byCategory).forEach(categoryCode => {
+            Object.keys(basicStats.byCategory || {}).forEach(categoryCode => {
                 if (basicStats.byCategory[categoryCode].skillScore === undefined) {
                     basicStats.byCategory[categoryCode].skillScore = 0;
                 }
@@ -659,19 +747,33 @@ const questionService = {
 
             return {
                 ...basicStats,
-                monthlyProgress,
-                studyTime
+                monthlyProgress: monthlyProgress || {},
+                studyTime: studyTime || { totalTime: 0, dailyTime: {} }
             };
         } catch (error) {
-            console.error('Error getting user stats:', error);
-            throw error;
+            console.error('Error getting dashboard stats:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            // Return default stats object
+            return {
+                totalQuestions: 0,
+                totalAttempted: 0,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                byCategory: {},
+                monthlyProgress: {},
+                studyTime: { totalTime: 0, dailyTime: {} }
+            };
         }
     },
 
     // Get flags for questions
     async getFlags(questionIds) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -692,7 +794,12 @@ const questionService = {
 
             return flags;
         } catch (error) {
-            console.error('Error fetching flags:', error);
+            console.error('Error fetching flags:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -700,7 +807,7 @@ const questionService = {
     // Get notes for questions
     async getNotes(questionIds) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -721,7 +828,12 @@ const questionService = {
 
             return notes;
         } catch (error) {
-            console.error('Error fetching notes:', error);
+            console.error('Error fetching notes:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -729,7 +841,7 @@ const questionService = {
     // Delete saved test
     async deleteSavedTest(testId) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -749,7 +861,12 @@ const questionService = {
             await deleteDoc(testRef);
             return true;
         } catch (error) {
-            console.error('Error deleting saved test:', error);
+            console.error('Error deleting saved test:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -757,7 +874,7 @@ const questionService = {
     // Reset study time stats for the last 7 days
     async resetStudyTime() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -783,7 +900,12 @@ const questionService = {
             await batch.commit();
             return true;
         } catch (error) {
-            console.error('Error resetting study time:', error);
+            console.error('Error resetting study time:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -791,7 +913,7 @@ const questionService = {
     // Reset all user progress and associated data
     async resetAllProgress() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -829,7 +951,12 @@ const questionService = {
             await Promise.all(batches);
             return true;
         } catch (error) {
-            console.error('Error resetting progress:', error);
+            console.error('Error resetting progress:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -837,11 +964,13 @@ const questionService = {
     // Save current test state
     async saveTestState(testData) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
 
+            console.log('saveTestState called with data:', testData);
+            
             // Get total questions for this category/subcategories combination
             let totalQuestions = 0;
             const questionsSnapshot = await getDocs(
@@ -888,7 +1017,12 @@ const questionService = {
 
             return savedTestRef.id;
         } catch (error) {
-            console.error('Error saving test state:', error);
+            console.error('Error saving test state:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -896,7 +1030,7 @@ const questionService = {
     // Get saved test state
     async getSavedTest(testId) {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -915,7 +1049,12 @@ const questionService = {
 
             return testData;
         } catch (error) {
-            console.error('Error loading test state:', error);
+            console.error('Error loading test state:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
     },
@@ -923,7 +1062,7 @@ const questionService = {
     // Get all saved tests for current user
     async getSavedTests() {
         try {
-            const user = auth.currentUser;
+            const user = this.getCurrentUser();
             if (!user) {
                 throw new Error('User not authenticated');
             }
@@ -941,10 +1080,99 @@ const questionService = {
                 ...doc.data()
             }));
         } catch (error) {
-            console.error('Error fetching saved tests:', error);
+            console.error('Error fetching saved tests:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
             throw error;
         }
-    }
+    },
+
+    // Save test results
+    async saveTestResults(testData) {
+        try {
+            console.log('saveTestResults called with data:', testData);
+            
+            const user = auth.currentUser;
+            console.log('Current user state:', user ? {
+                uid: user.uid,
+                email: user.email,
+                isAnonymous: user.isAnonymous
+            } : 'No user');
+
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const testResultsRef = collection(db, 'testResults');
+            console.log('Collection reference created');
+
+            const testResult = {
+                userId: user.uid,
+                categoryId: testData.categoryId,
+                score: testData.score,
+                totalQuestions: testData.total,
+                timeTaken: testData.time,
+                completedAt: new Date(),
+                percentage: Math.round((testData.score / testData.total) * 100),
+                isPassing: Math.round((testData.score / testData.total) * 100) >= 75,
+                questionResults: testData.questionResults.map(({ questionId, isCorrect, userAnswer }) => ({
+                    questionId,
+                    isCorrect,
+                    userAnswer
+                }))
+            };
+            console.log('Test result object prepared:', testResult);
+
+            // Use addDoc instead of setDoc to automatically generate a unique ID
+            console.log('Attempting to add document to Firestore...');
+            const docRef = await addDoc(testResultsRef, testResult);
+            console.log('Document successfully added with ID:', docRef.id);
+
+            return { id: docRef.id, ...testResult };
+        } catch (error) {
+            console.error('Error in saveTestResults:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            throw error;
+        }
+    },
+
+    // Get user's test history
+    async getTestHistory() {
+        try {
+            const user = this.getCurrentUser();
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            const testResultsRef = collection(db, 'testResults');
+            const q = query(
+                testResultsRef,
+                where('userId', '==', user.uid),
+                orderBy('completedAt', 'desc')
+            );
+
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error('Error fetching test history:', {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                stack: error.stack
+            });
+            throw error;
+        }
+    },
 };
 
 export default questionService;
