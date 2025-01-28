@@ -140,40 +140,18 @@ const questionService = {
         }
     },
 
-    // Get a single question
-    getQuestion: async (questionId) => {
-        try {
-            const user = this.getCurrentUser();
-            if (!user) {
-                throw new Error('User not authenticated');
-            }
-
-            const questionRef = doc(db, 'questions', questionId);
-            const docSnap = await getDoc(questionRef);
-            if (docSnap.exists()) {
-                return { id: docSnap.id, ...docSnap.data() };
-            } else {
-                throw new Error('Question not found');
-            }
-        } catch (error) {
-            console.error('Error fetching question:', {
-                name: error.name,
-                message: error.message,
-                code: error.code,
-                stack: error.stack
-            });
-            throw error;
-        }
-    },
-
-    // Get question by ID
+    /**
+     * Get a single question by ID with complete details
+     * @param {string} questionId - The ID of the question to retrieve
+     * @returns {Promise<Object>} Question data with ID and all fields
+     */
     async getQuestion(questionId) {
         try {
             const questionDoc = await getDoc(doc(db, 'questions', questionId));
             if (!questionDoc.exists()) {
                 throw new Error(`Question ${questionId} not found`);
             }
-            return questionDoc.data();
+            return { id: questionDoc.id, ...questionDoc.data() };
         } catch (error) {
             console.error('Error getting question:', error);
             throw error;
@@ -964,12 +942,11 @@ const questionService = {
     // Save current test state
     async saveTestState(testData) {
         try {
-            const user = this.getCurrentUser();
+            const user = auth.currentUser;
+
             if (!user) {
                 throw new Error('User not authenticated');
             }
-
-            console.log('saveTestState called with data:', testData);
             
             // Get total questions for this category/subcategories combination
             let totalQuestions = 0;
@@ -1090,24 +1067,18 @@ const questionService = {
         }
     },
 
-    // Save test results
+    /**
+     * Save test results to Firestore
+     * @param {Object} testData - Test data containing score, questions, and timing information
+     * @returns {Promise<Object>} Saved test result with generated ID
+     */
     async saveTestResults(testData) {
         try {
-            console.log('saveTestResults called with data:', testData);
-            
             const user = auth.currentUser;
-            console.log('Current user state:', user ? {
-                uid: user.uid,
-                email: user.email,
-                isAnonymous: user.isAnonymous
-            } : 'No user');
 
             if (!user) {
                 throw new Error('User not authenticated');
             }
-
-            const testResultsRef = collection(db, 'testResults');
-            console.log('Collection reference created');
 
             const testResult = {
                 userId: user.uid,
@@ -1124,21 +1095,11 @@ const questionService = {
                     userAnswer
                 }))
             };
-            console.log('Test result object prepared:', testResult);
 
-            // Use addDoc instead of setDoc to automatically generate a unique ID
-            console.log('Attempting to add document to Firestore...');
-            const docRef = await addDoc(testResultsRef, testResult);
-            console.log('Document successfully added with ID:', docRef.id);
-
+            const docRef = await addDoc(collection(db, 'testResults'), testResult);
             return { id: docRef.id, ...testResult };
         } catch (error) {
-            console.error('Error in saveTestResults:', {
-                name: error.name,
-                message: error.message,
-                code: error.code,
-                stack: error.stack
-            });
+            console.error('Error saving test results:', error);
             throw error;
         }
     },
