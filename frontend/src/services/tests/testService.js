@@ -1,7 +1,7 @@
-import { query, getDocs, getDoc, setDoc, deleteDoc, addDoc, where, orderBy } from 'firebase/firestore';
+import { query, getDocs, getDoc, setDoc, deleteDoc, addDoc, where, orderBy, doc } from 'firebase/firestore';
 import { getCurrentUser, handleFirebaseError, db_operations } from '../utils/firebaseUtils';
 
-const testService = {
+export const testService = {
     // Save current test state
     async saveTestState(testData) {
         try {
@@ -192,5 +192,3 @@ const testService = {
         }
     }
 };
-
-export default testService;

@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import questionService from '../../services/questionService';
+import { questionService } from '../../services/questions/questionService';
+import { progressService } from '../../services/questions/progressService';
+import { userDataService } from '../../services/questions/userDataService';
 import { categories } from '../Categories/Categories';
 
 // Components
@@ -169,7 +171,7 @@ const Questions = () => {
         }));
 
         // Update the question status in the database
-        questionService.updateProgress(currentQuestionData.id, isCorrect)
+        progressService.updateProgress(currentQuestionData.id, isCorrect)
             .catch(error => {
                 if (error.message === 'User not authenticated') {
                     navigate('/login');
@@ -221,8 +223,8 @@ const Questions = () => {
                     
                     try {
                         const [fetchedFlags, fetchedNotes] = await Promise.all([
-                            questionService.getFlags(visibleQuestionIds),
-                            questionService.getNotes(visibleQuestionIds)
+                            userDataService.getFlags(visibleQuestionIds),
+                            userDataService.getNotes(visibleQuestionIds)
                         ]);
                         
                         setFlags(prev => ({ ...prev, ...fetchedFlags }));
@@ -268,7 +270,7 @@ const Questions = () => {
     const handleFlag = useCallback((color) => {
         if (!currentQuestionData) return;
 
-        questionService.updateFlag(currentQuestionData.id, color)
+        userDataService.updateFlag(currentQuestionData.id, color)
             .catch(error => {
                 if (error.message === 'User not authenticated') {
                     navigate('/login');
@@ -286,7 +288,7 @@ const Questions = () => {
     const handleSaveNote = useCallback((note) => {
         if (!currentQuestionData) return;
 
-        questionService.saveNote(currentQuestionData.id, note)
+        userDataService.saveNote(currentQuestionData.id, note)
             .catch(error => {
                 if (error.message === 'User not authenticated') {
                     navigate('/login');
@@ -304,7 +306,7 @@ const Questions = () => {
     const handleFinishTest = useCallback(async () => {
         if (!currentQuestionData) return;
         try {
-            await questionService.updateProgress(currentQuestionData.id,
+            await progressService.updateProgress(currentQuestionData.id,
                 answeredQuestions[currentQuestionData.id] === currentQuestionData.correct_answer
             );
 

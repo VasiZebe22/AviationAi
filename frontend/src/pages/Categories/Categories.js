@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import questionService from '../../services/questionService';
+import { analyticsService } from '../../services/analytics/analyticsService';
 import CategoryCard from '../../components/CategoryCard';
 import SavedTestsModal from '../../components/SavedTests/SavedTestsModal';
 import Navbar from '../../components/Navbar/Navbar';
@@ -259,7 +259,7 @@ const Categories = () => {
   const fetchUserProgress = async () => {
     try {
       setLoading(true);
-      const stats = await questionService.getBasicStats();
+      const stats = await analyticsService.getBasicStats();
       const progressByCategory = {};
       Object.entries(stats.byCategory).forEach(([code, data]) => {
         progressByCategory[code] = {

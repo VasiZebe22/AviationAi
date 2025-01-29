@@ -1,7 +1,7 @@
 import { collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { getCurrentUser, handleFirebaseError, db_operations } from '../utils/firebaseUtils';
 
-const questionService = {
+export const questionService = {
     // Get questions by category
     async getQuestionsByCategory(categoryCode, filters = {}) {
         try {
@@ -129,5 +129,3 @@ const questionService = {
         }
     }
 };
-
-export default questionService;

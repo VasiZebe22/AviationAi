@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import questionService from '../../services/questionService';
+import { progressService } from '../../services/questions/progressService';
+import { analyticsService } from '../../services/analytics/analyticsService';
 
 const DashboardCard = ({ title, children, className = '', dashboard = null }) => {
   const handleResetStudyTime = async () => {
@@ -10,10 +11,10 @@ const DashboardCard = ({ title, children, className = '', dashboard = null }) =>
     if (window.confirm('Are you sure you want to reset your study time stats? This cannot be undone.')) {
       try {
         setIsLoading(true);
-        await questionService.resetStudyTime();
+        await analyticsService.resetStudyTime();
         showToast('success', 'Study time stats have been reset');
         // Refresh all dashboard data to ensure consistency
-        const stats = await questionService.getDashboardStats();
+        const stats = await analyticsService.getDashboardStats();
         setProgressData(prev => ({
           ...prev,
           studyTime: stats.studyTime
@@ -33,11 +34,11 @@ const DashboardCard = ({ title, children, className = '', dashboard = null }) =>
     if (window.confirm('Are you sure you want to reset all progress? This action cannot be undone and will delete all your progress data.')) {
       try {
         setIsLoading(true);
-        await questionService.resetAllProgress();
+        await progressService.resetAllProgress();
         showToast('success', 'All progress has been reset');
         
         // Refresh all dashboard data
-        const stats = await questionService.getDashboardStats();
+        const stats = await analyticsService.getDashboardStats();
         setProgressData({
           monthlyProgress: stats.monthlyProgress,
           performance: {

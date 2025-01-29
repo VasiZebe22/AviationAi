@@ -1,7 +1,8 @@
-import { query, getDocs, getDoc, setDoc, where, orderBy } from 'firebase/firestore';
+import { query, getDocs, getDoc, setDoc, where, orderBy, getFirestore, writeBatch } from 'firebase/firestore';
+import { db } from '../firebase';
 import { getCurrentUser, handleFirebaseError, db_operations, dateUtils } from '../utils/firebaseUtils';
 
-const progressService = {
+export const progressService = {
     // Update progress
     async updateProgress(questionId, isCorrect, answerTime = 0) {
         try {
@@ -214,7 +215,7 @@ const progressService = {
             const batches = [];
             
             for (let i = 0; i < progressSnapshot.docs.length; i += batchSize) {
-                const batch = db.batch();
+                const batch = writeBatch(db);
                 const chunk = progressSnapshot.docs.slice(i, i + batchSize);
                 
                 chunk.forEach(doc => {
@@ -231,5 +232,3 @@ const progressService = {
         }
     }
 };
-
-export default progressService;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import questionService from '../../services/questionService';
+import { testService } from '../../services/tests/testService';
 import { categories } from '../../pages/Categories/Categories';
 
 /**
@@ -21,7 +21,7 @@ const RecentSavedTests = () => {
         const fetchRecentTests = async () => {
             try {
                 setLoading(true);
-                const tests = await questionService.getSavedTests();
+                const tests = await testService.getSavedTests();
                 
                 // Group tests by categoryId and keep only the most recent one
                 const groupedTests = tests.reduce((acc, test) => {

@@ -1,9 +1,9 @@
 // Import all services
-import questionService from './questions/questionService';
-import progressService from './questions/progressService';
-import userDataService from './questions/userDataService';
-import testService from './tests/testService';
-import analyticsService from './analytics/analyticsService';
+import { questionService } from './questions/questionService';
+import { progressService } from './questions/progressService';
+import { userDataService } from './questions/userDataService';
+import { testService } from './tests/testService';
+import { analyticsService } from './analytics/analyticsService';
 
 // Export individual services
 export {

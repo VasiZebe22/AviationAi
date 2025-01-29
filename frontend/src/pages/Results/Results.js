@@ -7,7 +7,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
-import questionService from '../../services/questionService';
+import { questionService } from '../../services/questions/questionService';
+import { testService } from '../../services/tests/testService';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -100,7 +101,7 @@ const Results = () => {
             if (resultsSaved.current) return;
             
             try {
-                await questionService.saveTestResults({
+                await testService.saveTestResults({
                     categoryId,
                     score,
                     total,

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import questionService from '../../../services/questionService';
+import { testService } from '../../../services/tests/testService';
 
 const useSaveTest = (testData, onError) => {
     const [saveStatus, setSaveStatus] = useState('');
@@ -7,7 +7,7 @@ const useSaveTest = (testData, onError) => {
     const handleSaveTest = useCallback(async () => {
         try {
             setSaveStatus('saving');
-            await questionService.saveTestState(testData);
+            await testService.saveTestState(testData);
             setSaveStatus('saved');
             
             // Reset status after 3 seconds

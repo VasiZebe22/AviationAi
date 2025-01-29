@@ -1,7 +1,8 @@
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, getFirestore, writeBatch } from 'firebase/firestore';
+import { db } from '../firebase';
 import { getCurrentUser, handleFirebaseError, db_operations, dateUtils } from '../utils/firebaseUtils';
 
-const analyticsService = {
+export const analyticsService = {
     // Get basic stats (correct/incorrect counts)
     async getBasicStats() {
         try {
@@ -253,7 +254,7 @@ const analyticsService = {
             );
 
             // Reset answerTime to 0 for each doc
-            const batch = db.batch();
+            const batch = writeBatch(db);
             progressSnapshot.docs.forEach(doc => {
                 batch.update(doc.ref, { answerTime: 0 });
             });
@@ -263,7 +264,34 @@ const analyticsService = {
         } catch (error) {
             handleFirebaseError(error, 'resetting study time');
         }
+    },
+
+    // Get dashboard stats (combines all stat functions)
+    async getDashboardStats() {
+        try {
+            const [basicStats, monthlyProgress, studyTime] = await Promise.all([
+                this.getBasicStats(),
+                this.getMonthlyProgress(),
+                this.getRecentStudyTime()
+            ]);
+
+            return {
+                ...basicStats,
+                monthlyProgress: monthlyProgress || {},
+                studyTime: studyTime || { totalTime: 0, dailyTime: {} }
+            };
+        } catch (error) {
+            handleFirebaseError(error, 'getting dashboard stats');
+            // Return default stats object
+            return {
+                totalQuestions: 0,
+                totalAttempted: 0,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                byCategory: {},
+                monthlyProgress: {},
+                studyTime: { totalTime: 0, dailyTime: {} }
+            };
+        }
     }
 };
-
-export default analyticsService;

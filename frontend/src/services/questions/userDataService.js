@@ -1,7 +1,7 @@
 import { getDoc, setDoc } from 'firebase/firestore';
 import { getCurrentUser, handleFirebaseError, db_operations } from '../utils/firebaseUtils';
 
-const userDataService = {
+export const userDataService = {
     // Update flag
     async updateFlag(questionId, flag) {
         try {
@@ -111,5 +111,3 @@ const userDataService = {
         }
     }
 };
-
-export default userDataService;

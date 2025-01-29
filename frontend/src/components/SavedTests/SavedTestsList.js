@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import questionService from '../../services/questionService';
+import { testService } from '../../services/tests/testService';
 import { categories } from '../../pages/Categories/Categories';
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
 
@@ -15,7 +15,7 @@ const SavedTestsList = ({ onTestContinue, className = '' }) => {
         const fetchSavedTests = async () => {
             try {
                 setLoading(true);
-                const tests = await questionService.getSavedTests();
+                const tests = await testService.getSavedTests();
                 
                 // Sort by most recently saved
                 const sortedTests = tests.sort((a, b) => 
@@ -94,7 +94,7 @@ const SavedTestsList = ({ onTestContinue, className = '' }) => {
 
     const handleDelete = async (test) => {
         try {
-            await questionService.deleteSavedTest(test.id);
+            await testService.deleteSavedTest(test.id);
             setSavedTests(prev => prev.filter(t => t.id !== test.id));
         } catch (err) {
             console.error('Error deleting test:', err);
