@@ -56,7 +56,8 @@ export const testService = {
 
             return savedTestRef.id;
         } catch (error) {
-            handleFirebaseError(error, 'saving test state');
+            const handledError = handleFirebaseError(error, 'saving test state');
+            throw handledError;
         }
     },
 
@@ -80,7 +81,8 @@ export const testService = {
 
             return testData;
         } catch (error) {
-            handleFirebaseError(error, 'loading test state');
+            const handledError = handleFirebaseError(error, 'loading test state');
+            throw handledError;
         }
     },
 
@@ -100,12 +102,28 @@ export const testService = {
                 )
             );
 
-            return savedTestsSnapshot.docs.map(doc => ({
+            const tests = savedTestsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+
+            // Group tests by categoryId and keep only the most recent one
+            const groupedTests = tests.reduce((acc, test) => {
+                if (!acc[test.categoryId] || 
+                    acc[test.categoryId].savedAt.toDate() < test.savedAt.toDate()) {
+                    acc[test.categoryId] = test;
+                }
+                return acc;
+            }, {});
+
+            // Convert back to array and sort by date
+            const sortedTests = Object.values(groupedTests)
+                .sort((a, b) => b.savedAt.toDate() - a.savedAt.toDate());
+
+            return sortedTests;
         } catch (error) {
-            handleFirebaseError(error, 'fetching saved tests');
+            const handledError = handleFirebaseError(error, 'fetching saved tests');
+            throw handledError;
         }
     },
 
@@ -132,7 +150,8 @@ export const testService = {
             await deleteDoc(testRef);
             return true;
         } catch (error) {
-            handleFirebaseError(error, 'deleting saved test');
+            const handledError = handleFirebaseError(error, 'deleting saved test');
+            throw handledError;
         }
     },
 
@@ -163,7 +182,8 @@ export const testService = {
             const docRef = await addDoc(db_operations.collections.testResults(), testResult);
             return { id: docRef.id, ...testResult };
         } catch (error) {
-            handleFirebaseError(error, 'saving test results');
+            const handledError = handleFirebaseError(error, 'saving test results');
+            throw handledError;
         }
     },
 
@@ -188,7 +208,8 @@ export const testService = {
                 ...doc.data()
             }));
         } catch (error) {
-            handleFirebaseError(error, 'fetching test history');
+            const handledError = handleFirebaseError(error, 'fetching test history');
+            throw handledError;
         }
     }
 };

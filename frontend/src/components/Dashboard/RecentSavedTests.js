@@ -22,22 +22,8 @@ const RecentSavedTests = () => {
             try {
                 setLoading(true);
                 const tests = await testService.getSavedTests();
-                
-                // Group tests by categoryId and keep only the most recent one
-                const groupedTests = tests.reduce((acc, test) => {
-                    if (!acc[test.categoryId] || 
-                        acc[test.categoryId].savedAt.toDate() < test.savedAt.toDate()) {
-                        acc[test.categoryId] = test;
-                    }
-                    return acc;
-                }, {});
-
-                // Convert back to array, sort by date, and take top 3
-                const sortedTests = Object.values(groupedTests)
-                    .sort((a, b) => b.savedAt.toDate() - a.savedAt.toDate())
-                    .slice(0, 3);
-                
-                setRecentTests(sortedTests);
+                // Take top 3 tests (they're already grouped and sorted by the service)
+                setRecentTests(tests.slice(0, 3));
             } catch (err) {
                 console.error('Error fetching recent saved tests:', err);
             } finally {
