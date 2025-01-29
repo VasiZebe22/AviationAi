@@ -69,6 +69,26 @@ Shared utilities:
 
 ## Implementation Details
 
+### Export Pattern
+All services use named exports for better tree-shaking and module organization:
+```javascript
+// Service implementation
+export const serviceName = {
+    // service methods
+};
+
+// Usage
+import { serviceName } from '../services/path/serviceName';
+```
+
+### Firebase Integration
+Each service properly integrates with Firebase using:
+- Imported Firestore operations (collection, query, doc, etc.)
+- Shared Firebase utilities from firebaseUtils.js
+- Proper batch operations using writeBatch
+- Consistent error handling with default values
+- Common database operations through db_operations utility
+
 ### Function Distribution
 Each service maintains clear boundaries while working together:
 
@@ -149,6 +169,15 @@ When implementing these changes:
 2. Ensure backward compatibility
 3. Update imports gradually
 4. Test thoroughly after each change
+5. Firebase Integration:
+   - Update imports to use specific Firestore operations
+   - Use writeBatch instead of db.batch()
+   - Implement consistent error handling with default values
+   - Utilize shared db_operations utilities
+6. Export Pattern:
+   - Convert to named exports
+   - Update import statements in components
+   - Maintain backward compatibility through index.js
 
 ## Future Considerations
 
