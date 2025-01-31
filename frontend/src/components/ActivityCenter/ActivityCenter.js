@@ -364,9 +364,29 @@ const ActivityCenter = () => {
                                                                 <h3 className="font-medium text-white">
                                                                     {item.name}
                                                                 </h3>
-                                                                <span className={item.status === 'PASS' ? 'text-green-400' : 'text-red-400'}>
-                                                                    {item.successRate} - {item.status}
-                                                                </span>
+                                                                <div className="flex items-center space-x-3">
+                                                                    <div className={`
+                                                                        px-3 py-1 rounded-full font-medium text-sm
+                                                                        ${item.successRate >= 75 
+                                                                            ? 'bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 text-emerald-400' 
+                                                                            : 'bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400'}
+                                                                    `}>
+                                                                        {item.successRate}
+                                                                    </div>
+                                                                    <div className={`
+                                                                        px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider
+                                                                        flex items-center space-x-1
+                                                                        ${item.successRate >= 75
+                                                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                                            : 'bg-red-500/10 text-red-400 border border-red-500/20'}
+                                                                    `}>
+                                                                        <div className={`
+                                                                            w-1.5 h-1.5 rounded-full
+                                                                            ${item.successRate >= 75 ? 'bg-emerald-400' : 'bg-red-400'}
+                                                                        `}></div>
+                                                                        <span>{item.successRate >= 75 ? 'Pass' : 'Fail'}</span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             <div className="flex flex-col gap-1 mt-1">
                                                                 <div className="flex items-center justify-between">
