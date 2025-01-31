@@ -1,4 +1,17 @@
-import { query, getDocs, getDoc, setDoc, deleteDoc, addDoc, where, orderBy, doc } from 'firebase/firestore';
+import { 
+    collection, 
+    doc, 
+    getDoc, 
+    getDocs, 
+    addDoc, 
+    deleteDoc, 
+    setDoc,
+    query, 
+    where, 
+    orderBy 
+} from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { db } from '../../services/firebase';
 import { getCurrentUser, handleFirebaseError, db_operations } from '../utils/firebaseUtils';
 
 export const testService = {
@@ -127,31 +140,33 @@ export const testService = {
         }
     },
 
-    // Delete saved test
+    // Delete a saved test
     async deleteSavedTest(testId) {
         try {
-            const user = getCurrentUser();
-            if (!user) {
-                throw new Error('User not authenticated');
+            const { currentUser } = getAuth();
+            if (!currentUser) {
+                throw new Error('No user logged in');
             }
 
-            const testRef = db_operations.docs.savedTest(testId);
+            // Get the test document reference and verify ownership
+            const testRef = doc(db, 'saved_tests', testId);
             const testDoc = await getDoc(testRef);
-
+            
             if (!testDoc.exists()) {
-                throw new Error('Saved test not found');
+                throw new Error('Test not found');
             }
-
-            // Verify ownership
-            if (testDoc.data().userId !== user.uid) {
+            
+            // Verify the test belongs to the current user
+            if (testDoc.data().userId !== currentUser.uid) {
                 throw new Error('Unauthorized access to saved test');
             }
 
             await deleteDoc(testRef);
             return true;
         } catch (error) {
-            const handledError = handleFirebaseError(error, 'deleting saved test');
-            throw handledError;
+            console.error('Error deleting saved test:', error);
+            // Return false instead of throwing to handle the error gracefully
+            return false;
         }
     },
 

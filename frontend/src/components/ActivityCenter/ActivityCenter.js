@@ -171,9 +171,48 @@ const ActivityCenter = () => {
         });
     };
 
+    // Delete saved test handler
+    const handleDeleteTest = async (testId) => {
+        try {
+            const success = await testService.deleteSavedTest(testId);
+            if (success) {
+                // Update local state to remove the deleted test
+                setSavedTests(prev => prev.filter(test => test.id !== testId));
+                // Only refresh saved tests, not finished tests
+                try {
+                    const tests = await testService.getSavedTests();
+                    setSavedTests(tests);
+                } catch (err) {
+                    console.error('Error refreshing saved tests:', err);
+                }
+            } else {
+                setError('Failed to delete test. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error deleting test:', error);
+            setError('Failed to delete test. Please try again.');
+        }
+    };
+
+    const handleTestClick = (test) => {
+        navigate(`/questions/${test.categoryId}`, {
+            state: {
+                mode: test.mode,
+                filters: test.filters,
+                selectedSubcategories: test.selectedSubcategories,
+                savedTestId: test.id,
+                savedTestData: {
+                    currentQuestion: test.currentQuestion,
+                    timer: test.timer,
+                    answeredQuestions: test.answeredQuestions
+                }
+            }
+        });
+    };
+
     const activityCategories = [
         {
-            name: 'Tests & Quizzes',
+            name: 'Practice Tests & Exams',
             icon: BookOpenIcon,
             subcategories: ['Saved Tests', 'Finished Tests'],
             // Return different items based on which tab is selected
@@ -315,11 +354,12 @@ const ActivityCenter = () => {
                                         .map((item, itemIdx) => (
                                             <div 
                                                 key={itemIdx}
-                                                className="bg-surface-DEFAULT p-4 rounded-lg hover:bg-surface-lighter transition-colors duration-200 cursor-pointer"
+                                                className="bg-surface-DEFAULT p-4 rounded-lg relative group cursor-pointer hover:bg-surface-lighter transition-colors duration-200"
                                             >
                                                 {item.type === 'Saved Tests' ? (
                                                     // Original Saved Tests Layout
-                                                    <div className="flex justify-between items-start">
+                                                    <div className="flex justify-between items-start group">
+                                                        {/* Left side - Test information */}
                                                         <div className="flex-1">
                                                             <div className="flex items-center justify-between">
                                                                 <h3 className="font-medium text-white">
@@ -346,15 +386,45 @@ const ActivityCenter = () => {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleContinueTest(item.originalTest);
-                                                            }}
-                                                            className="ml-4 px-3 py-1 text-xs text-white bg-accent-lilac hover:bg-accent-lilac-light rounded-md transition-colors duration-200"
-                                                        >
-                                                            Continue
-                                                        </button>
+
+                                                        {/* Right side - Action buttons */}
+                                                        <div className="flex flex-col items-center ml-4">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleContinueTest(item.originalTest);
+                                                                }}
+                                                                className="w-full px-3 py-1 text-xs text-white bg-accent-lilac hover:bg-accent-lilac-light rounded-md transition-colors duration-200"
+                                                            >
+                                                                Continue
+                                                            </button>
+                                                            {/* Delete button - appears on hover */}
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (window.confirm('Are you sure you want to delete this saved test?')) {
+                                                                        handleDeleteTest(item.originalTest.id);
+                                                                    }
+                                                                }}
+                                                                className="mt-2 p-1.5 rounded-full hover:bg-red-500/10 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                                                title="Delete saved test"
+                                                            >
+                                                                <svg 
+                                                                    xmlns="http://www.w3.org/2000/svg" 
+                                                                    className="h-4 w-4 text-red-500" 
+                                                                    fill="none" 
+                                                                    viewBox="0 0 24 24" 
+                                                                    stroke="currentColor"
+                                                                >
+                                                                    <path 
+                                                                        strokeLinecap="round" 
+                                                                        strokeLinejoin="round" 
+                                                                        strokeWidth={2} 
+                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     // Finished Tests Layout

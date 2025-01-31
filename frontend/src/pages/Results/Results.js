@@ -97,15 +97,22 @@ const Results = () => {
     // Save test results when component mounts
     useEffect(() => {
         const saveResults = async () => {
+            if (resultsSaved.current) return; // Prevent multiple saves
+            
             try {
-                // Check if this test result has already been saved
+                resultsSaved.current = true; // Mark as saved immediately
+                
+                // Check for duplicates in the last minute
                 const existingResults = await testService.getTestHistory();
-                const isDuplicate = existingResults.some(result => 
-                    result.categoryId === categoryId && 
-                    result.score === score && 
-                    result.totalQuestions === total &&
-                    Math.abs(new Date(result.completedAt.toDate()) - new Date()) < 1000 // Within 1 second
-                );
+                const isDuplicate = existingResults.some(result => {
+                    const timeDiff = Math.abs(result.completedAt.toDate() - new Date());
+                    const isRecentEnough = timeDiff < 60000; // Within last minute
+                    
+                    return result.categoryId === categoryId && 
+                           result.score === score && 
+                           result.totalQuestions === total &&
+                           isRecentEnough;
+                });
                 
                 if (!isDuplicate) {
                     await testService.saveTestResults({
@@ -117,9 +124,12 @@ const Results = () => {
                         filters,
                         selectedSubcategories
                     });
+                } else {
+                    console.log('Duplicate test result detected, skipping save');
                 }
             } catch (error) {
                 console.error('Error saving test results:', error);
+                resultsSaved.current = false; // Reset flag on error
             }
         };
 
