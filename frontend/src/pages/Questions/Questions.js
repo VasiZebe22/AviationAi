@@ -329,20 +329,26 @@ const Questions = () => {
             const answeredTotal = questionResults.length;
             const correctTotal = questionResults.filter(q => q.isCorrect).length;
 
+            // Get filters and selectedSubcategories from location state
+            const filters = location.state?.filters;
+            const selectedSubcategories = location.state?.selectedSubcategories;
+
             navigate('/results', {
                 state: {
                     categoryId,
                     score: correctTotal,
                     total: answeredTotal,
                     time: timer,
-                    questionResults: questionResults
+                    questionResults: questionResults,
+                    filters: filters,  // Add filters
+                    selectedSubcategories: selectedSubcategories  // Add selectedSubcategories
                 }
             });
         } catch (err) {
             console.error('Error finishing test:', err);
             setError('Failed to save test results. Please try again.');
         }
-    }, [currentQuestionData, answeredQuestions, correctAnswers, categoryId, questions, timer, navigate]);
+    }, [currentQuestionData, answeredQuestions, correctAnswers, categoryId, questions, timer, navigate, location.state]);
 
     // Setup keyboard navigation
     useQuestionNavigation({

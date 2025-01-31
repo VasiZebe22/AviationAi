@@ -8,27 +8,54 @@ import { categories } from '../../pages/Categories/Categories.js';
 const ActivityCenter = () => {
     const navigate = useNavigate();
     const [selectedTab, setSelectedTab] = useState(0);
-    const [selectedSubcategory, setSelectedSubcategory] = useState({});
+    const [selectedSubcategory, setSelectedSubcategory] = useState('Saved Tests'); // Default to Saved Tests
     const [savedTests, setSavedTests] = useState([]);
+    const [finishedTests, setFinishedTests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Fetch both saved tests and test history when component mounts
     useEffect(() => {
-        const fetchSavedTests = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const tests = await testService.getSavedTests();
+                
+                // Fetch both saved tests and completed test history in parallel
+                const [tests, history] = await Promise.all([
+                    testService.getSavedTests(),
+                    testService.getTestHistory()
+                ]);
+
+                // Remove duplicates from history based on timestamp and categoryId
+                const uniqueHistory = history.reduce((acc, current) => {
+                    const isDuplicate = acc.some(item => 
+                        item.categoryId === current.categoryId &&
+                        Math.abs(item.completedAt.toDate() - current.completedAt.toDate()) < 1000 // Within 1 second
+                    );
+                    if (!isDuplicate) {
+                        // Keep the original test data without any transformations
+                        acc.push(current);
+                    }
+                    return acc;
+                }, []);
+
+                // Sort by completion date (newest first)
+                const sortedHistory = uniqueHistory.sort((a, b) => 
+                    b.completedAt.toDate() - a.completedAt.toDate()
+                );
+                
                 setSavedTests(tests);
+                setFinishedTests(sortedHistory);
             } catch (err) {
-                console.error('Error fetching saved tests:', err);
+                console.error('Error fetching data:', err);
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchSavedTests();
+        fetchData();
     }, []);
 
     // Show error state if there's an error
@@ -40,28 +67,44 @@ const ActivityCenter = () => {
         );
     }
 
-    // Get category name from categoryId
+    // Get category name from categoryId using the categories data
     const getCategoryName = (categoryId) => {
         const category = categories.find(cat => cat.id === categoryId);
-        return category ? category.title : 'Test';
+        return category ? category.title : 'Unknown Category';
     };
 
-    // Get subcategory names for a test
+    // Get subcategory names for a test (both saved and finished)
     const getSubcategoryNames = (test) => {
-        if (!test.selectedSubcategories?.length) {
+        // Early return if no test data
+        if (!test) return 'All subcategories';
+
+        // Log the raw test data for debugging
+        console.log('Processing test:', test);
+
+        // Get subcategories from the test data
+        const subcategories = test.selectedSubcategories;
+        
+        // If no subcategories found, return default text
+        if (!subcategories?.length) {
             return 'All subcategories';
         }
 
+        // Get the category object to find subcategory names
         const category = categories.find(cat => cat.id === test.categoryId);
-        if (!category) return '';
+        if (!category?.subcategories) {
+            return 'All subcategories';
+        }
 
-        return test.selectedSubcategories
+        // Map subcategory codes to their names
+        const subcategoryNames = subcategories
             .map(subCode => {
                 const subcategory = category.subcategories.find(sub => sub.code === subCode);
-                return subcategory ? subcategory.name : '';
+                return subcategory ? subcategory.name : null;
             })
             .filter(Boolean)
             .join(', ');
+
+        return subcategoryNames || 'All subcategories';
     };
 
     // Calculate progress percentage
@@ -82,11 +125,26 @@ const ActivityCenter = () => {
         return Object.keys(test.answeredQuestions).length;
     };
 
-    // Format the relative time
+    // Calculate and format the success rate as a percentage
+    const formatSuccessRate = (score, total) => {
+        if (!total) return '0%';
+        return Math.round((score / total) * 100) + '%';
+    };
+
+    // Determine if a test result is a pass or fail (75% is passing threshold)
+    const getTestStatus = (score, total) => {
+        if (!total) return 'FAIL';
+        return (score / total) >= 0.75 ? 'PASS' : 'FAIL';
+    };
+
+    // Get relative time for both saved and finished tests
     const getRelativeTime = (timestamp) => {
+        if (!timestamp) return '';
+        
         const now = new Date();
-        const savedDate = timestamp.toDate();
-        const diffInHours = Math.floor((now - savedDate) / (1000 * 60 * 60));
+        // Handle both Firestore Timestamp and regular Date objects
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
         
         if (diffInHours < 1) return 'Just now';
         if (diffInHours === 1) return '1 hour ago';
@@ -118,8 +176,20 @@ const ActivityCenter = () => {
             name: 'Tests & Quizzes',
             icon: BookOpenIcon,
             subcategories: ['Saved Tests', 'Finished Tests'],
-            items: [
-                ...savedTests.map(test => ({
+            // Return different items based on which tab is selected
+            items: selectedSubcategory === 'Finished Tests' ? 
+                // Map finished tests data for display
+                finishedTests.map(test => ({
+                    name: getCategoryName(test.categoryId),
+                    subcategories: getSubcategoryNames(test),
+                    questionsCompleted: test.totalQuestions,
+                    successRate: formatSuccessRate(test.score, test.totalQuestions),
+                    status: getTestStatus(test.score, test.totalQuestions),
+                    date: getRelativeTime(test.completedAt),
+                    type: 'Finished Tests'
+                })) :
+                // Map saved tests data for display
+                savedTests.map(test => ({
                     name: getCategoryName(test.categoryId),
                     date: getRelativeTime(test.savedAt),
                     progress: getProgress(test),
@@ -127,7 +197,6 @@ const ActivityCenter = () => {
                     type: 'Saved Tests',
                     originalTest: test
                 }))
-            ]
         },
         {
             name: 'Study Materials',
@@ -199,7 +268,7 @@ const ActivityCenter = () => {
                                         key={category.name}
                                         onClick={() => {
                                             setSelectedTab(index);
-                                            setSelectedSubcategory({}); // Reset subcategory selection when changing main category
+                                            setSelectedSubcategory('Saved Tests'); // Reset subcategory selection when changing main category
                                         }}
                                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
                                             selectedTab === index 
@@ -225,14 +294,10 @@ const ActivityCenter = () => {
                                             {activityCategories[selectedTab].subcategories.map((subcategory) => (
                                                 <button
                                                     key={subcategory}
-                                                    onClick={() => setSelectedSubcategory({
-                                                        ...selectedSubcategory,
-                                                        [activityCategories[selectedTab].name]: subcategory
-                                                    })}
+                                                    onClick={() => setSelectedSubcategory(subcategory)}
                                                     className={`
                                                         py-2 px-1 border-b-2 font-medium text-sm
-                                                        ${selectedSubcategory[activityCategories[selectedTab].name] === subcategory || 
-                                                          (!selectedSubcategory[activityCategories[selectedTab].name] && subcategory === (activityCategories[selectedTab].subcategories[0] || ''))
+                                                        ${selectedSubcategory === subcategory
                                                             ? 'border-accent-lilac text-accent-lilac'
                                                             : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'}
                                                     `}
@@ -247,73 +312,79 @@ const ActivityCenter = () => {
                                 {/* Items Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {activityCategories[selectedTab].items
-                                        .filter(item => {
-                                            if (!activityCategories[selectedTab].subcategories) return true;
-                                            const currentSubcategory = selectedSubcategory[activityCategories[selectedTab].name] || activityCategories[selectedTab].subcategories[0];
-                                            if (currentSubcategory === 'All') return true;
-                                            return item.type === currentSubcategory || item.flag === currentSubcategory;
-                                        })
                                         .map((item, itemIdx) => (
                                             <div 
                                                 key={itemIdx}
                                                 className="bg-surface-DEFAULT p-4 rounded-lg hover:bg-surface-lighter transition-colors duration-200 cursor-pointer"
                                             >
-                                                <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-medium text-white">
-                                                            {item.name}
-                                                        </h3>
-                                                        {item.progress && (
-                                                            <span className="text-accent-lilac ml-2">
-                                                                {item.progress}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex flex-col gap-1 mt-1">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs text-gray-400">
-                                                                {item.questionsCompleted} questions completed
-                                                            </span>
-                                                            <span className="text-xs text-gray-500">
-                                                                {item.date}
-                                                            </span>
-                                                        </div>
-                                                        {item.type === 'Saved Tests' && (
-                                                            <div className="text-xs text-gray-400">
-                                                                <span className="text-gray-500">Subcategories:</span>{' '}
-                                                                {getSubcategoryNames(item.originalTest)}
+                                                {item.type === 'Saved Tests' ? (
+                                                    // Original Saved Tests Layout
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <h3 className="font-medium text-white">
+                                                                    {item.name}
+                                                                </h3>
+                                                                {item.progress && (
+                                                                    <span className="text-accent-lilac ml-2">
+                                                                        {item.progress}
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                        )}
+                                                            <div className="flex flex-col gap-1 mt-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {item.questionsCompleted} questions completed
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {item.date}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-xs text-gray-400">
+                                                                    <span className="text-gray-500">Subcategories:</span>{' '}
+                                                                    {getSubcategoryNames(item.originalTest)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleContinueTest(item.originalTest);
+                                                            }}
+                                                            className="ml-4 px-3 py-1 text-xs text-white bg-accent-lilac hover:bg-accent-lilac-light rounded-md transition-colors duration-200"
+                                                        >
+                                                            Continue
+                                                        </button>
                                                     </div>
-                                                </div>
-                                                {item.type === 'Saved Tests' && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleContinueTest(item.originalTest);
-                                                        }}
-                                                        className="ml-4 px-3 py-1 text-xs text-white bg-accent-lilac hover:bg-accent-lilac-light rounded-md transition-colors duration-200"
-                                                    >
-                                                        Continue
-                                                    </button>
+                                                ) : (
+                                                    // Finished Tests Layout
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <h3 className="font-medium text-white">
+                                                                    {item.name}
+                                                                </h3>
+                                                                <span className={item.status === 'PASS' ? 'text-green-400' : 'text-red-400'}>
+                                                                    {item.successRate} - {item.status}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex flex-col gap-1 mt-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {item.questionsCompleted} questions completed
+                                                                    </span>
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {item.date}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-xs text-gray-400">
+                                                                    <span className="text-gray-500">Subcategories:</span>{' '}
+                                                                    {item.subcategories}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 )}
-                                                    {item.score && (
-                                                        <span className="text-green-400">
-                                                            {item.score}
-                                                        </span>
-                                                    )}
-                                                    {item.flag && (
-                                                        <span className={`
-                                                            px-2 py-1 rounded text-xs font-medium
-                                                            ${item.flag === 'Green' ? 'bg-green-900 text-green-300' :
-                                                              item.flag === 'Yellow' ? 'bg-yellow-900 text-yellow-300' :
-                                                              'bg-red-900 text-red-300'}
-                                                        `}>
-                                                            {item.flag}
-                                                        </span>
-                                                    )}
-                                                </div>
                                             </div>
                                         ))}
                                 </div>

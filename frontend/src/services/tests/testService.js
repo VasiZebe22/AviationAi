@@ -176,7 +176,9 @@ export const testService = {
                     questionId,
                     isCorrect,
                     userAnswer
-                }))
+                })),
+                selectedSubcategories: testData.selectedSubcategories || [],
+                filters: testData.filters || {}
             };
 
             const docRef = await addDoc(db_operations.collections.testResults(), testResult);

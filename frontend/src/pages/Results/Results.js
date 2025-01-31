@@ -33,7 +33,7 @@ const MarkdownComponents = {
 const Results = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { score, total, time, categoryId, questionResults } = location.state || {};
+    const { score, total, time, categoryId, questionResults, filters, selectedSubcategories } = location.state || {};
     const resultsSaved = useRef(false);
     const [detailedQuestions, setDetailedQuestions] = useState({});
     const [loading, setLoading] = useState(true);
@@ -97,18 +97,27 @@ const Results = () => {
     // Save test results when component mounts
     useEffect(() => {
         const saveResults = async () => {
-            // Prevent double saves
-            if (resultsSaved.current) return;
-            
             try {
-                await testService.saveTestResults({
-                    categoryId,
-                    score,
-                    total,
-                    time,
-                    questionResults
-                });
-                resultsSaved.current = true;
+                // Check if this test result has already been saved
+                const existingResults = await testService.getTestHistory();
+                const isDuplicate = existingResults.some(result => 
+                    result.categoryId === categoryId && 
+                    result.score === score && 
+                    result.totalQuestions === total &&
+                    Math.abs(new Date(result.completedAt.toDate()) - new Date()) < 1000 // Within 1 second
+                );
+                
+                if (!isDuplicate) {
+                    await testService.saveTestResults({
+                        categoryId,
+                        score,
+                        total,
+                        time,
+                        questionResults,
+                        filters,
+                        selectedSubcategories
+                    });
+                }
             } catch (error) {
                 console.error('Error saving test results:', error);
             }
@@ -117,7 +126,7 @@ const Results = () => {
         if (score !== undefined && total !== undefined) {
             saveResults();
         }
-    }, [categoryId, score, total, time, questionResults]);
+    }, [categoryId, score, total, time, questionResults, filters, selectedSubcategories]);
 
     const formatTime = (seconds) => {
         const hrs = Math.floor(seconds / 3600);
