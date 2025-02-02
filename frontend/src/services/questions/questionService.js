@@ -1,5 +1,6 @@
 import { collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { getCurrentUser, handleFirebaseError, db_operations } from '../utils/firebaseUtils';
+import { getImageFromStorage } from '../firebase';
 
 export const questionService = {
     // Get questions by category
@@ -126,6 +127,45 @@ export const questionService = {
             return { id: questionDoc.id, ...questionDoc.data() };
         } catch (error) {
             handleFirebaseError(error, 'fetching question');
+        }
+    },
+
+    // Get a question by ID
+    async getQuestionById(questionId) {
+        try {
+            const questionDoc = await getDoc(db_operations.docs.question(questionId));
+            if (!questionDoc.exists()) {
+                throw new Error('Question not found');
+            }
+            const data = {
+                id: questionDoc.id,
+                ...questionDoc.data()
+            };
+
+            // If question has an image, get its URL
+            if (data.has_question_image) {
+                try {
+                    data.image_url = await getImageFromStorage(`figures/${questionId}_question_0.png`);
+                } catch (error) {
+                    console.error('Error fetching question image:', error);
+                }
+            }
+
+            // If question has an explanation image, get its URL
+            if (data.has_explanation_image) {
+                try {
+                    data.explanation_image_url = await getImageFromStorage(`figures/${questionId}_explanation_0.png`);
+                } catch (error) {
+                    console.error('Error fetching explanation image:', error);
+                }
+            }
+
+            console.log('Question data from DB:', data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching question:', error);
+            handleFirebaseError(error);
+            throw error;
         }
     }
 };

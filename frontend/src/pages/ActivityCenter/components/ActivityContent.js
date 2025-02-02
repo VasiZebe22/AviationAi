@@ -2,14 +2,21 @@ import React from 'react';
 import ActivityTabs from './ActivityTabs';
 import SavedTestCard from './cards/SavedTestCard';
 import FinishedTestCard from './cards/FinishedTestCard';
+import StudyMaterials from './StudyMaterials';
 
 const ActivityContent = ({
     selectedCategory,
     selectedSubcategory,
     onSubcategoryChange,
     onContinueTest,
-    onDeleteTest
+    onDeleteTest,
+    onDeleteNote
 }) => {
+    // If it's the Notes section, render the StudyMaterials component
+    if (selectedCategory.name === 'Notes') {
+        return <StudyMaterials notes={selectedCategory.items} onDelete={onDeleteNote} />;
+    }
+
     const renderItem = (item, index) => {
         if (item.type === 'Saved Tests') {
             return (

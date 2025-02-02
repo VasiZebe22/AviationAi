@@ -1,28 +1,46 @@
 import { useState, useEffect } from 'react';
 import { testService } from '../../../services/tests/testService';
+import { noteService } from '../../../services/notes/noteService';
 import { mapSavedTestForDisplay, mapFinishedTestForDisplay } from '../utils/testUtils';
+import { mapNoteForDisplay } from '../utils/noteUtils';
 import { getCategoryName, getSubcategoryNames } from '../utils/categoryUtils';
 import { getRelativeTime, getProgress, getAnsweredCount, formatSuccessRate, getTestStatus } from '../utils/formatters';
 import { BookOpenIcon, BookmarkIcon, FlagIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const useActivityData = () => {
+    const { currentUser } = useAuth();
     const [selectedTab, setSelectedTab] = useState(0);
     const [selectedSubcategory, setSelectedSubcategory] = useState('Saved Tests');
     const [savedTests, setSavedTests] = useState([]);
     const [finishedTests, setFinishedTests] = useState([]);
+    const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchData = async () => {
+            // Don't fetch if there's no user
+            if (!currentUser?.user?.uid) {
+                if (isMounted) {
+                    setLoading(false);
+                }
+                return;
+            }
+
             try {
-                setLoading(true);
-                setError(null);
+                if (isMounted) {
+                    setLoading(true);
+                    setError(null);
+                }
                 
-                // Fetch both saved tests and completed test history in parallel
-                const [tests, history] = await Promise.all([
+                // Fetch tests, history, and notes in parallel
+                const [tests, history, userNotes] = await Promise.all([
                     testService.getSavedTests(),
-                    testService.getTestHistory()
+                    testService.getTestHistory(),
+                    noteService.getNotes(currentUser.user.uid)
                 ]);
 
                 // Remove duplicates from history based on timestamp and categoryId
@@ -42,18 +60,51 @@ export const useActivityData = () => {
                     b.completedAt.toDate() - a.completedAt.toDate()
                 );
                 
-                setSavedTests(tests);
-                setFinishedTests(sortedHistory);
+                if (isMounted) {
+                    setSavedTests(tests);
+                    setFinishedTests(sortedHistory);
+                    setNotes(userNotes || []); // Ensure we always have an array
+                }
             } catch (err) {
                 console.error('Error fetching data:', err);
-                setError(err.message);
+                if (isMounted) {
+                    setError(err.message);
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchData();
-    }, []);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [currentUser]);
+
+    const deleteNote = async (noteId) => {
+        try {
+            await noteService.deleteNote(noteId);
+            setNotes(notes.filter(note => note.id !== noteId));
+        } catch (err) {
+            console.error('Error deleting note:', err);
+            setError(err.message);
+        }
+    };
+
+    const updateNote = async (noteId, content) => {
+        try {
+            await noteService.updateNote(noteId, { content });
+            setNotes(prevNotes => prevNotes.map(n => 
+                n.id === noteId ? { ...n, content } : n
+            ));
+        } catch (err) {
+            console.error('Error updating note:', err);
+            setError(err.message);
+        }
+    };
 
     const activityCategories = [
         {
@@ -77,14 +128,31 @@ export const useActivityData = () => {
                 }))
         },
         {
-            name: 'Study Materials',
+            name: 'Notes',
             icon: BookmarkIcon,
-            items: [
-                { name: 'VOR Navigation Tips', date: '2025-01-18' },
-                { name: 'Weather Patterns', date: '2025-01-16' },
-                { name: 'ILS Approach Procedures', date: '2025-01-17' },
-                { name: 'METAR Interpretation', date: '2025-01-15' }
-            ]
+            items: notes.map(note => ({
+                ...mapNoteForDisplay(note, { getRelativeTime }),
+                onDelete: async () => {
+                    try {
+                        await noteService.deleteNote(note.id);
+                        setNotes(prevNotes => prevNotes.filter(n => n.id !== note.id));
+                    } catch (err) {
+                        console.error('Error deleting note:', err);
+                        setError(err.message);
+                    }
+                },
+                onUpdate: async (content) => {
+                    try {
+                        await noteService.updateNote(note.id, { content });
+                        setNotes(prevNotes => prevNotes.map(n => 
+                            n.id === note.id ? { ...n, content } : n
+                        ));
+                    } catch (err) {
+                        console.error('Error updating note:', err);
+                        setError(err.message);
+                    }
+                }
+            }))
         },
         {
             name: 'Flagged Questions',
@@ -140,9 +208,13 @@ export const useActivityData = () => {
         savedTests,
         setSavedTests,
         finishedTests,
+        notes,
+        setNotes,
         loading,
         error,
         setError,
-        activityCategories
+        activityCategories,
+        deleteNote,
+        updateNote
     };
 };

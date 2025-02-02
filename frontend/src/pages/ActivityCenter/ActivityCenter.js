@@ -13,10 +13,13 @@ const ActivityCenter = () => {
         setSelectedSubcategory,
         savedTests,
         setSavedTests,
+        notes,
+        setNotes,
         loading,
         error,
         setError,
-        activityCategories
+        activityCategories,
+        deleteNote
     } = useActivityData();
 
     const { handleContinueTest, handleDeleteTest } = useTestActions(setSavedTests, setError);
@@ -55,6 +58,7 @@ const ActivityCenter = () => {
                             onSubcategoryChange={setSelectedSubcategory}
                             onContinueTest={handleContinueTest}
                             onDeleteTest={handleDeleteTest}
+                            onDeleteNote={deleteNote}
                         />
                     </div>
                 </div>
