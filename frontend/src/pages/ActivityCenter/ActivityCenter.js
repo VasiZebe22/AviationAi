@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpenIcon, ClockIcon, BookmarkIcon, ChatBubbleLeftRightIcon, FlagIcon } from '@heroicons/react/24/outline';
-import Navbar from '../Navbar/Navbar';
+import Navbar from '../../components/Navbar/Navbar';
 import { testService } from '../../services/tests/testService';
-import { categories } from '../../pages/Categories/Categories.js';
+import { categories } from '../Categories/Categories.js';
 
 const ActivityCenter = () => {
+    // Rest of the component code remains exactly the same
     const navigate = useNavigate();
     const [selectedTab, setSelectedTab] = useState(0);
     const [selectedSubcategory, setSelectedSubcategory] = useState('Saved Tests'); // Default to Saved Tests
@@ -14,7 +15,7 @@ const ActivityCenter = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch both saved tests and test history when component mounts
+    // All the existing code remains exactly the same, just copying it here
     useEffect(() => {
         const fetchData = async () => {
             try {
