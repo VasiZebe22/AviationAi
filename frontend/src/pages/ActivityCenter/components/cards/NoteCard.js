@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClockIcon, ChevronDownIcon, BookOpenIcon, PencilIcon, CheckIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, ChevronDownIcon, BookOpenIcon, PencilIcon, CheckIcon, XMarkIcon, TrashIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { questionService } from '../../../../services/questions/questionService';
 import { noteService } from '../../../../services/notes/noteService';
 import ReactMarkdown from 'react-markdown';
@@ -35,7 +35,9 @@ const NoteCard = ({ note, onDelete, onUpdate }) => {
         content,
         relativeTime,
         questionId,
-        id: noteId
+        id: noteId,
+        isPinned,
+        onTogglePin
     } = note;
 
     useEffect(() => {
@@ -98,8 +100,19 @@ const NoteCard = ({ note, onDelete, onUpdate }) => {
 
     return (
         <div className="w-full bg-surface-light rounded-lg mb-4 overflow-hidden relative group">
-            {/* Top Delete Button */}
-            <div className="absolute top-4 right-4 z-10">
+            {/* Top Action Buttons */}
+            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                <button
+                    onClick={onTogglePin}
+                    className={`p-1.5 rounded-full transition-all duration-200 ${
+                        isPinned
+                            ? 'opacity-100 bg-purple-500/30 text-purple-400 hover:bg-purple-500/40'
+                            : 'opacity-0 group-hover:opacity-100 bg-surface/70 text-gray-400 hover:bg-surface hover:text-white'
+                    }`}
+                    title={isPinned ? "Unpin note" : "Pin note"}
+                >
+                    <MapPinIcon className={`h-4 w-4 ${isPinned ? 'rotate-45' : ''}`} />
+                </button>
                 <button
                     onClick={handleDelete}
                     className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 bg-red-500/20 text-red-500"

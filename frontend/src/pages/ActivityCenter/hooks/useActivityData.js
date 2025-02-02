@@ -97,11 +97,23 @@ export const useActivityData = () => {
     const updateNote = async (noteId, content) => {
         try {
             await noteService.updateNote(noteId, { content });
-            setNotes(prevNotes => prevNotes.map(n => 
+            setNotes(prevNotes => prevNotes.map(n =>
                 n.id === noteId ? { ...n, content } : n
             ));
         } catch (err) {
             console.error('Error updating note:', err);
+            setError(err.message);
+        }
+    };
+
+    const togglePin = async (noteId, isPinned) => {
+        try {
+            await noteService.pinNote(noteId, isPinned);
+            setNotes(prevNotes => prevNotes.map(n =>
+                n.id === noteId ? { ...n, isPinned } : n
+            ));
+        } catch (err) {
+            console.error('Error pinning note:', err);
             setError(err.message);
         }
     };
@@ -130,29 +142,52 @@ export const useActivityData = () => {
         {
             name: 'Notes',
             icon: BookmarkIcon,
-            items: notes.map(note => ({
-                ...mapNoteForDisplay(note, { getRelativeTime }),
-                onDelete: async () => {
-                    try {
-                        await noteService.deleteNote(note.id);
-                        setNotes(prevNotes => prevNotes.filter(n => n.id !== note.id));
-                    } catch (err) {
-                        console.error('Error deleting note:', err);
-                        setError(err.message);
+            items: (() => {
+                // Separate notes into pinned and unpinned
+                const pinnedNotes = notes.filter(note => note.isPinned);
+                const unpinnedNotes = notes.filter(note => !note.isPinned);
+
+                // Sort each group by timestamp independently
+                const sortByTimestamp = (a, b) => {
+                    const aTime = a.created_at?.toDate().getTime() || 0;
+                    const bTime = b.created_at?.toDate().getTime() || 0;
+                    return bTime - aTime;
+                };
+
+                // Sort both groups
+                pinnedNotes.sort(sortByTimestamp);
+                unpinnedNotes.sort(sortByTimestamp);
+
+                // Combine the groups with pinned notes at top
+                return [...pinnedNotes, ...unpinnedNotes];
+            })()
+                .map(note => ({
+                    ...mapNoteForDisplay(note, { getRelativeTime }),
+                    isPinned: note.isPinned || false,
+                    onDelete: async () => {
+                        try {
+                            await noteService.deleteNote(note.id);
+                            setNotes(prevNotes => prevNotes.filter(n => n.id !== note.id));
+                        } catch (err) {
+                            console.error('Error deleting note:', err);
+                            setError(err.message);
+                        }
+                    },
+                    onUpdate: async (content) => {
+                        try {
+                            await noteService.updateNote(note.id, { content });
+                            setNotes(prevNotes => prevNotes.map(n =>
+                                n.id === note.id ? { ...n, content } : n
+                            ));
+                        } catch (err) {
+                            console.error('Error updating note:', err);
+                            setError(err.message);
+                        }
+                    },
+                    onTogglePin: async () => {
+                        await togglePin(note.id, !note.isPinned);
                     }
-                },
-                onUpdate: async (content) => {
-                    try {
-                        await noteService.updateNote(note.id, { content });
-                        setNotes(prevNotes => prevNotes.map(n => 
-                            n.id === note.id ? { ...n, content } : n
-                        ));
-                    } catch (err) {
-                        console.error('Error updating note:', err);
-                        setError(err.message);
-                    }
-                }
-            }))
+                }))
         },
         {
             name: 'Flagged Questions',
@@ -215,6 +250,7 @@ export const useActivityData = () => {
         setError,
         activityCategories,
         deleteNote,
-        updateNote
+        updateNote,
+        togglePin
     };
 };
