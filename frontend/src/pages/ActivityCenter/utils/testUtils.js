@@ -30,5 +30,13 @@ export const mapFinishedTestForDisplay = (test, { getCategoryName, getRelativeTi
     successRate: formatSuccessRate(test.score, test.totalQuestions),
     status: getTestStatus(test.score, test.totalQuestions),
     date: getRelativeTime(test.completedAt),
-    type: 'Finished Tests'
+    type: 'Finished Tests',
+    // Add all the data needed for Results page
+    score: test.score,
+    totalQuestions: test.totalQuestions,
+    timeTaken: test.timeTaken,
+    categoryId: test.categoryId,
+    questionResults: test.questionResults,
+    filters: test.filters,
+    selectedSubcategories: test.selectedSubcategories
 });

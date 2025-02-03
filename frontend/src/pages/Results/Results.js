@@ -33,7 +33,7 @@ const MarkdownComponents = {
 const Results = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { score, total, time, categoryId, questionResults, filters, selectedSubcategories } = location.state || {};
+    const { score, total, time, categoryId, questionResults, filters, selectedSubcategories, isExistingTest } = location.state || {};
     const resultsSaved = useRef(false);
     const [detailedQuestions, setDetailedQuestions] = useState({});
     const [loading, setLoading] = useState(true);
@@ -133,7 +133,8 @@ const Results = () => {
             }
         };
 
-        if (score !== undefined && total !== undefined) {
+        // Only save results if this is a new test (not viewing an existing one)
+        if (score !== undefined && total !== undefined && !isExistingTest) {
             saveResults();
         }
     }, [categoryId, score, total, time, questionResults, filters, selectedSubcategories]);

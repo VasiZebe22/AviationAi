@@ -55,9 +55,25 @@ export const useTestActions = (setSavedTests, setFinishedTests, setError) => {
         }
     };
 
+    const handleViewFinishedTest = (test) => {
+        navigate('/results', {
+            state: {
+                score: test.score,
+                total: test.totalQuestions,
+                time: test.timeTaken,
+                categoryId: test.categoryId,
+                questionResults: test.questionResults,
+                filters: test.filters || {},
+                selectedSubcategories: test.selectedSubcategories || [],
+                isExistingTest: true // Flag to indicate we're viewing an existing test
+            }
+        });
+    };
+
     return {
         handleContinueTest,
         handleDeleteTest,
-        handleDeleteFinishedTest
+        handleDeleteFinishedTest,
+        handleViewFinishedTest
     };
 };

@@ -24,7 +24,7 @@ const ActivityCenter = () => {
         deleteNote
     } = useActivityData();
 
-    const { handleContinueTest, handleDeleteTest, handleDeleteFinishedTest } = useTestActions(
+    const { handleContinueTest, handleDeleteTest, handleDeleteFinishedTest, handleViewFinishedTest } = useTestActions(
         setSavedTests,
         setFinishedTests,
         setError
@@ -66,6 +66,7 @@ const ActivityCenter = () => {
                             onDeleteTest={handleDeleteTest}
                             onDeleteNote={deleteNote}
                             onDeleteFinishedTest={handleDeleteFinishedTest}
+                            onViewFinishedTest={handleViewFinishedTest}
                         />
                     </div>
                 </div>

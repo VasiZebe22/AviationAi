@@ -11,7 +11,8 @@ const ActivityContent = ({
     onContinueTest,
     onDeleteTest,
     onDeleteNote,
-    onDeleteFinishedTest
+    onDeleteFinishedTest,
+    onViewFinishedTest
 }) => {
     // If it's the Notes section, render the StudyMaterials component
     if (selectedCategory.name === 'Notes') {
@@ -34,6 +35,7 @@ const ActivityContent = ({
                     key={index}
                     item={item}
                     onDelete={onDeleteFinishedTest}
+                    onView={onViewFinishedTest}
                 />
             );
         }

@@ -1,7 +1,14 @@
 import React from 'react';
 
-const FinishedTestCard = ({ item, onDelete }) => (
-    <div className="bg-surface-DEFAULT p-4 rounded-lg relative group cursor-pointer hover:bg-surface-lighter transition-colors duration-200">
+const FinishedTestCard = ({ item, onDelete, onView }) => (
+    <div
+        className="bg-surface-DEFAULT p-4 rounded-lg relative group cursor-pointer hover:bg-surface-lighter transition-colors duration-200"
+        onClick={(e) => {
+            // Don't trigger if clicking delete button
+            if (e.target.closest('button')) return;
+            onView(item);
+        }}
+    >
         <div className="flex justify-between items-start">
             {/* Delete button - appears on hover */}
             <button
