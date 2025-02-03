@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, query, where, getDocs, addDoc, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc, orderBy, updateDoc } from 'firebase/firestore';
 
 class FlagService {
     constructor() {
@@ -45,6 +45,23 @@ class FlagService {
             };
         } catch (error) {
             console.error('Error adding flag:', error);
+            throw error;
+        }
+    }
+
+    async updateFlag(flagId, newFlag) {
+        try {
+            const flagRef = doc(db, this.flagsCollection, flagId);
+            await updateDoc(flagRef, {
+                flag: newFlag,
+                updated_at: new Date()
+            });
+            return {
+                flag: newFlag,
+                relativeTime: this.getRelativeTime(new Date())
+            };
+        } catch (error) {
+            console.error('Error updating flag:', error);
             throw error;
         }
     }
