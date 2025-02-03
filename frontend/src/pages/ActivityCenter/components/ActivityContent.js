@@ -3,6 +3,7 @@ import ActivityTabs from './ActivityTabs';
 import SavedTestCard from './cards/SavedTestCard';
 import FinishedTestCard from './cards/FinishedTestCard';
 import StudyMaterials from './StudyMaterials';
+import FlaggedQuestions from './FlaggedQuestions';
 
 const ActivityContent = ({
     selectedCategory,
@@ -17,6 +18,11 @@ const ActivityContent = ({
     // If it's the Notes section, render the StudyMaterials component
     if (selectedCategory.name === 'Notes') {
         return <StudyMaterials notes={selectedCategory.items} onDelete={onDeleteNote} />;
+    }
+
+    // If it's the Flagged Questions section, render the FlaggedQuestions component
+    if (selectedCategory.name === 'Flagged Questions') {
+        return <FlaggedQuestions />;
     }
 
     const renderItem = (item, index) => {
@@ -40,7 +46,7 @@ const ActivityContent = ({
             );
         }
 
-        // Default card for other types (Notes, Flagged Questions, AI Chat)
+        // Default card for other types (AI Chat)
         return (
             <div 
                 key={index}

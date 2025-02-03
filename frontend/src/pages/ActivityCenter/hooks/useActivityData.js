@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { testService } from '../../../services/tests/testService';
 import { noteService } from '../../../services/notes/noteService';
+import { flagService } from '../../../services/flags/flagService';
 import { mapSavedTestForDisplay, mapFinishedTestForDisplay } from '../utils/testUtils';
 import { mapNoteForDisplay } from '../utils/noteUtils';
 import { getCategoryName, getSubcategoryNames } from '../utils/categoryUtils';
@@ -15,6 +16,7 @@ export const useActivityData = () => {
     const [savedTests, setSavedTests] = useState([]);
     const [finishedTests, setFinishedTests] = useState([]);
     const [notes, setNotes] = useState([]);
+    const [flags, setFlags] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -36,11 +38,12 @@ export const useActivityData = () => {
                     setError(null);
                 }
                 
-                // Fetch tests, history, and notes in parallel
-                const [tests, history, userNotes] = await Promise.all([
+                // Fetch tests, history, notes, and flags in parallel
+                const [tests, history, userNotes, flaggedQuestions] = await Promise.all([
                     testService.getSavedTests(),
                     testService.getTestHistory(),
-                    noteService.getNotes(currentUser.user.uid)
+                    noteService.getNotes(currentUser.user.uid),
+                    flagService.getFlaggedQuestions(currentUser.user.uid)
                 ]);
 
                 // Remove duplicates from history based on timestamp and categoryId
@@ -64,6 +67,7 @@ export const useActivityData = () => {
                     setSavedTests(tests);
                     setFinishedTests(sortedHistory);
                     setNotes(userNotes || []); // Ensure we always have an array
+                    setFlags(flaggedQuestions || []); // Ensure we always have an array
                 }
             } catch (err) {
                 console.error('Error fetching data:', err);
@@ -193,23 +197,7 @@ export const useActivityData = () => {
             name: 'Flagged Questions',
             icon: FlagIcon,
             subcategories: ['All', 'Green', 'Yellow', 'Red'],
-            items: [
-                { 
-                    name: 'Question #156 - Radio Navigation', 
-                    date: '2025-01-18',
-                    flag: 'Green'
-                },
-                { 
-                    name: 'Question #89 - Weather Minimums', 
-                    date: '2025-01-17',
-                    flag: 'Yellow'
-                },
-                { 
-                    name: 'Question #234 - Aircraft Systems', 
-                    date: '2025-01-16',
-                    flag: 'Red'
-                }
-            ]
+            items: flags
         },
         {
             name: 'AI Chat History',
@@ -246,6 +234,8 @@ export const useActivityData = () => {
         setFinishedTests,
         notes,
         setNotes,
+        flags,
+        setFlags,
         loading,
         error,
         setError,
