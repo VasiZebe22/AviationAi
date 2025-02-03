@@ -228,5 +228,34 @@ export const testService = {
             const handledError = handleFirebaseError(error, 'fetching test history');
             throw handledError;
         }
+    },
+
+    // Delete a finished test
+    async deleteFinishedTest(testId) {
+        try {
+            const { currentUser } = getAuth();
+            if (!currentUser) {
+                throw new Error('No user logged in');
+            }
+
+            // Get the test document reference and verify ownership
+            const testRef = db_operations.docs.testResult(testId);
+            const testDoc = await getDoc(testRef);
+            
+            if (!testDoc.exists()) {
+                throw new Error('Test not found');
+            }
+            
+            // Verify the test belongs to the current user
+            if (testDoc.data().userId !== currentUser.uid) {
+                throw new Error('Unauthorized access to finished test');
+            }
+
+            await deleteDoc(testRef);
+            return true;
+        } catch (error) {
+            console.error('Error deleting finished test:', error);
+            return false;
+        }
     }
 };

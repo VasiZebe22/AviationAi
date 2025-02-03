@@ -243,6 +243,7 @@ export const useActivityData = () => {
         savedTests,
         setSavedTests,
         finishedTests,
+        setFinishedTests,
         notes,
         setNotes,
         loading,

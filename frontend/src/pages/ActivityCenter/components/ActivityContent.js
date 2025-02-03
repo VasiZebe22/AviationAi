@@ -10,7 +10,8 @@ const ActivityContent = ({
     onSubcategoryChange,
     onContinueTest,
     onDeleteTest,
-    onDeleteNote
+    onDeleteNote,
+    onDeleteFinishedTest
 }) => {
     // If it's the Notes section, render the StudyMaterials component
     if (selectedCategory.name === 'Notes') {
@@ -32,11 +33,12 @@ const ActivityContent = ({
                 <FinishedTestCard
                     key={index}
                     item={item}
+                    onDelete={onDeleteFinishedTest}
                 />
             );
         }
 
-        // Default card for other types (Study Materials, Flagged Questions, AI Chat)
+        // Default card for other types (Notes, Flagged Questions, AI Chat)
         return (
             <div 
                 key={index}

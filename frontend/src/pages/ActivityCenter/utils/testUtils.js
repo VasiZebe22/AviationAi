@@ -23,6 +23,7 @@ export const mapSavedTestForDisplay = (test, { getCategoryName, getRelativeTime,
 });
 
 export const mapFinishedTestForDisplay = (test, { getCategoryName, getRelativeTime, formatSuccessRate, getTestStatus, getSubcategoryNames }) => ({
+    id: test.id,
     name: getCategoryName(test.categoryId),
     subcategories: getSubcategoryNames(test),
     questionsCompleted: test.totalQuestions,
