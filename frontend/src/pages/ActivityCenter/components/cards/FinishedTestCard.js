@@ -77,8 +77,8 @@ const FinishedTestCard = ({ item, onDelete, onView }) => (
                             }}
                             className="px-2 py-0.5 rounded text-xs font-medium
                                      bg-blue-500/10 text-blue-400 border border-blue-500/20
-                                     hover:bg-blue-500/20 transition-colors duration-200
-                                     flex items-center"
+                                     hover:bg-blue-500/20 transition-all duration-200
+                                     flex items-center opacity-0 group-hover:opacity-100"
                         >
                             <svg 
                                 xmlns="http://www.w3.org/2000/svg" 
