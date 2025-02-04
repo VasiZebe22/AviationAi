@@ -4,6 +4,7 @@ import SavedTestCard from './cards/SavedTestCard';
 import FinishedTestCard from './cards/FinishedTestCard';
 import StudyMaterials from './StudyMaterials';
 import FlaggedQuestions from './FlaggedQuestions';
+import StarredConversations from './StarredConversations';
 
 const ActivityContent = ({
     selectedCategory,
@@ -23,6 +24,11 @@ const ActivityContent = ({
     // If it's the Flagged Questions section, render the FlaggedQuestions component
     if (selectedCategory.name === 'Flagged Questions') {
         return <FlaggedQuestions />;
+    }
+
+    // If it's the AI Chat History section, render the StarredConversations component
+    if (selectedCategory.name === 'AI Chat History') {
+        return <StarredConversations />;
     }
 
     const renderItem = (item, index) => {
