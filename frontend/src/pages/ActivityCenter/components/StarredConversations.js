@@ -1,9 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../../../services/firebase';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import AIChatHistoryTabs from './AIChatHistoryTabs';
+
+const formatTimestamp = (timestamp) => {
+  try {
+    if (!timestamp) {
+      return new Date().toLocaleString();
+    }
+    // Handle both Date objects, ISO strings, and Firestore timestamps
+    const date = typeof timestamp === 'object' && timestamp?.toDate
+      ? timestamp.toDate()
+      : new Date(timestamp);
+    
+    return date.toLocaleString();
+  } catch (error) {
+    console.error('Error formatting timestamp:', error);
+    return new Date().toLocaleString();
+  }
+};
 
 const StarredConversationCard = ({ chat, onAddTag }) => {
   const [showTagInput, setShowTagInput] = useState(false);
@@ -41,9 +58,9 @@ const StarredConversationCard = ({ chat, onAddTag }) => {
               {tags.length > 0 && tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300/90 font-light group relative inline-flex items-center"
+                  className="px-2 py-0.5 rounded-full bg-gray-600/40 border border-gray-500/40 text-gray-200 font-light group relative inline-flex items-center"
                 >
-                  <span className="text-purple-400/70 font-normal">#</span>{tag}
+                  <span className="text-gray-300 font-normal">#</span>{tag}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -51,7 +68,7 @@ const StarredConversationCard = ({ chat, onAddTag }) => {
                       setTags(newTags);
                       onAddTag(chat.id, newTags);
                     }}
-                    className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-purple-400 hover:text-purple-300"
+                    className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-300"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -97,20 +114,19 @@ const StarredConversationCard = ({ chat, onAddTag }) => {
             </div>
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>
-                {chat.messages?.[0]?.timestamp ? (
-                  chat.messages[0].timestamp.split(',')[0]
-                ) : (
-                  'No date'
-                )}
+                {formatTimestamp(chat.messages?.[0]?.timestamp)}
               </span>
-              <span>{chat.messages.length} messages</span>
+              <div className="flex items-center gap-4">
+                <span>{chat.messages.length} messages</span>
+                <span>{chat.messages.filter(m => m.bookmarked).length} bookmarks</span>
+              </div>
             </div>
           </div>
         </div>
-        <div className="ml-4">
+        <div className="flex flex-col items-end">
           <button
             onClick={handleNavigateToChat}
-            className="text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded hover:bg-blue-600/30 transition-colors"
+            className="text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded hover:bg-blue-600/30 transition-colors mb-auto"
           >
             Open Chat
           </button>
@@ -170,13 +186,15 @@ const StarredConversations = () => {
           const firstMessage = messages[0];
           const lastMessage = messages.filter(m => m.type === 'user' || m.type === 'ai').pop();
 
-          // Find the first message with a valid timestamp
-          const timestamp = messages.find(m => m.timestamp)?.timestamp;
+          // Get timestamp from first message
+          const timestamp = firstMessage?.timestamp;
+          const date = timestamp ? new Date(timestamp) : null;
+          const formattedDate = date ? date.toLocaleString() : null;
 
           return {
             id: doc.id,
             title: data.title || firstMessage?.content?.slice(0, 50) || 'Untitled Chat',
-            createdAt: timestamp || null,
+            createdAt: formattedDate,
             lastMessage: lastMessage?.content || 'No messages',
             messages: messages,
             tags: data.tags || []
