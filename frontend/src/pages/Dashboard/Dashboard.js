@@ -48,77 +48,29 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const { showToast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState(null);
   const [progressData, setProgressData] = useState(null);
-  const [error, setError] = useState(null);
-  const [selectedOverviewCategory, setSelectedOverviewCategory] = useState('all');
-  const [selectedPerformanceCategory, setSelectedPerformanceCategory] = useState('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const loadData = async (forceRefresh = false) => {
+    try {
+      setIsRefreshing(forceRefresh);
+      const data = forceRefresh 
+        ? await analyticsService.refreshUserProgress(currentUser.uid)
+        : await analyticsService.getUserProgress(currentUser.uid);
+      
+      setProgressData(data);
+    } catch (error) {
+      console.error('Error fetching progress data:', error);
+      showToast('error', 'Failed to load dashboard data');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        // Fetch user data
-        const userResponse = await new Promise(resolve => 
-          setTimeout(() => resolve({
-            name: currentUser?.displayName || "User",
-            email: currentUser?.email || "",
-            subscription: "Premium",
-            credits: 150,
-            queriesThisMonth: 45,
-            creditUsage: 15,
-            timezone: "UTC",
-            notifications: true,
-            recentActivity: [
-              { action: "Query about flight regulations", time: "2 hours ago" },
-              { action: "Weather interpretation practice", time: "5 hours ago" },
-              { action: "Navigation calculations", time: "1 day ago" }
-            ]
-          }), 1000)
-        );
-        setUserData(userResponse);
-
-        // Fetch all dashboard stats at once
-        const stats = await analyticsService.getDashboardStats();
-        
-        // Process stats for charts
-        const progressStats = {
-          monthlyProgress: stats.monthlyProgress,
-          performance: {
-            correct: stats.correctAnswers,
-            incorrect: stats.incorrectAnswers
-          },
-          categoryProgress: Object.entries(stats.byCategory).map(([code, data]) => ({
-            code,
-            name: data.name,
-            total: data.total,
-            correct: data.correct,
-            percentage: Math.round((data.correct / data.total) * 100) || 0
-          })),
-          skillsBreakdown: Object.entries(stats.byCategory)
-            .map(([code, data]) => ({
-              name: data.name,
-              skillScore: data.skillScore || 0
-            })),
-          byCategory: stats.byCategory,
-          studyTime: stats.studyTime
-        };
-        
-        setProgressData(progressStats);
-        setIsLoading(false);
-      } catch (err) {
-        setError("Failed to load user data");
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [currentUser, navigate]);
+    loadData();
+  }, [currentUser?.uid]);
 
   const handleLogout = async () => {
     try {
@@ -132,45 +84,19 @@ const Dashboard = () => {
   const handleProfileUpdate = async (data) => {
     try {
       // Here you would typically make an API call to update the user's profile
-      setUserData(prev => ({
-        ...prev,
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email,
-        timezone: data.timezone,
-        notifications: data.notifications,
-      }));
       showToast('success', 'Profile updated successfully');
     } catch (error) {
       showToast('error', 'Failed to update profile');
     }
   };
 
-  if (isLoading) return (
-    <div className="min-h-screen bg-dark flex items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen bg-dark p-4">
-      <div className="bg-red-900/50 text-red-200 p-3 rounded-lg text-xs">
-        Error: {error}
-      </div>
-    </div>
-  );
-
-  if (!userData) return (
-    <div className="min-h-screen bg-dark p-4">
-      <div className="bg-surface-dark p-3 rounded-lg text-gray-400 text-xs">
-        No user data available
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-screen bg-dark text-white">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-6">
+        <div className="flex justify-between items-center mb-6">
+        </div>
+        
         <div className="flex flex-col space-y-6">
           {/* Header Section */}
           <div className="flex justify-between items-center">
@@ -187,41 +113,70 @@ const Dashboard = () => {
           </div>
 
           {/* Progress Section */}
-          <DashboardCard 
-            title="Learning Progress" 
-            className="lg:col-span-3"
-            dashboard={{
-              showToast,
-              setIsLoading,
-              setProgressData
-            }}
-          >
+          <div className="bg-dark-lighter rounded-lg p-6">
+            <div className="flex justify-between items-center pb-4 border-b border-gray-700 mb-6">
+              <h2 className="text-gray-100 uppercase text-sm font-medium tracking-wider">Learning Progress</h2>
+              <button
+                onClick={() => loadData(true)}
+                disabled={isRefreshing}
+                className="px-3 py-1.5 bg-dark-lighter text-xs text-gray-300 rounded-md hover:bg-dark-lightest transition-colors duration-200 flex items-center gap-2"
+              >
+                <svg
+                  className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <LearningOverviewChart 
                 progressData={progressData} 
                 selectedCategory={{
-                  value: selectedOverviewCategory,
-                  setter: setSelectedOverviewCategory
+                  value: selectedCategory,
+                  setter: setSelectedCategory
                 }}
               />
               <PerformanceChart 
                 progressData={progressData}
                 selectedCategory={{
-                  value: selectedPerformanceCategory,
-                  setter: setSelectedPerformanceCategory
+                  value: selectedCategory,
+                  setter: setSelectedCategory
                 }}
               />
               <SkillsAnalysisChart progressData={progressData} />
               <StudyTimeChart progressData={progressData} />
               <QuestionsToReview progressData={progressData} />
             </div>
-          </DashboardCard>
+          </div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Profile Card */}
             <DashboardCard title="Profile" className="lg:col-span-2">
-              <ProfileSection userData={userData} onSave={handleProfileUpdate} />
+              <ProfileSection userData={{
+                name: currentUser?.displayName || "User",
+                email: currentUser?.email || "",
+                subscription: "Premium",
+                credits: 150,
+                queriesThisMonth: 45,
+                creditUsage: 15,
+                timezone: "UTC",
+                notifications: true,
+                recentActivity: [
+                  { action: "Query about flight regulations", time: "2 hours ago" },
+                  { action: "Weather interpretation practice", time: "5 hours ago" },
+                  { action: "Navigation calculations", time: "1 day ago" }
+                ]
+              }} onSave={handleProfileUpdate} />
             </DashboardCard>
 
             {/* Practice Card */}
@@ -240,8 +195,9 @@ const Dashboard = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </button>
-                  {userData.recentActivity
-                    .filter(activity => activity.action.toLowerCase().includes('practice'))
+                  {[{ action: "Query about flight regulations", time: "2 hours ago" },
+                  { action: "Weather interpretation practice", time: "5 hours ago" },
+                  { action: "Navigation calculations", time: "1 day ago" }].filter(activity => activity.action.toLowerCase().includes('practice'))
                     .map((activity, index) => (
                       <div key={index} className="flex items-center justify-between text-xs">
                         <span className="text-gray-400">{activity.action}</span>
@@ -256,19 +212,19 @@ const Dashboard = () => {
             {/* Overview Card */}
             <DashboardCard title="Overview">
               <div className="space-y-4">
-                <StatItem value={userData.subscription} label="Current Plan" trend={0} />
-                <StatItem value={userData.credits} label="Credits Available" trend={-5} />
-                <StatItem value={userData.queriesThisMonth} label="Queries This Month" trend={12} />
+                <StatItem value="Premium" label="Current Plan" trend={0} />
+                <StatItem value={150} label="Credits Available" trend={-5} />
+                <StatItem value={45} label="Queries This Month" trend={12} />
               </div>
               <div className="mt-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-medium text-gray-400">Credit Usage</span>
-                  <span className="text-xs font-medium text-gray-400">{userData.creditUsage}%</span>
+                  <span className="text-xs font-medium text-gray-400">15%</span>
                 </div>
                 <div className="w-full bg-dark rounded-full h-1.5">
                   <div 
                     className="bg-accent-lilac h-1.5 rounded-full"
-                    style={{ width: `${userData.creditUsage}%` }}
+                    style={{ width: `15%` }}
                   />
                 </div>
               </div>
@@ -316,7 +272,9 @@ const Dashboard = () => {
             {/* Recent Activity Card */}
             <DashboardCard title="Recent Activity" className="lg:col-span-3">
               <div className="space-y-3">
-                {userData.recentActivity.map((activity, index) => (
+                {[{ action: "Query about flight regulations", time: "2 hours ago" },
+                { action: "Weather interpretation practice", time: "5 hours ago" },
+                { action: "Navigation calculations", time: "1 day ago" }].map((activity, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-dark bg-opacity-50 rounded-md hover:bg-dark-lighter transition-colors duration-200"

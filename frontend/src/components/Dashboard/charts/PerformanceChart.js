@@ -1,7 +1,23 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
+import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 
 const PerformanceChart = ({ progressData, selectedCategory }) => {
+  if (!progressData?.performance) {
+    return (
+      <div className="bg-surface-dark/30 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-medium text-gray-300">Average Performance</h3>
+          <div className="h-8 w-36 bg-dark/20 rounded"></div>
+        </div>
+        <div className="h-[200px] flex flex-col items-center justify-center space-y-4">
+          <LoadingSpinner />
+          <p className="text-sm text-gray-400 animate-pulse">Loading performance data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-surface-dark/30 rounded-lg p-4">
       <div className="flex justify-between items-center mb-4">

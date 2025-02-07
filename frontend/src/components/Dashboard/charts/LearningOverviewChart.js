@@ -1,7 +1,23 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
+import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 
 const LearningOverviewChart = ({ progressData, selectedCategory }) => {
+  if (!progressData?.monthlyProgress) {
+    return (
+      <div className="lg:col-span-2 bg-surface-dark/30 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-medium text-gray-300">Learning Overview</h3>
+          <div className="h-8 w-36 bg-dark/20 rounded"></div>
+        </div>
+        <div className="h-[200px] flex flex-col items-center justify-center space-y-4">
+          <LoadingSpinner />
+          <p className="text-sm text-gray-400 animate-pulse">Analyzing your learning progress...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lg:col-span-2 bg-surface-dark/30 rounded-lg p-4">
       <div className="flex justify-between items-center mb-4">
