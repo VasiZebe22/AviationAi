@@ -112,18 +112,6 @@ const categories = [
     ]
   },
   {
-    id: '034',
-    title: 'Performance - Helicopters',
-    description: 'Helicopter-specific performance considerations',
-    image: '/images/categories/helicopter.jpg',
-    subcategories: [
-      { code: '034-01', name: 'General Performance Theory' },
-      { code: '034-02', name: 'Performance Class 3 Single Engine Helicopters' },
-      { code: '034-03', name: 'Performance Class 2' },
-      { code: '034-04', name: 'Performance Class 1 Helicopters Certified in the Transport Category' }
-    ]
-  },
-  {
     id: '040',
     title: 'Human Performance',
     description: 'Human factors and limitations',
