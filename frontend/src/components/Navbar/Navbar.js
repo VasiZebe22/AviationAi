@@ -1,6 +1,19 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { NAV_ITEMS } from './navigationConfig';
+
+// NavButton component for consistent button styling and behavior
+const NavButton = ({ item, currentPath, onClick }) => (
+    <button
+        className={`text-gray-300 hover:text-white transition-colors duration-200 ${
+            item.path === currentPath ? 'text-accent-lilac-light font-medium' : ''
+        }`}
+        onClick={onClick}
+    >
+        {item.label}
+    </button>
+);
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -26,6 +39,19 @@ const Navbar = () => {
         }
     };
 
+    const renderNavItems = (items) => items.map((item) => (
+        <NavButton
+            key={item.path || item.id}
+            item={item}
+            currentPath={location.pathname}
+            onClick={() => {
+                item.action === 'scroll' 
+                    ? handleNavigation(item.id) 
+                    : navigate(item.path);
+            }}
+        />
+    ));
+
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-surface-DEFAULT border-b border-dark-lightest">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,49 +64,10 @@ const Navbar = () => {
                     </div>
                     
                     <nav className="hidden md:flex space-x-8">
-                        {!currentUser ? (
-                            <>
-                                <button 
-                                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                                    onClick={() => handleNavigation('features')}
-                                >
-                                    Features
-                                </button>
-                                <button 
-                                    className="text-gray-300 hover:text-white transition-colors duration-200"
-                                    onClick={() => handleNavigation('pricing')}
-                                >
-                                    Pricing
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button 
-                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
-                                        location.pathname === '/dashboard' ? 'text-accent-lilac-light font-medium' : ''
-                                    }`}
-                                    onClick={() => navigate('/dashboard')}
-                                >
-                                    Dashboard
-                                </button>
-                                <button 
-                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
-                                        location.pathname === '/chat' ? 'text-accent-lilac-light font-medium' : ''
-                                    }`}
-                                    onClick={() => navigate('/chat')}
-                                >
-                                    AI Chat
-                                </button>
-                                <button 
-                                    className={`text-gray-300 hover:text-white transition-colors duration-200 ${
-                                        location.pathname === '/activity' ? 'text-accent-lilac-light font-medium' : ''
-                                    }`}
-                                    onClick={() => navigate('/activity')}
-                                >
-                                    Activity Center
-                                </button>
-                            </>
-                        )}
+                        {currentUser 
+                            ? renderNavItems(NAV_ITEMS.private)
+                            : renderNavItems(NAV_ITEMS.public)
+                        }
                     </nav>
 
                     <div className="flex items-center">
