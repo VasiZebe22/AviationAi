@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { progressService } from '../../services/questions/progressService';
-import { analyticsService } from '../../services/analytics/analyticsService';
+import { analyticsService } from '../../services/analytics';
 
 const DashboardCard = ({ title, children, className = '', dashboard = null }) => {
   const handleResetStudyTime = async () => {

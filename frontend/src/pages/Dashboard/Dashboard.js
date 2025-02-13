@@ -27,7 +27,7 @@ import SkillsAnalysisChart from '../../components/Dashboard/charts/SkillsAnalysi
 import StudyTimeChart from '../../components/Dashboard/charts/StudyTimeChart';
 import QuestionsToReview from '../../components/Dashboard/QuestionsToReview';
 import RecentSavedTests from '../../components/Dashboard/RecentSavedTests';
-import { analyticsService } from '../../services/analytics/analyticsService';
+import { analyticsService } from '../../services/analytics';
 
 // Register Chart.js components
 ChartJS.register(

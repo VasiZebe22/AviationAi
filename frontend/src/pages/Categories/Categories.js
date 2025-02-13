@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { analyticsService } from '../../services/analytics/analyticsService';
+import { analyticsService } from '../../services/analytics';
 import CategoryCard from '../../components/CategoryCard';
 import SavedTestsModal from '../../components/SavedTests/SavedTestsModal';
 import Navbar from '../../components/Navbar/Navbar';
