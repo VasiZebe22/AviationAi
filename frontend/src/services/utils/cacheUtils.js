@@ -3,7 +3,9 @@ export const CACHE_TTL = 60 * 60 * 1000; // 60 minutes in milliseconds
 
 export const cacheKeys = {
   userProgress: (userId) => `user-progress-${userId}`,
-  basicStats: (userId) => `basic-stats-${userId}`
+  basicStats: (userId) => `basic-stats-${userId}`,
+  monthlyProgress: (userId) => `monthly-progress-${userId}`,
+  recentStudyTime: (userId) => `recent-study-time-${userId}`
 };
 
 export const cacheUtils = {
