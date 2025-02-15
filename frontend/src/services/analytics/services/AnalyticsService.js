@@ -166,8 +166,31 @@ export class AnalyticsService extends BaseAnalyticsService {
     static async refreshUserProgress(userId) {
         try {
             const user = this.ensureAuthenticated();
+            
+            // Refresh all dependent data first
+            await Promise.all([
+                this.refreshBasicStats(),
+                this.refreshMonthlyProgress(),
+                this.refreshRecentStudyTime()
+            ]);
+
+            // Then refresh and return the combined user progress
             return await this.refreshCache(userId, 'userProgress', async () => {
-                return this.getUserProgress(userId);
+                const [basicStats, monthlyProgress, studyTime] = await Promise.all([
+                    this.getBasicStats(),
+                    this.getMonthlyProgress(),
+                    this.getRecentStudyTime()
+                ]);
+
+                return {
+                    ...basicStats,
+                    monthlyProgress,
+                    studyTime,
+                    performance: {
+                        correct: basicStats.correctAnswers,
+                        incorrect: basicStats.incorrectAnswers
+                    }
+                };
             });
         } catch (error) {
             console.error('Error refreshing user progress:', error);

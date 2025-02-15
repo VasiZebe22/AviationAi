@@ -52,8 +52,12 @@ export class BaseAnalyticsService {
      * @returns {Promise<any>} Fresh data
      */
     static async refreshCache(userId, cacheType, fetchFn) {
-        const freshData = await fetchFn();
+        // First invalidate the cache
         const cacheKey = CacheManager.generateKey(userId, cacheType);
+        CacheManager.set(cacheKey, null);
+
+        // Then fetch fresh data
+        const freshData = await fetchFn();
         CacheManager.set(cacheKey, freshData);
         return freshData;
     }
