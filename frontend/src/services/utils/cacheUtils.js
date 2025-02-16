@@ -1,5 +1,5 @@
 // Cache utility functions following SOLID principles
-export const CACHE_TTL = 60 * 60 * 1000; // 60 minutes in milliseconds
+export const CACHE_TTL = 180 * 60 * 1000; // 60 minutes in milliseconds
 
 export const cacheKeys = {
   userProgress: (userId) => `user-progress-${userId}`,
