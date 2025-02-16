@@ -50,7 +50,8 @@ const Dashboard = () => {
   const { showToast } = useToast();
   const [progressData, setProgressData] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [learningOverviewCategory, setLearningOverviewCategory] = useState('all');
+  const [performanceCategory, setPerformanceCategory] = useState('all');
 
   const loadData = async (forceRefresh = false) => {
     try {
@@ -141,16 +142,16 @@ const Dashboard = () => {
               <LearningOverviewChart 
                 progressData={progressData} 
                 selectedCategory={{
-                  value: selectedCategory,
-                  setter: setSelectedCategory
+                  value: learningOverviewCategory,
+                  setter: setLearningOverviewCategory
                 }}
                 isLoading={isRefreshing}
               />
               <PerformanceChart 
                 progressData={progressData}
                 selectedCategory={{
-                  value: selectedCategory,
-                  setter: setSelectedCategory
+                  value: performanceCategory,
+                  setter: setPerformanceCategory
                 }}
                 isLoading={isRefreshing}
               />
