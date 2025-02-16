@@ -15,7 +15,10 @@ frontend/src/services/
 ├── tests/
 │   └── testService.js         # Test management and results
 ├── analytics/
-│   └── analyticsService.js    # Statistics and metrics
+│   ├── core/                  # Core analytics functionality
+│   ├── transformers/          # Data transformation logic
+│   ├── services/             # Analytics services
+│   └── index.js              # Analytics service exports
 ├── utils/
 │   └── firebaseUtils.js       # Shared Firebase utilities
 └── index.js                   # Main export file
@@ -54,6 +57,11 @@ Statistics and metrics:
 - Monthly progress tracking
 - Study time analytics
 - Dashboard statistics
+- Skills analysis with category handling:
+  - Accuracy, speed, consistency, retention metrics
+  - Category-based skill breakdown
+  - Graceful handling of uncategorized items
+  - Detailed performance tracking
 
 ### 6. User Data Service (userDataService.js)
 User-specific data management:
@@ -117,6 +125,8 @@ Each service maintains clear boundaries while working together:
    - getRecentStudyTime()
    - getDashboardStats()
    - resetStudyTime()
+   - getSkillsAnalysis()
+   - getCategoryPerformance()
 
 5. **User Data Service**:
    - updateFlag()
@@ -185,13 +195,16 @@ When implementing these changes:
    - Additional analytics services
    - More specialized test types
    - Enhanced user data features
+   - Advanced skills analysis features
 
 2. **Performance Optimizations**:
    - Caching strategies
    - Query optimizations
    - Batch operations
+   - Analytics data aggregation
 
 3. **Security Enhancements**:
    - Additional validation
    - Rate limiting
    - Access control
+   - Data integrity checks

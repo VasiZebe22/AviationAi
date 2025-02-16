@@ -183,16 +183,19 @@ export class AnalyticsService extends BaseAnalyticsService {
 
             // Then refresh and return the combined user progress
             return await this.refreshCache(userId, 'userProgress', async () => {
-                const [basicStats, monthlyProgress, studyTime] = await Promise.all([
+                const progress = await FirestoreAdapter.getUserProgress(user.uid);
+                const [basicStats, monthlyProgress, studyTime, skillsAnalysis] = await Promise.all([
                     this.getBasicStats(),
                     this.getMonthlyProgress(),
-                    this.getRecentStudyTime()
+                    this.getRecentStudyTime(),
+                    SkillsTransformer.transform(progress)
                 ]);
 
                 return {
                     ...basicStats,
                     monthlyProgress,
                     studyTime,
+                    skillsBreakdown: skillsAnalysis.skillsBreakdown,
                     performance: {
                         correct: basicStats.correctAnswers,
                         incorrect: basicStats.incorrectAnswers

@@ -20,11 +20,17 @@ export class FirestoreAdapter {
                 progressRef,
                 where('userId', '==', userId)
             );
+            console.log('Fetching progress for user:', userId);
             const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => ({
+            console.log('Progress documents found:', snapshot.size);
+            
+            const progressData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+            
+            console.log('Progress data sample:', progressData.slice(0, 2));
+            return progressData;
         } catch (error) {
             handleFirebaseError(error, 'fetching user progress');
             throw error;

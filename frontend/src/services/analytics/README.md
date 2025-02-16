@@ -13,7 +13,8 @@ analytics/
 │   └── FirestoreAdapter.js     - Database operations
 ├── transformers/
 │   ├── BasicStatsTransformer.js - Data transformation for basic stats
-│   └── TimeSeriesTransformer.js - Time-series data processing
+│   ├── TimeSeriesTransformer.js - Time-series data processing
+│   └── SkillsTransformer.js     - Skills analysis and categorization
 ├── services/
 │   ├── BaseAnalyticsService.js  - Common service functionality
 │   └── AnalyticsService.js      - Main analytics service
@@ -49,6 +50,17 @@ Handles time-based data processing:
 - Monthly progress aggregation
 - Study time calculations
 - Category-wise temporal analysis
+
+### SkillsTransformer
+Processes and analyzes user skills data:
+- Calculates skill metrics (accuracy, speed, consistency, retention)
+- Handles category-based skill analysis
+- Gracefully manages missing category information:
+  - Uses 'UNKNOWN' category code for uncategorized items
+  - Assigns 'Uncategorized' as default category name
+  - Maintains data integrity with proper validation
+  - Provides detailed logging for debugging
+- Sorts skills breakdown with categorized items before uncategorized ones
 
 ## Services
 
@@ -140,6 +152,24 @@ await analyticsService.resetStudyTime();
     performance: {
         correct: number,
         incorrect: number
+    },
+
+    // Skills analysis
+    skills: {
+        overall: {
+            accuracy: number,
+            speed: number,
+            consistency: number,
+            retention: number
+        },
+        byCategory: Array<{
+            code: string,
+            name: string,
+            accuracy: number,
+            speed: number,
+            consistency: number,
+            retention: number
+        }>
     }
 }
 ```
