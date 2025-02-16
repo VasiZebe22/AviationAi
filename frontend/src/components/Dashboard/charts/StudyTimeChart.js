@@ -2,8 +2,9 @@ import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 
-const StudyTimeChart = ({ progressData }) => {
-  if (!progressData?.studyTime) {
+const StudyTimeChart = ({ progressData, isLoading }) => {
+  // Show loading state during initial load or refresh
+  if (isLoading || !progressData?.studyTime) {
     return (
       <div className="bg-surface-dark/30 rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">

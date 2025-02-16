@@ -2,8 +2,9 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 
-const LearningOverviewChart = ({ progressData, selectedCategory }) => {
-  if (!progressData?.monthlyProgress) {
+const LearningOverviewChart = ({ progressData, selectedCategory, isLoading }) => {
+  // Show loading state during initial load or refresh
+  if (isLoading || !progressData?.monthlyProgress) {
     return (
       <div className="lg:col-span-2 bg-surface-dark/30 rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">

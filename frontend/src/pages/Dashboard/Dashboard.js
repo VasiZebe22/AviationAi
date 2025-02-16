@@ -144,6 +144,7 @@ const Dashboard = () => {
                   value: selectedCategory,
                   setter: setSelectedCategory
                 }}
+                isLoading={isRefreshing}
               />
               <PerformanceChart 
                 progressData={progressData}
@@ -151,10 +152,17 @@ const Dashboard = () => {
                   value: selectedCategory,
                   setter: setSelectedCategory
                 }}
+                isLoading={isRefreshing}
               />
-              <SkillsAnalysisChart progressData={progressData} />
-              <StudyTimeChart progressData={progressData} />
-              <QuestionsToReview progressData={progressData} />
+              <SkillsAnalysisChart 
+                progressData={progressData} 
+                isLoading={isRefreshing}
+              />
+              <StudyTimeChart 
+                progressData={progressData}
+                isLoading={isRefreshing}
+              />
+              <QuestionsToReview progressData={progressData} isLoading={isRefreshing} />
             </div>
           </div>
 

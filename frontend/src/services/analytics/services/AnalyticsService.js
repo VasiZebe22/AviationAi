@@ -2,6 +2,7 @@ import { BaseAnalyticsService } from './BaseAnalyticsService';
 import { FirestoreAdapter } from '../core/FirestoreAdapter';
 import { BasicStatsTransformer } from '../transformers/BasicStatsTransformer';
 import { TimeSeriesTransformer } from '../transformers/TimeSeriesTransformer';
+import { SkillsTransformer } from '../transformers/SkillsTransformer';
 import { dateUtils } from '../../../services/utils/firebaseUtils';
 
 /**
@@ -136,21 +137,27 @@ export class AnalyticsService extends BaseAnalyticsService {
         try {
             const user = this.ensureAuthenticated();
             return await this.getWithCache(userId, 'userProgress', async () => {
-                const [basicStats, monthlyProgress, studyTime] = await Promise.all([
+                const progress = await FirestoreAdapter.getUserProgress(user.uid);
+                const [basicStats, monthlyProgress, studyTime, skillsAnalysis] = await Promise.all([
                     this.getBasicStats(),
                     this.getMonthlyProgress(),
-                    this.getRecentStudyTime()
+                    this.getRecentStudyTime(),
+                    SkillsTransformer.transform(progress)
                 ]);
 
-                return {
+                const combinedData = {
                     ...basicStats,
                     monthlyProgress,
                     studyTime,
+                    skillsBreakdown: skillsAnalysis.skillsBreakdown,
                     performance: {
                         correct: basicStats.correctAnswers,
                         incorrect: basicStats.incorrectAnswers
                     }
                 };
+
+                console.log('User Progress Data:', combinedData); // Debug log
+                return combinedData;
             });
         } catch (error) {
             console.error('Error getting user progress:', error);

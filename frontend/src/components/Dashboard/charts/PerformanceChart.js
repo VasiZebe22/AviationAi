@@ -2,8 +2,9 @@ import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 
-const PerformanceChart = ({ progressData, selectedCategory }) => {
-  if (!progressData?.performance) {
+const PerformanceChart = ({ progressData, selectedCategory, isLoading }) => {
+  // Show loading state during initial load or refresh
+  if (isLoading || !progressData?.performance) {
     return (
       <div className="bg-surface-dark/30 rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">

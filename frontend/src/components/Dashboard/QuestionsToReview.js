@@ -1,8 +1,24 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 
-const QuestionsToReview = ({ progressData }) => {
+const QuestionsToReview = ({ progressData, isLoading }) => {
   const navigate = useNavigate();
+
+  // Show loading state during initial load or refresh
+  if (isLoading || !progressData) {
+    return (
+      <div className="bg-surface-dark/30 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-medium text-gray-300">Questions to Review</h3>
+        </div>
+        <div className="h-[200px] flex flex-col items-center justify-center space-y-4">
+          <LoadingSpinner />
+          <p className="text-sm text-gray-400 animate-pulse">Finding questions to review...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface-dark/30 rounded-lg p-4">
