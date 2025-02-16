@@ -40,12 +40,12 @@ const PerformanceChart = ({ progressData, selectedCategory, isLoading }) => {
             labels: ['Correct', 'Incorrect'],
             datasets: [{
               data: [
-                selectedCategory.value === 'all' 
+                selectedCategory.value === 'all'
                   ? progressData?.performance.correct || 0
                   : progressData?.byCategory[selectedCategory.value]?.correct || 0,
                 selectedCategory.value === 'all'
                   ? progressData?.performance.incorrect || 0
-                  : (progressData?.byCategory[selectedCategory.value]?.total || 0) - (progressData?.byCategory[selectedCategory.value]?.correct || 0)
+                  : (progressData?.byCategory[selectedCategory.value]?.attempted || 0) - (progressData?.byCategory[selectedCategory.value]?.correct || 0)
               ],
               backgroundColor: [
                 '#8B5CF6',
@@ -69,7 +69,7 @@ const PerformanceChart = ({ progressData, selectedCategory, isLoading }) => {
           {progressData ? 
             selectedCategory.value === 'all' 
               ? Math.round((progressData.performance.correct / (progressData.performance.correct + progressData.performance.incorrect)) * 100)
-              : Math.round((progressData.byCategory[selectedCategory.value]?.correct || 0) / (progressData.byCategory[selectedCategory.value]?.total || 1) * 100)
+              : Math.round((progressData.byCategory[selectedCategory.value]?.correct || 0) / ((progressData.byCategory[selectedCategory.value]?.correct || 0) + ((progressData.byCategory[selectedCategory.value]?.attempted || 0) - (progressData.byCategory[selectedCategory.value]?.correct || 0))) * 100)
           : 0}%
         </div>
       </div>
