@@ -3,6 +3,9 @@ import { Bar } from 'react-chartjs-2';
 import LoadingSpinner from '../../LoadingSpinner/LoadingSpinner';
 
 const StudyTimeChart = ({ progressData, isLoading }) => {
+  console.log('StudyTimeChart progressData:', progressData);
+  console.log('StudyTimeChart studyTime:', progressData?.studyTime);
+
   // Show loading state during initial load or refresh
   if (isLoading || !progressData?.studyTime) {
     return (
@@ -26,8 +29,8 @@ const StudyTimeChart = ({ progressData, isLoading }) => {
           data={{
             labels: progressData?.studyTime?.labels || [],
             datasets: [{
-              label: 'Hours',
-              data: progressData?.studyTime?.data.map(time => Math.round(time * 10) / 10) || [],
+              label: 'Minutes',
+              data: progressData?.studyTime?.data || [],
               backgroundColor: '#8B5CF6'
             }]
           }}
@@ -37,11 +40,17 @@ const StudyTimeChart = ({ progressData, isLoading }) => {
             scales: {
               y: {
                 beginAtZero: true,
+                min: 0,
                 grid: {
                   color: 'rgba(255, 255, 255, 0.1)'
                 },
                 ticks: {
-                  color: '#9CA3AF'
+                  color: '#9CA3AF',
+                  stepSize: 1,
+                  precision: 0,
+                  callback: function(value) {
+                    return value + ' min';
+                  }
                 }
               },
               x: {

@@ -39,18 +39,39 @@ export class TimeSeriesTransformer {
      * @returns {Object} Transformed study time data
      */
     static transformStudyTime(progressData) {
+        console.log('TimeSeriesTransformer input:', progressData);
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const dailyTime = new Array(7).fill(0);
         
         progressData.forEach(data => {
-            const date = data.lastAttempted.toDate();
-            const dayIndex = date.getDay();
-            dailyTime[dayIndex] += (data.answerTime || 0) / 3600;
+            // Process attempt history for each progress document
+            if (data.attemptHistory && Array.isArray(data.attemptHistory)) {
+                data.attemptHistory.forEach(attempt => {
+                    console.log('Processing attempt:', attempt);
+                    if (attempt.timestamp && attempt.answerTime) {
+                        const date = attempt.timestamp.toDate();
+                        const dayIndex = date.getDay();
+                        const seconds = attempt.answerTime;
+                        
+                        if (seconds > 0) {
+                            // Round up to at least 1 minute for any non-zero time
+                            const minutes = Math.max(1, Math.ceil(seconds / 60));
+                            dailyTime[dayIndex] += minutes;
+                        }
+                    }
+                });
+            }
         });
 
+        console.log('TimeSeriesTransformer output:', {
+            labels: dayNames,
+            data: dailyTime,
+            rawData: progressData
+        });
+        
         return {
             labels: dayNames,
-            data: dailyTime.map(time => Math.round(time * 10) / 10) // Round to 1 decimal
+            data: dailyTime.map(time => time || 0)  // Ensure no null/undefined values
         };
     }
 

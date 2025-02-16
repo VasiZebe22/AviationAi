@@ -30,6 +30,7 @@ const Questions = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState('');
     const [activeTab, setActiveTab] = useState('question');
+    const [questionStartTime, setQuestionStartTime] = useState(Date.now());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [flags, setFlags] = useState({});
@@ -83,12 +84,14 @@ const Questions = () => {
         return questionIndex >= currentPageStart && questionIndex < currentPageEnd;
     }, [currentQuestion, currentPage]);
 
-    // Update current page when question changes
+    // Update current page and reset timer when question changes
     useEffect(() => {
         if (!isQuestionOnCurrentPage) {
             const newPage = Math.floor(currentQuestion / QUESTIONS_PER_PAGE);
             setCurrentPage(newPage);
         }
+        // Reset question start time when question changes
+        setQuestionStartTime(Date.now());
     }, [currentQuestion, isQuestionOnCurrentPage]);
 
     // Get current question data
@@ -158,6 +161,7 @@ const Questions = () => {
         if (!currentQuestionData) return;
 
         const isCorrect = isAnswerCorrect(currentQuestionData, selectedAnswer.letter);
+        const answerTime = Math.round((Date.now() - questionStartTime) / 1000); // Convert to seconds
 
         // Store only the letter in answeredQuestions
         setAnsweredQuestions(prev => ({
@@ -170,8 +174,8 @@ const Questions = () => {
             [currentQuestionData.id]: isCorrect
         }));
 
-        // Update the question status in the database
-        progressService.updateProgress(currentQuestionData.id, isCorrect)
+        // Update the question status in the database with answer time
+        progressService.updateProgress(currentQuestionData.id, isCorrect, answerTime)
             .catch(error => {
                 if (error.message === 'User not authenticated') {
                     navigate('/login');
@@ -302,12 +306,15 @@ const Questions = () => {
             [currentQuestionData.id]: note
         }));
     }, [currentQuestionData, navigate]);
-
     const handleFinishTest = useCallback(async () => {
         if (!currentQuestionData) return;
         try {
-            await progressService.updateProgress(currentQuestionData.id,
-                answeredQuestions[currentQuestionData.id] === currentQuestionData.correct_answer
+            // Calculate time for the last question
+            const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
+            await progressService.updateProgress(
+                currentQuestionData.id,
+                answeredQuestions[currentQuestionData.id] === currentQuestionData.correct_answer,
+                answerTime
             );
 
             // Only include questions that were actually answered, storing only the option letters
@@ -330,7 +337,7 @@ const Questions = () => {
             const correctTotal = questionResults.filter(q => q.isCorrect).length;
 
             // Get filters and selectedSubcategories from location state
-            const filters = location.state?.filters;
+            const testFilters = location.state?.filters;
             const selectedSubcategories = location.state?.selectedSubcategories;
 
             navigate('/results', {
@@ -340,15 +347,15 @@ const Questions = () => {
                     total: answeredTotal,
                     time: timer,
                     questionResults: questionResults,
-                    filters: filters,  // Add filters
-                    selectedSubcategories: selectedSubcategories  // Add selectedSubcategories
+                    filters: testFilters,
+                    selectedSubcategories: selectedSubcategories
                 }
             });
         } catch (err) {
             console.error('Error finishing test:', err);
             setError('Failed to save test results. Please try again.');
         }
-    }, [currentQuestionData, answeredQuestions, correctAnswers, categoryId, questions, timer, navigate, location.state]);
+    }, [currentQuestionData, answeredQuestions, correctAnswers, categoryId, questions, timer, navigate, location.state, questionStartTime]);
 
     // Setup keyboard navigation
     useQuestionNavigation({

@@ -144,8 +144,8 @@ await analyticsService.resetStudyTime();
     
     // Study time
     studyTime: {
-        labels: string[],  // Day names
-        data: number[]     // Hours per day
+        labels: string[],  // Day names (Sun-Sat)
+        data: number[]     // Minutes per day, rounded up to nearest minute
     },
     
     // Performance summary
