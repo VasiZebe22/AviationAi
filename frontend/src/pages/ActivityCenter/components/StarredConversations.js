@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { MapPinIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { db, auth } from '../../../services/firebase';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -22,7 +23,7 @@ const formatTimestamp = (timestamp) => {
   }
 };
 
-const StarredConversationCard = ({ chat, onAddTag }) => {
+const StarredConversationCard = ({ chat, onAddTag, onDelete, onTogglePin }) => {
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState(chat.tags || []);
@@ -47,19 +48,44 @@ const StarredConversationCard = ({ chat, onAddTag }) => {
   };
 
   return (
-    <div className="bg-gray-800/80 p-5 rounded-lg mb-6 hover:bg-gray-700/80 transition-all duration-200 border border-gray-600/20 shadow-lg ring-1 ring-gray-700/10">
+    <div className="bg-gray-800/80 p-5 rounded-lg mb-6 hover:bg-gray-700/80 transition-all duration-200 border border-gray-600/20 shadow-lg ring-1 ring-gray-700/10 relative group">
       <div className="flex flex-col space-y-3">
-        {/* Header with title and button */}
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium text-white text-base truncate pr-4">
-            {chat.title}
-          </h3>
-          <button
-            onClick={handleNavigateToChat}
-            className="text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded hover:bg-blue-600/30 transition-colors flex-shrink-0"
-          >
-            Open Chat
-          </button>
+        {/* Header with title, actions, and open button */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-white text-base truncate">
+              {chat.title}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Pin button */}
+            <button
+              onClick={() => onTogglePin(chat.id)}
+              className={`p-1.5 rounded-full transition-all duration-200 ${
+                chat.isPinned
+                  ? 'opacity-100 bg-purple-500/30 text-purple-400 hover:bg-purple-500/40'
+                  : 'opacity-0 group-hover:opacity-100 bg-surface/70 text-gray-400 hover:bg-surface hover:text-white'
+              }`}
+              title={chat.isPinned ? "Unpin chat" : "Pin chat"}
+            >
+              <MapPinIcon className={`h-4 w-4 ${chat.isPinned ? 'rotate-45' : ''}`} />
+            </button>
+            {/* Delete button */}
+            <button
+              onClick={() => onDelete(chat.id)}
+              className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 bg-red-500/20 text-red-500"
+              title="Delete chat"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+            {/* Open Chat button */}
+            <button
+              onClick={handleNavigateToChat}
+              className="text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded hover:bg-blue-600/30 transition-colors flex-shrink-0"
+            >
+              Open Chat
+            </button>
+          </div>
         </div>
 
         {/* Tags section */}
@@ -230,7 +256,8 @@ const StarredConversations = () => {
             createdAt: formattedDate,
             lastMessage: lastMessage?.content || 'No messages',
             messages: messages,
-            tags: data.tags || []
+            tags: data.tags || [],
+            isPinned: data.isPinned || false
           };
         }).filter(chat => chat.messages.length > 0); // Only show chats with messages
         
@@ -251,6 +278,51 @@ const StarredConversations = () => {
       fetchStarredChats().finally(() => setLoading(false));
     }
   }, [currentUser]);
+
+  const handleDelete = async (chatId) => {
+    if (!window.confirm('Are you sure you want to delete this chat?')) {
+      return;
+    }
+
+    try {
+      const chatRef = doc(db, 'chats', chatId);
+      await deleteDoc(chatRef);
+      setStarredChats(prevChats => prevChats.filter(chat => chat.id !== chatId));
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+    }
+  };
+
+  const handleTogglePin = async (chatId) => {
+    try {
+      const chatRef = doc(db, 'chats', chatId);
+      const chat = starredChats.find(c => c.id === chatId);
+      const newPinnedState = !chat.isPinned;
+      
+      await updateDoc(chatRef, {
+        isPinned: newPinnedState
+      });
+
+      setStarredChats(prevChats =>
+        prevChats.map(chat =>
+          chat.id === chatId ? { ...chat, isPinned: newPinnedState } : chat
+        )
+      );
+    } catch (error) {
+      console.error('Error updating pin status:', error);
+    }
+  };
+
+  // Sort chats with pinned ones first
+  const sortedChats = useMemo(() => {
+    return [...filteredChats].sort((a, b) => {
+      if (a.isPinned === b.isPinned) {
+        // If both are pinned or both are not pinned, sort by timestamp
+        return new Date(b.messages[0]?.timestamp) - new Date(a.messages[0]?.timestamp);
+      }
+      return a.isPinned ? -1 : 1; // Pinned chats come first
+    });
+  }, [filteredChats]);
 
   const handleAddTag = async (chatId, newTags) => {
     try {
@@ -312,11 +384,13 @@ const StarredConversations = () => {
       );
     }
 
-    return filteredChats.map(chat => (
+    return sortedChats.map(chat => (
       <StarredConversationCard
         key={chat.id}
         chat={chat}
         onAddTag={handleAddTag}
+        onDelete={handleDelete}
+        onTogglePin={handleTogglePin}
       />
     ));
   };
