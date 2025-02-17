@@ -8,18 +8,29 @@ import AIChatHistoryTabs from './AIChatHistoryTabs';
 
 const formatTimestamp = (timestamp) => {
   try {
-    if (!timestamp) {
-      return new Date().toLocaleString();
+    if (!timestamp) return '';
+    
+    // Handle Firestore timestamps
+    if (typeof timestamp === 'object' && timestamp?.toDate) {
+      return timestamp.toDate().toLocaleString();
     }
-    // Handle both Date objects, ISO strings, and Firestore timestamps
-    const date = typeof timestamp === 'object' && timestamp?.toDate
-      ? timestamp.toDate()
-      : new Date(timestamp);
+    
+    // Handle Date objects
+    if (timestamp instanceof Date) {
+      return timestamp.toLocaleString();
+    }
+    
+    // Handle string timestamps
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      console.error('Invalid timestamp:', timestamp);
+      return '';
+    }
     
     return date.toLocaleString();
   } catch (error) {
     console.error('Error formatting timestamp:', error);
-    return new Date().toLocaleString();
+    return '';
   }
 };
 
@@ -156,7 +167,7 @@ const StarredConversationCard = ({ chat, onAddTag, onDelete, onTogglePin }) => {
         {/* Metadata footer */}
         <div className="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-700/50">
           <span className="text-gray-400">
-            {formatTimestamp(chat.messages?.[0]?.timestamp)}
+            {formatTimestamp(chat.messages?.[0]?.timestamp || chat.clientCreatedAt || chat.createdAt)}
           </span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
@@ -250,10 +261,29 @@ const StarredConversations = () => {
           const firstMessage = messages[0];
           const lastMessage = messages.filter(m => m.type === 'user' || m.type === 'ai').pop();
 
-          // Get timestamp from first message
-          const timestamp = firstMessage?.timestamp;
-          const date = timestamp ? new Date(timestamp) : null;
+          // Get timestamp from first message or fallback to chat creation time
+          const messageTimestamp = firstMessage?.timestamp;
+          const chatTimestamp = data.clientCreatedAt || data.createdAt;
+          
+          // Convert timestamp to Date object
+          let date;
+          if (messageTimestamp) {
+            date = typeof messageTimestamp === 'object' && messageTimestamp.toDate
+              ? messageTimestamp.toDate()
+              : new Date(messageTimestamp);
+          } else if (chatTimestamp) {
+            date = typeof chatTimestamp === 'object' && chatTimestamp.toDate
+              ? chatTimestamp.toDate()
+              : new Date(chatTimestamp);
+          }
+          
           const formattedDate = date ? date.toLocaleString() : null;
+          console.log('Chat timestamp details:', {
+            chatId: doc.id,
+            messageTimestamp,
+            chatTimestamp,
+            finalDate: formattedDate
+          });
 
           return {
             id: doc.id,
@@ -262,7 +292,8 @@ const StarredConversations = () => {
             lastMessage: lastMessage?.content || 'No messages',
             messages: messages,
             tags: data.tags || [],
-            isPinned: data.isPinned || false
+            isPinned: data.isPinned || false,
+            rawTimestamp: messageTimestamp || chatTimestamp // Store raw timestamp for sorting
           };
         }).filter(chat => chat.messages.length > 0); // Only show chats with messages
         
@@ -318,14 +349,30 @@ const StarredConversations = () => {
     }
   };
 
-  // Sort chats with pinned ones first
+  // Sort chats with pinned ones first, then by date
   const sortedChats = useMemo(() => {
     return [...filteredChats].sort((a, b) => {
-      if (a.isPinned === b.isPinned) {
-        // If both are pinned or both are not pinned, sort by timestamp
-        return new Date(b.messages[0]?.timestamp) - new Date(a.messages[0]?.timestamp);
+      // First sort by pin status
+      if (a.isPinned !== b.isPinned) {
+        return a.isPinned ? -1 : 1; // Pinned chats come first
       }
-      return a.isPinned ? -1 : 1; // Pinned chats come first
+      
+      // Then sort by timestamp within each group (pinned and unpinned)
+      const getDateFromTimestamp = (timestamp) => {
+        if (!timestamp) return new Date(0);
+        if (typeof timestamp === 'object' && timestamp.toDate) {
+          return timestamp.toDate();
+        }
+        if (timestamp instanceof Date) {
+          return timestamp;
+        }
+        return new Date(timestamp);
+      };
+
+      const aDate = getDateFromTimestamp(a.rawTimestamp);
+      const bDate = getDateFromTimestamp(b.rawTimestamp);
+      
+      return bDate.getTime() - aDate.getTime(); // Newer dates first
     });
   }, [filteredChats]);
 
