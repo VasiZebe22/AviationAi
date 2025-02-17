@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../../../services/firebase';
 import { useNavigate } from 'react-router-dom';
@@ -47,89 +47,100 @@ const StarredConversationCard = ({ chat, onAddTag }) => {
   };
 
   return (
-    <div className="bg-surface-DEFAULT p-4 rounded-lg mb-4 hover:bg-surface-lighter transition-colors duration-200">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <div className="space-y-2">
-            <h3 className="font-medium text-white">
-              {chat.title}
-            </h3>
-            <div className="flex items-center flex-wrap gap-2 text-xs">
-              {tags.length > 0 && tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-0.5 rounded-full bg-gray-600/40 border border-gray-500/40 text-gray-200 font-light group relative inline-flex items-center"
-                >
-                  <span className="text-gray-300 font-normal">#</span>{tag}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const newTags = tags.filter((_, i) => i !== index);
-                      setTags(newTags);
-                      onAddTag(chat.id, newTags);
-                    }}
-                    className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-300"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </span>
-              ))}
-              {showTagInput ? (
-                <input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onBlur={() => {
-                    if (tagInput.trim()) {
-                      handleAddTag({ preventDefault: () => {} });
-                    }
-                    setShowTagInput(false);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (tagInput.trim()) {
-                        handleAddTag({ preventDefault: () => {} });
-                      }
-                      setShowTagInput(false);
-                    }
-                  }}
-                  placeholder="Type tag name..."
-                  className="bg-transparent border-b border-gray-600 focus:border-accent-lilac focus:outline-none px-1 w-24"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  onClick={() => setShowTagInput(true)}
-                  className="text-gray-400 hover:text-gray-300 flex items-center gap-1 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Tag
-                </button>
-              )}
-            </div>
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>
-                {formatTimestamp(chat.messages?.[0]?.timestamp)}
-              </span>
-              <div className="flex items-center gap-4">
-                <span>{chat.messages.length} messages</span>
-                <span>{chat.messages.filter(m => m.bookmarked).length} bookmarks</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col items-end">
+    <div className="bg-gray-800/80 p-5 rounded-lg mb-6 hover:bg-gray-700/80 transition-all duration-200 border border-gray-600/20 shadow-lg ring-1 ring-gray-700/10">
+      <div className="flex flex-col space-y-3">
+        {/* Header with title and button */}
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-white text-base truncate pr-4">
+            {chat.title}
+          </h3>
           <button
             onClick={handleNavigateToChat}
-            className="text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded hover:bg-blue-600/30 transition-colors mb-auto"
+            className="text-xs bg-blue-600/20 text-blue-300 px-3 py-1 rounded hover:bg-blue-600/30 transition-colors flex-shrink-0"
           >
             Open Chat
           </button>
+        </div>
+
+        {/* Tags section */}
+        <div className="flex items-center flex-wrap gap-1 min-h-[14px] opacity-75 -mt-1">
+          {tags.length > 0 && tags.map((tag, index) => (
+            <span
+              key={index}
+              className="px-1.5 py-[2px] rounded-full bg-gray-600/40 border border-gray-500/40 text-gray-200 text-[11px] font-light group relative inline-flex items-center"
+            >
+              <span className="text-gray-300 font-normal">#</span>{tag}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newTags = tags.filter((_, i) => i !== index);
+                  setTags(newTags);
+                  onAddTag(chat.id, newTags);
+                }}
+                className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-gray-300"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </span>
+          ))}
+          {showTagInput ? (
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onBlur={() => {
+                if (tagInput.trim()) {
+                  handleAddTag({ preventDefault: () => {} });
+                }
+                setShowTagInput(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (tagInput.trim()) {
+                    handleAddTag({ preventDefault: () => {} });
+                  }
+                  setShowTagInput(false);
+                }
+              }}
+              placeholder="Type tag name..."
+              className="bg-transparent border-b border-gray-600 focus:border-accent-lilac focus:outline-none px-1 w-20 text-[11px]"
+              autoFocus
+            />
+          ) : (
+            <button
+              onClick={() => setShowTagInput(true)}
+              className="text-gray-400 hover:text-gray-300 flex items-center gap-0.5 transition-colors text-[11px]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Tag
+            </button>
+          )}
+        </div>
+
+        {/* Metadata footer */}
+        <div className="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-700/50">
+          <span className="text-gray-400">
+            {formatTimestamp(chat.messages?.[0]?.timestamp)}
+          </span>
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4-4-4z" />
+              </svg>
+              {chat.messages.length}
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              {chat.messages.filter(m => m.bookmarked).length}
+            </span>
+          </div>
         </div>
       </div>
       {/* Tag input is now integrated in the main content area */}
@@ -142,6 +153,28 @@ const StarredConversations = () => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedTab, setSelectedTab] = useState('Starred Conversations');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter chats based on search query
+  const filteredChats = useMemo(() => {
+    if (!searchQuery.trim()) return starredChats;
+    const searchLower = searchQuery.toLowerCase();
+    
+    // Handle tag search with '#' prefix
+    if (searchLower.startsWith('#')) {
+      const tagSearch = searchLower.slice(1); // Remove the '#'
+      return starredChats.filter(chat =>
+        chat.tags.some(tag => tag.toLowerCase().includes(tagSearch))
+      );
+    }
+    
+    // Regular search across all fields
+    return starredChats.filter(chat => (
+      chat.title.toLowerCase().includes(searchLower) ||
+      chat.messages.some(msg => msg.content?.toLowerCase().includes(searchLower)) ||
+      chat.tags.some(tag => tag.toLowerCase().includes(searchLower))
+    ));
+  }, [starredChats, searchQuery]);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -266,7 +299,20 @@ const StarredConversations = () => {
       );
     }
 
-    return starredChats.map(chat => (
+    if (filteredChats.length === 0 && searchQuery.trim()) {
+      return (
+        <div className="col-span-2 flex flex-col items-center justify-center py-12">
+          <div className="text-gray-400 text-center">
+            <p className="mb-2">No chats found matching your search</p>
+            <p className="text-sm text-gray-500">
+              Try different keywords or clear the search
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return filteredChats.map(chat => (
       <StarredConversationCard
         key={chat.id}
         chat={chat}
@@ -293,13 +339,40 @@ const StarredConversations = () => {
   };
 
   return (
-    <div className="flex-1 bg-surface-light rounded-lg p-6">
-      <div className="space-y-6">
-        <AIChatHistoryTabs
-          selectedTab={selectedTab}
-          onTabChange={setSelectedTab}
+    <div className="flex-1 space-y-4">
+      {/* Search bar */}
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Search chats, messages, or tags..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-gray-800/90 text-gray-200 placeholder-gray-500 px-4 py-2.5 pl-11 rounded-lg border border-gray-700/50 focus:outline-none focus:border-accent-lilac/50 focus:ring-1 focus:ring-accent-lilac/50"
         />
-        {renderTabContent()}
+        <svg
+          className="absolute left-3.5 top-3 h-5 w-5 text-gray-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      </div>
+
+      {/* Content area */}
+      <div className="bg-surface-light rounded-lg p-6">
+        <div className="space-y-6 relative">
+          <AIChatHistoryTabs
+            selectedTab={selectedTab}
+            onTabChange={setSelectedTab}
+          />
+          {renderTabContent()}
+        </div>
       </div>
     </div>
   );

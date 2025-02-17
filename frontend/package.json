@@ -8,6 +8,7 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^5.15.0",
+    "all": "^0.0.0",
     "chart.js": "^4.4.7",
     "date-fns": "^4.1.0",
     "firebase": "^11.1.0",
