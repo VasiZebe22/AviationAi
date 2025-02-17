@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAssistantResponse } from '../../api/assistant';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   collection, 
   addDoc, 
@@ -75,6 +75,24 @@ const BookmarkButton = ({ message, isBookmarked, onToggle, messageType, chatId }
 };
 
 const AiChat = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (location.state?.selectedChatId && location.state?.action === 'loadChat') {
+      const chatRef = doc(db, 'chats', location.state.selectedChatId);
+      getDoc(chatRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const chatData = docSnap.data();
+          const fullChat = {
+            id: location.state.selectedChatId,
+            ...chatData
+          };
+          handleChatSelect(fullChat);
+        }
+      });
+    }
+  }, [location.state]);
+
   const { currentUser } = useAuth();
   const [messageInput, setMessageInput] = useState('');
   const [history, setHistory] = useState([]);
@@ -1072,6 +1090,32 @@ const AiChat = () => {
 
     loadSavedChats();
   }, [currentUser?.user?.uid, chatId]);
+
+  const routeLocation = useLocation();
+
+  // Load chat from navigation state
+  useEffect(() => {
+    const loadChatFromState = async () => {
+      if (routeLocation.state?.selectedChatId && routeLocation.state?.action === 'loadChat') {
+        try {
+          const chatRef = doc(db, 'chats', routeLocation.state.selectedChatId);
+          const docSnap = await getDoc(chatRef);
+          if (docSnap.exists()) {
+            const chatData = docSnap.data();
+            const fullChat = {
+              id: routeLocation.state.selectedChatId,
+              ...chatData
+            };
+            handleChatSelect(fullChat);
+          }
+        } catch (error) {
+          console.error('Error loading chat:', error);
+        }
+      }
+    };
+
+    loadChatFromState();
+  }, [routeLocation.state]);
 
   useEffect(() => {
     return () => {

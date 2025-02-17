@@ -30,7 +30,12 @@ const StarredConversationCard = ({ chat, onAddTag, onDelete, onTogglePin }) => {
   const navigate = useNavigate();
 
   const handleNavigateToChat = () => {
-    navigate(`/ai-chat/${chat.id}`);
+    navigate('/chat', {
+      state: {
+        selectedChatId: chat.id,
+        action: 'loadChat'
+      }
+    });
   };
 
   const handleAddTag = (e) => {
