@@ -252,18 +252,33 @@ const AiChat = () => {
 
   const formatTimestamp = (timestamp) => {
     try {
-      if (!timestamp) {
-        return new Date().toLocaleString();
+      // Handle ISO string timestamps (from message.timestamp)
+      if (typeof timestamp === 'string') {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleString();
+        }
       }
-      // Handle both Date objects, ISO strings, and Firestore timestamps
-      const date = typeof timestamp === 'object' && timestamp?.toDate 
-        ? timestamp.toDate() 
-        : new Date(timestamp);
       
-      return date.toLocaleString();
+      // Handle Firestore timestamps (from createdAt/updatedAt)
+      if (typeof timestamp === 'object' && timestamp?.toDate) {
+        return timestamp.toDate().toLocaleString();
+      }
+      
+      // Fallback to chat creation time
+      if (currentChat?.createdAt) {
+        if (typeof currentChat.createdAt === 'string') {
+          return new Date(currentChat.createdAt).toLocaleString();
+        }
+        if (currentChat.createdAt?.toDate) {
+          return currentChat.createdAt.toDate().toLocaleString();
+        }
+      }
+      
+      return 'Date not available';
     } catch (error) {
       console.error('Error formatting timestamp:', error);
-      return new Date().toLocaleString();
+      return 'Date not available';
     }
   };
 
@@ -418,10 +433,10 @@ const AiChat = () => {
 
     try {
       const currentTimestamp = new Date();
-      const userMessage = { 
-        type: 'user', 
+      const userMessage = {
+        type: 'user',
         content: messageInput,
-        timestamp: currentTimestamp.toISOString() // Store as ISO string for consistency
+        timestamp: new Date().toISOString() // Use ISO string for consistent display
       };
       localHistory = [...history, userMessage];
       
@@ -477,10 +492,10 @@ const AiChat = () => {
         throw new Error(`Failed to get AI response: ${err.message}`);
       }
 
-      const assistantMessage = { 
-        type: 'assistant', 
+      const assistantMessage = {
+        type: 'assistant',
         content: responseData.response,
-        timestamp: new Date().toISOString() // Store as ISO string
+        timestamp: new Date().toISOString() // Use ISO string for consistent display
       };
       const finalHistory = [...localHistory, assistantMessage];
 
@@ -847,6 +862,7 @@ const AiChat = () => {
     return (
       <div
         key={chat?.id || 'new-chat'}
+        data-chat-id={chat?.id}
         className={`p-3 cursor-pointer hover:bg-dark-lighter transition-colors duration-200 relative group flex items-center justify-between ${
           currentChat?.id === chat?.id ? 'bg-accent-lilac bg-opacity-20 border-l-4 border-accent-lilac' : ''
         }`}
@@ -1106,7 +1122,15 @@ const AiChat = () => {
               id: routeLocation.state.selectedChatId,
               ...chatData
             };
-            handleChatSelect(fullChat);
+            await handleChatSelect(fullChat);
+            
+            // After loading the chat, find and scroll to its element in the list
+            setTimeout(() => {
+              const chatElement = document.querySelector(`[data-chat-id="${routeLocation.state.selectedChatId}"]`);
+              if (chatElement) {
+                chatElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 100); // Small delay to ensure the chat list is rendered
           }
         } catch (error) {
           console.error('Error loading chat:', error);
