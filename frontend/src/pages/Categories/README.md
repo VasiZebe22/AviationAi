@@ -5,11 +5,41 @@ The Categories component is a crucial part of the Aviation AI application, respo
 
 ## File Structure
 ```
-frontend/src/pages/Categories/
-├── Categories.js    # Main component implementation
-├── index.js        # Export file
-└── Categories.md   # Documentation (this file)
+frontend/src/
+├── components/
+│   ├── FilterPanel/            # Filter options UI and logic
+│   │   ├── FilterPanel.js      # Filter component implementation
+│   │   └── index.js            # Export file
+│   ├── ModeSelector/           # Study/Exam mode selection
+│   │   ├── ModeSelector.js     # Mode selector implementation
+│   │   └── index.js            # Export file
+│   └── CategoryCard/           # Category card component
+├── data/
+│   └── categoryData.js         # Centralized category data
+├── pages/
+│   └── Categories/
+│       ├── Categories.js       # Main component implementation
+│       ├── index.js            # Export file
+│       └── Categories.md       # Documentation (this file)
+└── services/
+    └── analytics/              # Analytics service for progress tracking
 ```
+
+## Component Architecture
+
+The Categories feature has been refactored following SOLID, KISS, DRY, and YAGNI principles to improve maintainability and code organization:
+
+1. **Single Responsibility Principle (SRP)**:
+   - `Categories.js`: Main page orchestration and layout
+   - `FilterPanel.js`: Handles all filtering UI and logic
+   - `ModeSelector.js`: Manages study/exam mode selection
+   - `categoryData.js`: Stores and exports category data
+
+2. **Code Organization Benefits**:
+   - Improved maintainability with smaller, focused components
+   - Better separation of concerns
+   - Enhanced reusability of components
+   - Cleaner, more readable code
 
 ## Component Features
 
@@ -17,9 +47,10 @@ frontend/src/pages/Categories/
 - **Study Mode**: For practice and learning
 - **Exam Mode**: For test simulation
 - Mode selection affects how questions are presented and scored
+- Implemented in the dedicated `ModeSelector` component
 
 ### 2. Question Filtering System
-The component implements comprehensive filtering options:
+The component implements comprehensive filtering options through the `FilterPanel` component:
 - Question Types:
   - All questions
   - Questions with annexes
@@ -45,6 +76,7 @@ Each category contains:
 - Description
 - Associated image
 - List of subcategories with codes and names
+- Data centralized in `categoryData.js`
 
 ## Available Categories
 
@@ -70,8 +102,27 @@ Each category contains:
 
 ## Key Components and Functions
 
+### Main Categories Component
+The main `Categories` component now focuses on:
+- Orchestrating the overall page layout
+- Managing shared state
+- Handling navigation and progress tracking
+- Integrating the specialized components
+
+### FilterPanel Component
+- Encapsulates all filtering logic and UI
+- Manages question type selection
+- Handles all filter checkbox interactions
+- Can be reused in other parts of the application
+
+### ModeSelector Component
+- Manages the study/exam mode toggle
+- Provides clear visual feedback on current mode
+- Designed for potential reuse in other contexts
+
 ### State Management
 ```javascript
+// In Categories.js
 - loading: Tracks data loading state
 - error: Stores error messages
 - userProgress: Tracks user progress across categories
@@ -99,10 +150,6 @@ Each category contains:
 - Manages subcategory selection/deselection
 - Updates selected subcategories state
 
-#### `handleQuestionTypeChange(type)`
-- Manages question type filter changes
-- Ensures mutually exclusive selection
-
 ## UI Components
 
 ### Navigation Bar
@@ -124,28 +171,39 @@ Each category contains:
 - React (useState, useEffect)
 - react-router-dom (useNavigate)
 - analyticsService (for progress tracking)
-- Various UI components (CategoryCard, SavedTestsModal, Navbar)
+- Various UI components (CategoryCard, SavedTestsModal, Navbar, FilterPanel, ModeSelector)
 
 ## Best Practices
-1. **State Management**
-   - Uses React hooks for efficient state management
-   - Implements loading states for better UX
-   - Handles errors gracefully
+1. **SOLID Principles**
+   - Single Responsibility: Each component has one job
+   - Open/Closed: Components can be extended without modification
+   - Interface Segregation: Components expose only what's needed
+   - Dependency Inversion: High-level components don't depend on details
 
-2. **Performance**
+2. **DRY (Don't Repeat Yourself)**
+   - Common UI patterns extracted to reusable components
+   - Shared data centralized in dedicated files
+   - Utility functions designed for reuse
+
+3. **KISS (Keep It Simple, Stupid)**
+   - Components designed to be intuitive and straightforward
+   - Clear naming conventions
+   - Focused functionality
+
+4. **YAGNI (You Aren't Gonna Need It)**
+   - Only implemented what's currently needed
+   - Avoided speculative features
+   - Kept the codebase lean and maintainable
+
+5. **Performance**
    - Implements efficient filtering mechanisms
    - Uses async operations for data fetching
    - Optimizes re-renders with proper state structure
 
-3. **User Experience**
+6. **User Experience**
    - Provides clear visual feedback
    - Implements intuitive navigation
    - Shows loading states during operations
-
-4. **Code Organization**
-   - Follows component-based architecture
-   - Implements clear separation of concerns
-   - Uses meaningful naming conventions
 
 ## Usage Example
 ```javascript
