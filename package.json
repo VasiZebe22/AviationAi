@@ -4,13 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "analyze-firestore": "node fetch_firestore_structure.js",
+    "view-collections": "node view_collections.js",
+    "view-firestore": "node view_firestore.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.2",
     "chart.js": "^4.4.7",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.10.1",
+    "google-auth-library": "^9.4.1",
     "react-chartjs-2": "^5.3.0"
   }
 }

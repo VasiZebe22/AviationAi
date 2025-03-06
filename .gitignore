@@ -39,3 +39,7 @@ yarn-error.log*
 cline_docs/
 scripts/
 .clinerules
+
+# Firestore structure analyzer files
+firestore_structure.json
+*_structure.json
