@@ -92,24 +92,6 @@ const FilterPanel = ({ filters, setFilters }) => {
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={filters.reviewQuestions}
-            onChange={(e) => setFilters({ ...filters, reviewQuestions: e.target.checked })}
-            className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-          />
-          <label className="ml-3 text-gray-300">Review Questions</label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={filters.markedQuestions}
-            onChange={(e) => setFilters({ ...filters, markedQuestions: e.target.checked })}
-            className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"
-          />
-          <label className="ml-3 text-gray-300">Marked Questions</label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
             checked={filters.unseenQuestions}
             onChange={(e) => setFilters({ ...filters, unseenQuestions: e.target.checked })}
             className="w-4 h-4 text-accent-lilac bg-dark border-gray-700 rounded focus:ring-accent-lilac focus:ring-1"

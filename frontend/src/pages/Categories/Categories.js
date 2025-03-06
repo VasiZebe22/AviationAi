@@ -37,8 +37,6 @@ const Categories = () => {
       withoutAnnexes: false
     },
     realExamOnly: false,
-    reviewQuestions: false,
-    markedQuestions: false,
     unseenQuestions: false,
     incorrectlyAnswered: false,
     greenFlagged: false,

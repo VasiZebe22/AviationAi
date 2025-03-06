@@ -11,9 +11,17 @@ export const questionService = {
                 throw new Error('User not authenticated');
             }
 
-            // First get wrong answers from progress collection if filter is applied
-            let questionIds = [];
-            if (filters.incorrectlyAnswered) {
+            // Initialize arrays to store filtered question IDs
+            let incorrectlyAnsweredIds = [];
+            let seenQuestionIds = []; // Track seen questions
+            let flaggedQuestionIds = {
+                green: [],
+                yellow: [],
+                red: []
+            };
+
+            // Get progress data for incorrectly answered and seen questions
+            if (filters.incorrectlyAnswered || filters.unseenQuestions) {
                 const progressSnapshot = await getDocs(
                     query(
                         db_operations.collections.progress(),
@@ -24,9 +32,14 @@ export const questionService = {
                 // Create a map to track the latest attempt for each question
                 const latestAttempts = new Map();
                 
-                // Process all attempts to find the latest one for each question
                 progressSnapshot.forEach(doc => {
                     const data = doc.data();
+                    
+                    // Track question IDs where isSeen is true
+                    if (data.isSeen === true) {
+                        seenQuestionIds.push(data.questionId);
+                    }
+                    
                     const existingAttempt = latestAttempts.get(data.questionId);
                     
                     if (!existingAttempt || data.lastAttempted.toDate() > existingAttempt.lastAttempted.toDate()) {
@@ -35,26 +48,38 @@ export const questionService = {
                 });
 
                 // Get IDs of questions that are still incorrect in their latest attempt
-                questionIds = Array.from(latestAttempts.values())
+                incorrectlyAnsweredIds = Array.from(latestAttempts.values())
                     .filter(data => !data.isCorrect)
                     .map(data => data.questionId);
             }
 
-            // Build query
+            // Get flagged questions if any flag filter is applied
+            if (filters.greenFlagged || filters.yellowFlagged || filters.redFlagged) {
+                const flagsSnapshot = await getDocs(
+                    query(
+                        db_operations.collections.flags(),
+                        where('userId', '==', user.uid)
+                    )
+                );
+
+                flagsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.flag === 'green' && filters.greenFlagged) {
+                        flaggedQuestionIds.green.push(data.questionId);
+                    } else if (data.flag === 'yellow' && filters.yellowFlagged) {
+                        flaggedQuestionIds.yellow.push(data.questionId);
+                    } else if (data.flag === 'red' && filters.redFlagged) {
+                        flaggedQuestionIds.red.push(data.questionId);
+                    }
+                });
+            }
+
+            // Build base query
             let q;
             if (categoryCode === 'all') {
                 q = query(db_operations.collections.questions());
             } else {
                 q = db_operations.queries.byCategory(categoryCode);
-            }
-
-            // Apply additional filters
-            if (filters.markedQuestions) {
-                q = query(q, where('is_marked', '==', true));
-            }
-
-            if (filters.unseenQuestions) {
-                q = query(q, where('is_seen', '==', false));
             }
 
             // Get questions and sort them
@@ -70,9 +95,47 @@ export const questionService = {
                     return dateB - dateA;
                 });
 
-            // Filter by wrong answers if needed
-            if (filters.incorrectlyAnswered && questionIds.length > 0) {
-                questions = questions.filter(q => questionIds.includes(q.id));
+            // Apply post-query filters
+            
+            // Filter unseen questions using the isSeen field from progress collection
+            if (filters.unseenQuestions) {
+                // Keep only questions that are not in the seenQuestionIds array
+                questions = questions.filter(q => !seenQuestionIds.includes(q.id));
+            }
+            
+            // Filter real exam questions (if field exists)
+            if (filters.realExamOnly) {
+                questions = questions.filter(q => q.is_real_exam === true);
+            }
+            
+            // Filter by question types
+            if (filters.questionTypes) {
+                if (filters.questionTypes.withAnnexes) {
+                    // Only show questions with question images (annexes)
+                    questions = questions.filter(q => q.has_question_image === true);
+                } else if (filters.questionTypes.withoutAnnexes) {
+                    // Only show questions without question images (annexes)
+                    questions = questions.filter(q => q.has_question_image !== true);
+                }
+                // If 'all' is selected, don't filter by annexes
+            }
+
+            // Filter by incorrectly answered if needed
+            if (filters.incorrectlyAnswered && incorrectlyAnsweredIds.length > 0) {
+                questions = questions.filter(q => incorrectlyAnsweredIds.includes(q.id));
+            }
+
+            // Filter by flags if any flag filter is applied
+            if (filters.greenFlagged || filters.yellowFlagged || filters.redFlagged) {
+                const allFlaggedIds = [
+                    ...(filters.greenFlagged ? flaggedQuestionIds.green : []),
+                    ...(filters.yellowFlagged ? flaggedQuestionIds.yellow : []),
+                    ...(filters.redFlagged ? flaggedQuestionIds.red : [])
+                ];
+                
+                if (allFlaggedIds.length > 0) {
+                    questions = questions.filter(q => allFlaggedIds.includes(q.id));
+                }
             }
 
             return questions;
