@@ -397,7 +397,7 @@ const StarredConversations = () => {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="col-span-2 flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
         </div>
       );
@@ -405,7 +405,7 @@ const StarredConversations = () => {
 
     if (!currentUser) {
       return (
-        <div className="col-span-2 text-center text-gray-400 py-8">
+        <div className="text-center text-gray-400 py-8">
           Please log in to view your starred conversations
         </div>
       );
@@ -413,7 +413,7 @@ const StarredConversations = () => {
 
     if (starredChats.length === 0) {
       return (
-        <div className="col-span-2 flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12">
           <div className="text-gray-400 text-center">
             <p className="mb-2">No starred conversations found</p>
             <p className="text-sm text-gray-500">
@@ -426,7 +426,7 @@ const StarredConversations = () => {
 
     if (filteredChats.length === 0 && searchQuery.trim()) {
       return (
-        <div className="col-span-2 flex flex-col items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12">
           <div className="text-gray-400 text-center">
             <p className="mb-2">No chats found matching your search</p>
             <p className="text-sm text-gray-500">
@@ -437,68 +437,65 @@ const StarredConversations = () => {
       );
     }
 
-    return sortedChats.map(chat => (
-      <StarredConversationCard
-        key={chat.id}
-        chat={chat}
-        onAddTag={handleAddTag}
-        onDelete={handleDelete}
-        onTogglePin={handleTogglePin}
-      />
-    ));
-  };
-
-  const renderTabContent = () => {
-    if (selectedTab === 'Starred Conversations') {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {renderContent()}
-        </div>
-      );
-    } else {
-      // Bookmarked Messages content
-      return <BookmarkedMessages />;
-    }
+    return (
+      <div className="space-y-4">
+        {sortedChats.map(chat => (
+          <StarredConversationCard
+            key={chat.id}
+            chat={chat}
+            onAddTag={handleAddTag}
+            onDelete={handleDelete}
+            onTogglePin={handleTogglePin}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
-    <div className="flex-1 space-y-4">
-      {/* Search bar */}
-      {selectedTab === 'Starred Conversations' && (
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search chats, messages, or tags..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-800/90 text-gray-200 placeholder-gray-500 px-4 py-2.5 pl-11 rounded-lg border border-gray-700/50 focus:outline-none focus:border-accent-lilac/50 focus:ring-1 focus:ring-accent-lilac/50"
-          />
-          <svg
-            className="absolute left-3.5 top-3 h-5 w-5 text-gray-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
-      )}
+    <div className="w-full p-4">
+      {/* Tabs */}
+      <AIChatHistoryTabs
+        selectedTab={selectedTab}
+        onTabChange={setSelectedTab}
+      />
+      
+      {/* Content based on selected tab */}
+      {selectedTab === 'Starred Conversations' ? (
+        <>
+          {/* Search bar */}
+          <div className="mb-6 mt-6">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search chats, messages, or tags..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-surface-light rounded-lg px-4 py-2 pl-10 text-white"
+              />
+              <svg
+                className="absolute left-3.5 top-3 h-5 w-5 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
 
-      {/* Content area */}
-      <div className="bg-surface-light rounded-lg p-6">
-        <div className="space-y-6 relative">
-          <AIChatHistoryTabs
-            selectedTab={selectedTab}
-            onTabChange={setSelectedTab}
-          />
-          {renderTabContent()}
-        </div>
-      </div>
+          {/* Starred Conversations content */}
+          {renderContent()}
+        </>
+      ) : (
+        /* Bookmarked Messages content */
+        <BookmarkedMessages />
+      )}
     </div>
   );
 };

@@ -141,38 +141,38 @@ const BookmarkedMessages = () => {
             );
         }
 
-        return sortedChats.map(chat => (
-            <BookmarkedMessageCard
-                key={chat.id}
-                chat={chat}
-                onDelete={handleDelete}
-                onTogglePin={handleTogglePin}
-            />
-        ));
+        return (
+            <div className="space-y-4">
+                {sortedChats.map(chat => (
+                    <BookmarkedMessageCard
+                        key={chat.id}
+                        chat={chat}
+                        onDelete={handleDelete}
+                        onTogglePin={handleTogglePin}
+                    />
+                ))}
+            </div>
+        );
     };
 
     return (
-        <div className="flex-1 space-y-4">
+        <div className="w-full p-4">
             {/* Search bar */}
-            <div className="relative">
-                <input
-                    type="text"
-                    placeholder="Search chats, messages, or tags..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-gray-800/90 text-gray-200 placeholder-gray-500 px-4 py-2.5 pl-11 rounded-lg border border-gray-700/50 focus:outline-none focus:border-accent-lilac/50 focus:ring-1 focus:ring-accent-lilac/50"
-                />
-                <MagnifyingGlassIcon className="absolute left-3.5 top-3 h-5 w-5 text-gray-500" />
+            <div className="mb-6">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder="Search chats, messages, or tags..."
+                        className="w-full bg-surface-light rounded-lg px-4 py-2 pl-10 text-white"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
+                </div>
             </div>
 
             {/* Content area */}
-            <div className="bg-surface-light rounded-lg p-6">
-                <div className="space-y-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {renderContent()}
-                    </div>
-                </div>
-            </div>
+            {renderContent()}
         </div>
     );
 };
