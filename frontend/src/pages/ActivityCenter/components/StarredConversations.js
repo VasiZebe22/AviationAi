@@ -5,6 +5,7 @@ import { db, auth } from '../../../services/firebase';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import AIChatHistoryTabs from './AIChatHistoryTabs';
+import BookmarkedMessages from './BookmarkedMessages';
 
 const formatTimestamp = (timestamp) => {
   try {
@@ -455,40 +456,38 @@ const StarredConversations = () => {
         </div>
       );
     } else {
-      // Bookmarked Messages content will be implemented later
-      return (
-        <div className="col-span-2 text-center text-gray-400 py-8">
-          Bookmarked Messages feature coming soon
-        </div>
-      );
+      // Bookmarked Messages content
+      return <BookmarkedMessages />;
     }
   };
 
   return (
     <div className="flex-1 space-y-4">
       {/* Search bar */}
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="Search chats, messages, or tags..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-gray-800/90 text-gray-200 placeholder-gray-500 px-4 py-2.5 pl-11 rounded-lg border border-gray-700/50 focus:outline-none focus:border-accent-lilac/50 focus:ring-1 focus:ring-accent-lilac/50"
-        />
-        <svg
-          className="absolute left-3.5 top-3 h-5 w-5 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      {selectedTab === 'Starred Conversations' && (
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search chats, messages, or tags..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-gray-800/90 text-gray-200 placeholder-gray-500 px-4 py-2.5 pl-11 rounded-lg border border-gray-700/50 focus:outline-none focus:border-accent-lilac/50 focus:ring-1 focus:ring-accent-lilac/50"
           />
-        </svg>
-      </div>
+          <svg
+            className="absolute left-3.5 top-3 h-5 w-5 text-gray-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+      )}
 
       {/* Content area */}
       <div className="bg-surface-light rounded-lg p-6">
