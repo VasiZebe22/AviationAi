@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { auth } from '../../../services/firebase';
 import { chatService } from '../../../services/chats/chatService';
 import BookmarkedMessageCard from './cards/BookmarkedMessageCard';
 
-const BookmarkedMessages = () => {
+const BookmarkedMessages = ({ searchQuery = '' }) => {
     const [bookmarkedChats, setBookmarkedChats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
 
     // Filter chats based on search query
     const filteredChats = useMemo(() => {
@@ -157,20 +155,6 @@ const BookmarkedMessages = () => {
 
     return (
         <div className="w-full p-4">
-            {/* Search bar */}
-            <div className="mb-6">
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search chats, messages, or tags..."
-                        className="w-full bg-surface-light rounded-lg px-4 py-2 pl-10 text-white"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
-                </div>
-            </div>
-
             {/* Content area */}
             {renderContent()}
         </div>

@@ -206,19 +206,17 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                     {chat.messages.map((message, index) => {
                         const userMsg = isUserMessage(message);
                         return (
-                            <div key={index} className={`flex ${userMsg ? 'justify-end' : 'justify-start'}`}>
+                            <div key={index} className={`flex ${userMsg ? 'justify-end' : 'justify-start'} relative`}>
                                 <div 
                                     className={`
-                                        max-w-[80%] rounded-lg p-3 
+                                        max-w-[80%] rounded-lg p-4 relative
                                         ${userMsg 
-                                            ? 'bg-purple-600/80 text-white ml-auto' 
-                                            : 'bg-surface text-white mr-auto'
+                                            ? 'bg-purple-600 text-white' 
+                                            : 'bg-surface text-white'
                                         }
                                     `}
                                 >
-                                    <div className="text-xs text-gray-300 mb-1">
-                                        {userMsg ? 'You' : 'AI'} • {formatTimestamp(message.timestamp)}
-                                    </div>
+                                    {/* Message content */}
                                     <div className="text-sm">
                                         <ReactMarkdown 
                                             components={MarkdownComponents}
@@ -226,6 +224,11 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                                         >
                                             {message.content}
                                         </ReactMarkdown>
+                                    </div>
+                                    
+                                    {/* Timestamp */}
+                                    <div className="text-xs text-gray-300 mt-2">
+                                        {formatTimestamp(message.timestamp)}
                                     </div>
                                 </div>
                             </div>

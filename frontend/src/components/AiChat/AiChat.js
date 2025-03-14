@@ -111,6 +111,7 @@ const AiChat = () => {
   const [forceUpdate, setForceUpdate] = useState(0);
   const historyRef = useRef(null);
   const inputRef = useRef(null);
+  const chatListContainerRef = useRef(null);
   const navigate = useNavigate();
   const [showStarredChatsOnly, setShowStarredChatsOnly] = useState(false);
   const [showBookmarkedMessagesOnly, setShowBookmarkedMessagesOnly] = useState(false);
@@ -1125,12 +1126,47 @@ const AiChat = () => {
             await handleChatSelect(fullChat);
             
             // After loading the chat, find and scroll to its element in the list
-            setTimeout(() => {
-              const chatElement = document.querySelector(`[data-chat-id="${routeLocation.state.selectedChatId}"]`);
-              if (chatElement) {
-                chatElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Use multiple attempts with increasing delays to ensure the chat list is fully rendered
+            const scrollToChat = (attempt = 1, maxAttempts = 5) => {
+              if (attempt > maxAttempts) {
+                console.error('Failed to find chat element after', maxAttempts, 'attempts');
+                return;
               }
-            }, 100); // Small delay to ensure the chat list is rendered
+              
+              setTimeout(() => {
+                // Try to find the chat element
+                const chatElement = document.querySelector(`[data-chat-id="${routeLocation.state.selectedChatId}"]`);
+                
+                if (chatElement && chatListContainerRef.current) {
+                  // Calculate the position to scroll to
+                  const containerRect = chatListContainerRef.current.getBoundingClientRect();
+                  const elementRect = chatElement.getBoundingClientRect();
+                  const scrollTop = chatListContainerRef.current.scrollTop + (elementRect.top - containerRect.top) - (containerRect.height / 2) + (elementRect.height / 2);
+                  
+                  // Scroll to the element
+                  chatListContainerRef.current.scrollTo({
+                    top: scrollTop,
+                    behavior: 'smooth'
+                  });
+                  
+                  // Add a highlight effect to make it more visible
+                  chatElement.style.transition = 'background-color 0.3s ease';
+                  chatElement.style.backgroundColor = 'rgba(139, 92, 246, 0.3)';
+                  
+                  setTimeout(() => {
+                    chatElement.style.backgroundColor = '';
+                  }, 2000); // Remove highlight after 2 seconds
+                  
+                  console.log('Successfully scrolled to chat:', routeLocation.state.selectedChatId);
+                } else {
+                  console.log(`Attempt ${attempt}: Chat element not found, trying again...`);
+                  scrollToChat(attempt + 1, maxAttempts);
+                }
+              }, attempt * 200); // Increase delay with each attempt
+            };
+            
+            // Start the scrolling attempts
+            scrollToChat();
           }
         } catch (error) {
           console.error('Error loading chat:', error);
@@ -1202,7 +1238,7 @@ const AiChat = () => {
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 overflow-y-auto scrollbar-hide" ref={chatListContainerRef}>
           <div className="space-y-1">
             {renderChatList()}
           </div>
