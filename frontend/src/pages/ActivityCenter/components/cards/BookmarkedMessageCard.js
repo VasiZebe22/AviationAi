@@ -237,7 +237,7 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                                     </div>
                                     
                                     {/* Timestamp */}
-                                    <div className="text-xs text-gray-300 mt-2">
+                                    <div className="text-xs text-gray-400 mt-2">
                                         {formatTimestamp(message.timestamp)}
                                     </div>
                                 </div>
