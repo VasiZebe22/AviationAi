@@ -65,8 +65,8 @@ const StarredConversationCard = ({ chat, onAddTag, onDelete, onTogglePin }) => {
   };
 
   return (
-    <div className="bg-gray-800/80 p-5 rounded-lg mb-4 hover:bg-gray-700/80 transition-all duration-200 border border-gray-600/20 shadow-lg ring-1 ring-gray-700/10 relative group">
-      <div className="flex flex-col space-y-3">
+    <div className="w-full bg-surface-light rounded-lg mb-4 relative group">
+      <div className="flex flex-col space-y-3 p-4">
         {/* Header with title, actions, and open button */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">

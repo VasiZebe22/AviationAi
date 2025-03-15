@@ -4,6 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 
+// Helper function to clean message content by removing source citations
+const cleanMessageContent = (content) => {
+    if (!content) return '';
+    // Remove source citation markers like 【4:0†source】
+    return content.replace(/【\d+:\d+†source】/g, '');
+};
+
 // Custom components for markdown rendering
 const MarkdownComponents = {
     // Override heading sizes
@@ -12,9 +19,11 @@ const MarkdownComponents = {
     h3: ({ children }) => <h3 className="text-sm font-medium mb-1">{children}</h3>,
     // Add consistent paragraph spacing
     p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-    // Style lists
-    ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
-    ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+    // Style lists with proper spacing
+    ul: ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-1">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-1">{children}</ol>,
+    // Style list items
+    li: ({ children }) => <li className="pl-1">{children}</li>,
 };
 
 const formatTimestamp = (timestamp) => {
@@ -110,8 +119,8 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
     };
 
     return (
-        <div className="w-full bg-gray-800/80 p-5 rounded-lg mb-4 hover:bg-gray-700/80 transition-all duration-200 border border-gray-600/20 shadow-lg ring-1 ring-gray-700/10 relative group">
-            <div className="flex flex-col space-y-3">
+        <div className="w-full bg-surface-light rounded-lg mb-4 relative group">
+            <div className="flex flex-col space-y-3 p-4">
                 {/* Header with title, actions, and open button */}
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -166,9 +175,9 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                 )}
 
                 {/* First bookmarked message preview */}
-                <div className="text-sm text-gray-300 p-3 bg-surface/50 border border-surface/30 rounded-md group relative hover:bg-surface/70 hover:border-surface/40 transition-all duration-200">
+                <div className="text-sm text-gray-300 p-3 bg-surface/50 rounded-md group relative hover:bg-surface/70 transition-all duration-200">
                     <ReactMarkdown components={MarkdownComponents}>
-                        {firstBookmarkedMessage?.content}
+                        {cleanMessageContent(firstBookmarkedMessage?.content)}
                     </ReactMarkdown>
                 </div>
 
@@ -190,7 +199,7 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                 {/* Expand Button */}
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="flex items-center justify-center w-full mt-2 pt-2 border-t border-surface hover:bg-surface-hover transition-colors"
+                    className="flex items-center justify-center w-full mt-4 pt-2 border-t border-surface hover:bg-surface-hover transition-colors"
                 >
                     <ChevronDownIcon 
                         className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
@@ -202,7 +211,7 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
 
             {/* Expanded Content - All Bookmarked Messages */}
             {isExpanded && (
-                <div className="mt-4 space-y-4">
+                <div className="px-4 pt-6 pb-4 bg-surface space-y-4">
                     {chat.messages.map((message, index) => {
                         const userMsg = isUserMessage(message);
                         return (
@@ -210,19 +219,20 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                                 <div 
                                     className={`
                                         max-w-[80%] rounded-lg p-4 relative
-                                        ${userMsg 
-                                            ? 'bg-purple-600 text-white' 
-                                            : 'bg-surface text-white'
+                                        ${userMsg
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-gray-700 text-white border border-gray-600/30'
                                         }
                                     `}
+                                    
                                 >
                                     {/* Message content */}
                                     <div className="text-sm">
-                                        <ReactMarkdown 
+                                        <ReactMarkdown
                                             components={MarkdownComponents}
                                             className="prose prose-invert prose-sm max-w-none"
                                         >
-                                            {message.content}
+                                            {cleanMessageContent(message.content)}
                                         </ReactMarkdown>
                                     </div>
                                     

@@ -118,22 +118,7 @@ const FlaggedQuestions = () => {
         { id: 'red', label: 'Red' }
     ];
 
-    const getTabClass = (tabId) => {
-        const baseClass = "px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200";
-        if (activeTab === tabId) {
-            switch (tabId) {
-                case 'green':
-                    return `${baseClass} bg-green-500/20 text-green-500`;
-                case 'yellow':
-                    return `${baseClass} bg-yellow-500/20 text-yellow-500`;
-                case 'red':
-                    return `${baseClass} bg-red-500/20 text-red-500`;
-                default:
-                    return `${baseClass} bg-primary/20 text-primary`;
-            }
-        }
-        return `${baseClass} text-gray-400 hover:text-white`;
-    };
+    // getTabClass function removed as it's no longer needed
 
     if (isLoading) {
         return (
@@ -171,9 +156,8 @@ const FlaggedQuestions = () => {
 
     return (
         <div className="w-full p-4">
-            {/* Search and Filters Section */}
-            <div className="space-y-6 mb-6">
-                {/* Search Bar */}
+            {/* Search Bar */}
+            <div className="mb-6">
                 <div className="relative">
                     <input
                         type="text"
@@ -184,19 +168,26 @@ const FlaggedQuestions = () => {
                     />
                     <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
                 </div>
+            </div>
 
-                {/* Tabs */}
-                <div className="flex flex-wrap gap-2">
+            {/* Tabs - Updated to match AIChatHistoryTabs style */}
+            <div className="border-b border-surface-DEFAULT mb-6">
+                <nav className="-mb-px flex space-x-8">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={getTabClass(tab.id)}
+                            className={`
+                                py-2 px-1 border-b-2 font-medium text-sm
+                                ${activeTab === tab.id
+                                    ? 'border-accent-lilac text-accent-lilac'
+                                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'}
+                            `}
                         >
                             {tab.label}
                         </button>
                     ))}
-                </div>
+                </nav>
             </div>
 
             {/* Content Section */}
