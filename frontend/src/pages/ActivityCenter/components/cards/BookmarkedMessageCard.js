@@ -220,7 +220,7 @@ const BookmarkedMessageCard = ({ chat, onDelete, onTogglePin }) => {
                                     className={`
                                         max-w-[80%] rounded-lg p-4 relative
                                         ${userMsg
-                                            ? 'bg-purple-600 text-white'
+                                            ? 'bg-accent-lilac text-white'
                                             : 'bg-gray-700 text-white border border-gray-600/30'
                                         }
                                     `}
