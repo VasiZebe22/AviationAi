@@ -10,6 +10,7 @@ import 'katex/dist/katex.min.css';
 import { questionService } from '../../services/questions/questionService';
 import { testService } from '../../services/tests/testService';
 import TestResultQuestionCard from './components/TestResultQuestionCard';
+import Navbar from '../../components/Navbar/Navbar';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -173,147 +174,154 @@ const Results = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background p-8">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-light text-white mb-8">Test Results</h1>
-                
-                {/* Results Summary */}
-                <div className="bg-surface-dark rounded-lg p-6 mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <h2 className="text-xl text-white mb-4">Score Summary</h2>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-400">Score:</span>
-                                    <span className="text-white font-medium">{score}/{total}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-400">Percentage:</span>
-                                    <span className={`font-medium ${isPassing ? 'text-green-400' : 'text-red-400'}`}>
-                                        {percentage}%
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-400">Time Taken:</span>
-                                    <span className="text-white font-medium">{formatTime(time)}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-400">Status:</span>
-                                    <span className={`font-medium ${isPassing ? 'text-green-400' : 'text-red-400'}`}>
-                                        {isPassing ? 'PASS' : 'FAIL'}
-                                    </span>
+        <>
+            <Navbar />
+            <div className="pt-24 min-h-screen bg-background p-8">
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex justify-center mb-12">
+                        <h1 className="text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-accent-lilac to-blue-400 inline-block">
+                            Test Results
+                        </h1>
+                    </div>
+                    
+                    {/* Results Summary */}
+                    <div className="bg-surface-dark rounded-lg p-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h2 className="text-xl text-white mb-4">Score Summary</h2>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-400">Score:</span>
+                                        <span className="text-white font-medium">{score}/{total}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-400">Percentage:</span>
+                                        <span className={`font-medium ${isPassing ? 'text-green-400' : 'text-red-400'}`}>
+                                            {percentage}%
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-400">Time Taken:</span>
+                                        <span className="text-white font-medium">{formatTime(time)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-400">Status:</span>
+                                        <span className={`font-medium ${isPassing ? 'text-green-400' : 'text-red-400'}`}>
+                                            {isPassing ? 'PASS' : 'FAIL'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="flex items-center justify-center">
-                            <div className="w-48">
-                                <Doughnut data={chartData} />
+                            <div className="flex items-center justify-center">
+                                <div className="w-48">
+                                    <Doughnut data={chartData} />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Detailed Question Results */}
-                {loading ? (
-                    <div className="bg-surface-dark rounded-lg p-6 text-center">
-                        <p className="text-gray-400">Loading question details...</p>
-                    </div>
-                ) : questionResults && questionResults.length > 0 ? (
-                    <div className="bg-surface-dark rounded-lg p-6">
-                        <button 
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="w-full flex justify-between items-center"
+                    {/* Detailed Question Results */}
+                    {loading ? (
+                        <div className="bg-surface-dark rounded-lg p-6 text-center">
+                            <p className="text-gray-400">Loading question details...</p>
+                        </div>
+                    ) : questionResults && questionResults.length > 0 ? (
+                        <div className="bg-surface-dark rounded-lg p-6">
+                            <button 
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className="w-full flex justify-between items-center"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-xl text-white">Question Details</h2>
+                                    <span className="text-gray-400 text-sm">
+                                        ({questionResults.length} questions)
+                                    </span>
+                                </div>
+                                <ChevronDownIcon 
+                                    className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${
+                                        isExpanded ? 'transform rotate-180' : ''
+                                    }`}
+                                />
+                            </button>
+                            
+                            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                                isExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
+                            }`}>
+                                <div className="flex flex-col space-y-4 mt-6">
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setFilter('all')}
+                                            className={`px-4 py-2 rounded-md transition-colors ${
+                                                filter === 'all'
+                                                    ? 'bg-primary text-white'
+                                                    : 'bg-surface text-gray-400 hover:bg-surface-light'
+                                            }`}
+                                        >
+                                            All Questions
+                                        </button>
+                                        <button
+                                            onClick={() => setFilter('correct')}
+                                            className={`px-4 py-2 rounded-md transition-colors ${
+                                                filter === 'correct'
+                                                    ? 'bg-green-600 text-white'
+                                                    : 'bg-surface text-gray-400 hover:bg-surface-light'
+                                            }`}
+                                        >
+                                            Correct Answers
+                                        </button>
+                                        <button
+                                            onClick={() => setFilter('wrong')}
+                                            className={`px-4 py-2 rounded-md transition-colors ${
+                                                filter === 'wrong'
+                                                    ? 'bg-red-600 text-white'
+                                                    : 'bg-surface text-gray-400 hover:bg-surface-light'
+                                            }`}
+                                        >
+                                            Wrong Answers
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 mt-6">
+                                    {questionResults
+                                        .filter(result => {
+                                            if (filter === 'all') return true;
+                                            if (filter === 'correct') return result.isCorrect;
+                                            if (filter === 'wrong') return !result.isCorrect;
+                                            return true;
+                                        })
+                                        .map((result, index) => {
+                                            const questionData = detailedQuestions[result.questionId];
+                                            if (!questionData) return null;
+
+                                            return (
+                                                <TestResultQuestionCard
+                                                    key={result.questionId}
+                                                    questionData={questionData}
+                                                    result={result}
+                                                    index={index}
+                                                />
+                                            );
+                                        })}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-surface-dark rounded-lg p-6 text-center">
+                            <p className="text-gray-400">No questions were answered in this test.</p>
+                        </div>
+                    )}
+
+                    <div className="mt-8 flex justify-center">
+                        <button
+                            onClick={handleReturnToCategories}
+                            className="px-6 py-2 bg-accent-lilac text-white rounded hover:bg-accent-lilac/90 transition-colors"
                         >
-                            <div className="flex items-center gap-2">
-                                <h2 className="text-xl text-white">Question Details</h2>
-                                <span className="text-gray-400 text-sm">
-                                    ({questionResults.length} questions)
-                                </span>
-                            </div>
-                            <ChevronDownIcon 
-                                className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${
-                                    isExpanded ? 'transform rotate-180' : ''
-                                }`}
-                            />
+                            Return to Categories
                         </button>
-                        
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                            isExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
-                        }`}>
-                            <div className="flex flex-col space-y-4 mt-6">
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setFilter('all')}
-                                        className={`px-4 py-2 rounded-md transition-colors ${
-                                            filter === 'all'
-                                                ? 'bg-primary text-white'
-                                                : 'bg-surface text-gray-400 hover:bg-surface-light'
-                                        }`}
-                                    >
-                                        All Questions
-                                    </button>
-                                    <button
-                                        onClick={() => setFilter('correct')}
-                                        className={`px-4 py-2 rounded-md transition-colors ${
-                                            filter === 'correct'
-                                                ? 'bg-green-600 text-white'
-                                                : 'bg-surface text-gray-400 hover:bg-surface-light'
-                                        }`}
-                                    >
-                                        Correct Answers
-                                    </button>
-                                    <button
-                                        onClick={() => setFilter('wrong')}
-                                        className={`px-4 py-2 rounded-md transition-colors ${
-                                            filter === 'wrong'
-                                                ? 'bg-red-600 text-white'
-                                                : 'bg-surface text-gray-400 hover:bg-surface-light'
-                                        }`}
-                                    >
-                                        Wrong Answers
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="space-y-4 mt-6">
-                                {questionResults
-                                    .filter(result => {
-                                        if (filter === 'all') return true;
-                                        if (filter === 'correct') return result.isCorrect;
-                                        if (filter === 'wrong') return !result.isCorrect;
-                                        return true;
-                                    })
-                                    .map((result, index) => {
-                                        const questionData = detailedQuestions[result.questionId];
-                                        if (!questionData) return null;
-
-                                        return (
-                                            <TestResultQuestionCard
-                                                key={result.questionId}
-                                                questionData={questionData}
-                                                result={result}
-                                                index={index}
-                                            />
-                                        );
-                                    })}
-                            </div>
-                        </div>
                     </div>
-                ) : (
-                    <div className="bg-surface-dark rounded-lg p-6 text-center">
-                        <p className="text-gray-400">No questions were answered in this test.</p>
-                    </div>
-                )}
-
-                <div className="mt-8 flex justify-center">
-                    <button
-                        onClick={handleReturnToCategories}
-                        className="px-6 py-2 bg-accent-lilac text-white rounded hover:bg-accent-lilac/90 transition-colors"
-                    >
-                        Return to Categories
-                    </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

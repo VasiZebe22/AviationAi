@@ -73,7 +73,8 @@ const Navbar = () => {
                     <div className="flex items-center">
                         {(!currentUser || (location.pathname !== '/dashboard' && 
                           location.pathname !== '/activity' && 
-                          location.pathname !== '/practice')) && (
+                          location.pathname !== '/practice' &&
+                          location.pathname !== '/results')) && (
                             <button
                                 onClick={handleButtonClick}
                                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent-lilac hover:bg-accent-lilac-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-lilac transition-colors duration-200"
