@@ -9,6 +9,7 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { questionService } from '../../services/questions/questionService';
 import { testService } from '../../services/tests/testService';
+import TestResultQuestionCard from './components/TestResultQuestionCard';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -273,7 +274,7 @@ const Results = () => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="space-y-6">
+                            <div className="space-y-4 mt-6">
                                 {questionResults
                                     .filter(result => {
                                         if (filter === 'all') return true;
@@ -286,79 +287,12 @@ const Results = () => {
                                         if (!questionData) return null;
 
                                         return (
-                                            <div key={result.questionId} className="border-b border-gray-700 last:border-0 pb-4 last:pb-0">
-                                                <div className="flex items-start gap-4">
-                                                    <div className="mt-1">
-                                                        {result.isCorrect ? (
-                                                            <CheckCircleIcon className="w-5 h-5 text-green-400" />
-                                                        ) : (
-                                                            <XCircleIcon className="w-5 h-5 text-red-400" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <p className="text-white flex-1">
-                                                                {index + 1}. {questionData.question}
-                                                            </p>
-                                                            <span className="text-gray-400 text-sm ml-4">
-                                                                {questionData.id}
-                                                            </span>
-                                                        </div>
-                                                        <div className="grid grid-cols-1 gap-4 text-sm">
-                                                            <div>
-                                                                <p className="text-gray-400 mb-1">Your Answer:</p>
-                                                                <p className={`font-medium ${result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                                                                    {result.userAnswer ? `${result.userAnswer}: ${questionData.options[result.userAnswer]}` : 'Not answered'}
-                                                                </p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-gray-400 mb-1">Correct Answer:</p>
-                                                                <p className="text-green-400 font-medium">
-                                                                    {questionData.correct_answer}: {questionData.options[questionData.correct_answer]}
-                                                                </p>
-                                                            </div>
-                                                            {questionData.options && (
-                                                                <div className="mt-2">
-                                                                    <p className="text-gray-400 mb-1">All Options:</p>
-                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                                        {Object.entries(questionData.options).map(([key, value]) => (
-                                                                            <div 
-                                                                                key={key} 
-                                                                                className={`p-2 rounded ${
-                                                                                    key === questionData.correct_answer 
-                                                                                        ? 'bg-green-400/10 text-green-400' 
-                                                                                        : key === result.userAnswer
-                                                                                            ? result.isCorrect 
-                                                                                                ? 'bg-green-400/10 text-green-400'
-                                                                                                : 'bg-red-400/10 text-red-400'
-                                                                                            : 'text-gray-400'
-                                                                                }`}
-                                                                            >
-                                                                                <span className="font-medium">{key}:</span> {value}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {questionData.explanation && (
-                                                            <div className="mt-4 bg-surface-darker rounded-lg p-4">
-                                                                <p className="text-gray-400 text-sm mb-2">Explanation:</p>
-                                                                <div className="prose prose-invert max-w-none">
-                                                                    <ReactMarkdown
-                                                                        remarkPlugins={[remarkMath]}
-                                                                        rehypePlugins={[rehypeKatex]}
-                                                                        components={MarkdownComponents}
-                                                                        className="text-gray-300"
-                                                                    >
-                                                                        {cleanMarkdown(questionData.explanation)}
-                                                                    </ReactMarkdown>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <TestResultQuestionCard
+                                                key={result.questionId}
+                                                questionData={questionData}
+                                                result={result}
+                                                index={index}
+                                            />
                                         );
                                     })}
                             </div>
