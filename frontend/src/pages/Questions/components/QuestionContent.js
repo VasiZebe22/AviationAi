@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import ImageWithMeasurement from '../../../components/LineDrawingTool';
 
 const QuestionContent = ({
     questionData,
@@ -19,11 +20,10 @@ const QuestionContent = ({
                 <ReactMarkdown>{getQuestionText(questionData).text}</ReactMarkdown>
                 {questionImageUrl && (
                     <div className="mt-4 max-w-2xl mx-auto">
-                        <img 
-                            src={questionImageUrl} 
-                            alt="Question illustration" 
+                        <ImageWithMeasurement
+                            src={questionImageUrl}
+                            alt="Question illustration"
                             className="max-w-full h-auto rounded-lg"
-                            onError={handleImageError}
                         />
                     </div>
                 )}
