@@ -35,7 +35,7 @@ const MarkdownComponents = {
 const Results = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { score, total, time, categoryId, questionResults, filters, selectedSubcategories, isExistingTest } = location.state || {};
+    const { score, total, time, categoryId, questionResults, filters, selectedSubcategories, isExistingTest, isExamMode } = location.state || {};
     const resultsSaved = useRef(false);
     const [detailedQuestions, setDetailedQuestions] = useState({});
     const [loading, setLoading] = useState(true);
@@ -181,6 +181,11 @@ const Results = () => {
                     <div className="flex justify-center mb-12">
                         <h1 className="text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-accent-lilac to-blue-400 inline-block">
                             Test Results
+                            {isExamMode && (
+                                <span className="ml-2 text-sm bg-orange-700 text-white px-2 py-1 rounded-sm align-text-top">
+                                    EXAM
+                                </span>
+                            )}
                         </h1>
                     </div>
                     

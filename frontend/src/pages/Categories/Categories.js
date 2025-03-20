@@ -80,7 +80,12 @@ const Categories = () => {
    * @param {string} categoryId - The ID of the selected category
    */
   const handleCategoryStart = (categoryId) => {
-    navigate(`/questions/${categoryId}`, {
+    // Navigate to ExamQuestions for exam mode, regular Questions for study mode
+    const targetPath = mode === 'exam' 
+      ? `/exam-questions/${categoryId}` 
+      : `/questions/${categoryId}`;
+      
+    navigate(targetPath, {
       state: {
         mode,
         filters,

@@ -316,6 +316,8 @@ app.post("/assistant-query",
 // Mount routes
 app.use('/api/questions', authenticate, questionsRoutes);
 
+// Removed the examQuestions route since we're now using direct Firebase access
+
 // Apply error handler middleware last
 app.use(errorHandler);
 

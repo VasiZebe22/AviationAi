@@ -17,6 +17,7 @@ const Signup = React.lazy(() => import("./pages/Signup/SignupPage"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard/Dashboard"));
 const AiChat = React.lazy(() => import("./components/AiChat/AiChat"));
 const Questions = React.lazy(() => import("./pages/Questions/Questions"));
+const ExamQuestions = React.lazy(() => import("./pages/ExamQuestions/ExamQuestions"));
 const Categories = React.lazy(() => import("./pages/Categories"));
 const Results = React.lazy(() => import("./pages/Results/Results"));
 const SavedTests = React.lazy(() => import("./pages/SavedTests/SavedTests"));
@@ -108,6 +109,16 @@ function AppRoutes() {
                         <ProtectedRoute>
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Questions />
+                            </Suspense>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/exam-questions/:categoryId"
+                    element={
+                        <ProtectedRoute>
+                            <Suspense fallback={<LoadingSpinner />}>
+                                <ExamQuestions />
                             </Suspense>
                         </ProtectedRoute>
                     }
