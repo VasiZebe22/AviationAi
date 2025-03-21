@@ -12,6 +12,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
   const [lines, setLines] = useState([]);
   const [currentLine, setCurrentLine] = useState(null);
   const [activeLineIndex, setActiveLineIndex] = useState(null);
+  const [hoveredEndpoint, setHoveredEndpoint] = useState(null);
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   
@@ -83,7 +84,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     const ctx = canvasRef.current.getContext('2d');
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     
-    // Draw all saved lines
+    // Always draw all saved lines first to ensure they're visible
     lines.forEach((line, index) => {
       drawLine(ctx, line, index === activeLineIndex);
     });
@@ -91,6 +92,21 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     // Draw current line being created
     if (currentLine) {
       drawLine(ctx, currentLine, true);
+    }
+    
+    // Draw hovered endpoint with special highlight if shift is pressed
+    if (hoveredEndpoint) {
+      ctx.fillStyle = '#00FF00'; // Bright green for the hovered endpoint
+      ctx.beginPath();
+      ctx.arc(hoveredEndpoint.x, hoveredEndpoint.y, 7, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Add a "+" symbol to indicate connection point
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('+', hoveredEndpoint.x, hoveredEndpoint.y);
     }
   };
   
@@ -100,7 +116,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     
     // Line style
     ctx.lineWidth = isActive ? 3 : 2;
-    ctx.strokeStyle = isActive ? '#00BFFF' : '#FFFF00';
+    ctx.strokeStyle = isActive ? '#00BFFF' : '#FF0000'; // Changed to red
     
     // Draw the line
     ctx.beginPath();
@@ -109,7 +125,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     ctx.stroke();
     
     // Draw endpoints
-    ctx.fillStyle = isActive ? '#00BFFF' : '#FFFF00';
+    ctx.fillStyle = isActive ? '#00BFFF' : '#FF0000'; // Changed to red
     ctx.beginPath();
     ctx.arc(x1, y1, 5, 0, 2 * Math.PI);
     ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
@@ -143,14 +159,34 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     const y = e.clientY - rect.top;
     
     // Check if clicked near an existing line endpoint
+    let foundEndpoint = null;
     const clickedLineIndex = lines.findIndex(line => {
       const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
       const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
-      return distToStart < 10 || distToEnd < 10;
+      
+      // Store the endpoint coordinates if we're close to one
+      if (distToStart < 10) {
+        foundEndpoint = { x: line.x1, y: line.y1 };
+        return true;
+      } else if (distToEnd < 10) {
+        foundEndpoint = { x: line.x2, y: line.y2 };
+        return true;
+      }
+      return false;
     });
     
-    if (clickedLineIndex >= 0) {
-      // Select this line
+    // If shift key is pressed and we found an endpoint, start a new line from that endpoint
+    if (e.shiftKey && foundEndpoint) {
+      setIsDrawing(true);
+      setCurrentLine({
+        x1: foundEndpoint.x,
+        y1: foundEndpoint.y,
+        x2: foundEndpoint.x,
+        y2: foundEndpoint.y
+      });
+      setActiveLineIndex(null);
+    } else if (clickedLineIndex >= 0) {
+      // Select this line (when not holding shift)
       setActiveLineIndex(clickedLineIndex);
     } else {
       // Start drawing a new line
@@ -160,16 +196,52 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     }
   };
   
-  // Handle mouse move - update the current line
+  // Handle mouse move - update the current line and check for endpoint hovering
   const handleMouseMove = (e) => {
-    if (!isDrawing || !currentLine || !canvasRef.current) return;
+    if (!canvasRef.current) return;
     
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    setCurrentLine(prev => ({ ...prev, x2: x, y2: y }));
-    drawLines();
+    // If drawing, update the current line
+    if (isDrawing && currentLine) {
+      setCurrentLine(prev => ({ ...prev, x2: x, y2: y }));
+      // We'll let the useEffect handle the redraw
+      return;
+    }
+    
+    // Only check for endpoints if we're not currently drawing
+    // and if the shift key is pressed (optimization)
+    if (!isDrawing && e.shiftKey) {
+      // Check if hovering over any endpoint
+      let foundEndpoint = null;
+      for (const line of lines) {
+        const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
+        const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
+        
+        if (distToStart < 10) {
+          foundEndpoint = { x: line.x1, y: line.y1 };
+          break;
+        } else if (distToEnd < 10) {
+          foundEndpoint = { x: line.x2, y: line.y2 };
+          break;
+        }
+      }
+      
+      // Only update state if it's different to avoid unnecessary rerenders
+      const newHoveredEndpoint = foundEndpoint ? foundEndpoint : null;
+      if (!hoveredEndpoint && newHoveredEndpoint ||
+          hoveredEndpoint && !newHoveredEndpoint ||
+          (hoveredEndpoint && newHoveredEndpoint &&
+           (hoveredEndpoint.x !== newHoveredEndpoint.x ||
+            hoveredEndpoint.y !== newHoveredEndpoint.y))) {
+        setHoveredEndpoint(newHoveredEndpoint);
+      }
+    } else if (hoveredEndpoint && !e.shiftKey) {
+      // Clear hovered endpoint if shift is not pressed
+      setHoveredEndpoint(null);
+    }
   };
   
   // Handle mouse up - finish drawing the line
@@ -210,7 +282,33 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
   // Update canvas when lines change
   useEffect(() => {
     drawLines();
-  }, [lines, currentLine, activeLineIndex]);
+  }, [lines, currentLine, activeLineIndex, hoveredEndpoint]);
+  
+  // Add keyboard event listeners for shift key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Shift') {
+        // We'll handle the visual update in the mouse move handler
+        // No need to force redraw here
+      }
+    };
+    
+    const handleKeyUp = (e) => {
+      if (e.key === 'Shift') {
+        // Clear hovered endpoint when shift is released
+        setHoveredEndpoint(null);
+        // No need to force redraw here, it will happen in the useEffect
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
   
   return (
     <div className="line-drawing-tool">
@@ -235,8 +333,9 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
         >
           {unit === 'cm' ? 'Switch to inches' : 'Switch to cm'}
         </button>
-        <div className="text-xs ml-2">
-          Click and drag to draw a line
+        <div className="text-xs ml-2 flex flex-col">
+          <span>Click and drag to draw a line</span>
+          <span className="text-gray-400">Hold Shift + click on endpoint to connect lines</span>
         </div>
       </div>
       
