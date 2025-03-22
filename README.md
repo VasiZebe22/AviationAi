@@ -82,19 +82,19 @@ The application follows the official EASA ATPL(A) exam structure:
 
 | Subject | Questions | Time (minutes) |
 |---------|-----------|----------------|
-| Air Law | 44 | 60 |
-| Aircraft General Knowledge | 80 | 120 |
-| Instrumentation | 60 | 90 |
-| Mass and Balance | 25 | 60 |
-| Performance | 35 | 120 |
-| Flight Planning and Monitoring | 43 | 120 |
-| Human Performance | 48 | 60 |
-| Meteorology | 84 | 120 |
-| General Navigation | 60 | 120 |
-| Radio Navigation | 66 | 90 |
-| Operational Procedures | 45 | 75 |
-| Principles of Flight | 44 | 60 |
-| Communications | 34 | 60 |
+| Air Law (010) | 44 | 60 |
+| Aircraft General Knowledge (021) | 80 | 120 |
+| Instrumentation (022) | 60 | 90 |
+| Mass and Balance (031) | 25 | 60 |
+| Performance (032) | 35 | 120 |
+| Flight Planning (033) | 43 | 120 |
+| Human Performance (040) | 48 | 60 |
+| Meteorology (050) | 84 | 120 |
+| General Navigation (061) | 60 | 120 |
+| Radio Navigation (062) | 66 | 90 |
+| Operational Procedures (070) | 45 | 75 |
+| Principles of Flight (081) | 44 | 60 |
+| Communications (090) | 34 | 60 |
 
 ## Recent Updates
 - **March 2025**: Added Exam Mode with official EASA specifications

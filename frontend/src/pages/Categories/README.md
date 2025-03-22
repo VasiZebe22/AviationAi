@@ -1,38 +1,45 @@
 # Categories Component Documentation
 
 ## Overview
-The Categories component is a crucial part of the Aviation AI application, responsible for displaying and managing ATPL (Airline Transport Pilot License) question categories. It provides an interactive interface for users to select study materials and track their progress across different aviation subjects.
+The Categories component is a crucial part of the Aviation AI application, responsible for displaying and managing EASA ATPL(A) question categories. It provides an interactive interface for users to select study materials, track their progress across different aviation subjects, and choose between study and exam modes.
 
 ## File Structure
 ```
 frontend/src/
 ├── components/
+│   ├── CategoryCard/           # Individual category card display
+│   │   ├── CategoryCard.js     # Card component with subcategory selection
+│   │   └── index.js            # Export file
 │   ├── FilterPanel/            # Filter options UI and logic
 │   │   ├── FilterPanel.js      # Filter component implementation
 │   │   └── index.js            # Export file
 │   ├── ModeSelector/           # Study/Exam mode selection
 │   │   ├── ModeSelector.js     # Mode selector implementation
 │   │   └── index.js            # Export file
-│   └── CategoryCard/           # Category card component
+│   └── SavedTests/             # Modal for accessing saved tests
 ├── data/
-│   └── categoryData.js         # Centralized category data
+│   ├── categoryData.js         # Centralized category definition data
+│   └── examConfig.js           # Exam mode configuration (time limits, etc.)
 ├── pages/
-│   └── Categories/
-│       ├── Categories.js       # Main component implementation
-│       ├── index.js            # Export file
-│       └── Categories.md       # Documentation (this file)
+│   ├── Categories/
+│   │   ├── Categories.js       # Main component implementation
+│   │   ├── index.js            # Export file
+│   │   └── README.md           # Documentation (this file)
+│   ├── Questions/              # Study mode question display
+│   └── ExamQuestions/          # Exam mode question display
 └── services/
     └── analytics/              # Analytics service for progress tracking
 ```
 
 ## Component Architecture
 
-The Categories feature has been refactored following SOLID, KISS, DRY, and YAGNI principles to improve maintainability and code organization:
+The Categories feature follows SOLID, KISS, DRY, and YAGNI principles to improve maintainability and code organization:
 
 1. **Single Responsibility Principle (SRP)**:
    - `Categories.js`: Main page orchestration and layout
    - `FilterPanel.js`: Handles all filtering UI and logic
    - `ModeSelector.js`: Manages study/exam mode selection
+   - `CategoryCard.js`: Manages individual category display and interaction
    - `categoryData.js`: Stores and exports category data
 
 2. **Code Organization Benefits**:
@@ -41,182 +48,111 @@ The Categories feature has been refactored following SOLID, KISS, DRY, and YAGNI
    - Enhanced reusability of components
    - Cleaner, more readable code
 
-## Component Features
+## Data Flow & State Management
 
-### 1. Study Modes
+### Category Data Source
+- Categories are defined in `frontend/src/data/categoryData.js`
+- Each category has:
+  - `id`: Standardized EASA ID format (e.g., '010' for Air Law)
+  - `title`: Display name
+  - `description`: Brief content explanation
+  - `image`: Path to category illustration
+  - `subcategories`: Array of subcategories with codes and names
+
+### User Progress Data
+- Progress data is fetched from Firebase via `analyticsService.getBasicStats()`
+- The component tracks:
+  - Total questions per category
+  - Attempted questions
+  - Correctly answered questions
+  - Completion percentage
+
+### Component State
+The Categories component maintains several state variables:
+- `loading`: Tracks API loading state
+- `error`: Stores any error messages
+- `userProgress`: Stores progress data from Firebase
+- `mode`: Tracks selected mode (study/exam)
+- `selectedSubcategories`: Stores user's subcategory selections
+- `filters`: Stores filter settings for questions
+
+## Key Features
+
+### 1. Mode Selection
 - **Study Mode**: For practice and learning
-- **Exam Mode**: For test simulation
-- Mode selection affects how questions are presented and scored
-- Implemented in the dedicated `ModeSelector` component
+- **Exam Mode**: For timed test simulation
+- Mode selection affects navigation target (Questions vs ExamQuestions)
 
-### 2. Question Filtering System
-The component implements comprehensive filtering options through the `FilterPanel` component:
-- Question Types:
-  - All questions
-  - Questions with annexes
-  - Questions without annexes
-- Special Filters:
-  - Real exam questions
-  - Review questions
-  - Marked questions
-  - Unseen questions
-  - Incorrectly answered
-  - Flag-based filtering (Green, Yellow, Red)
-  - Option to show correct answers
+### 2. Question Filtering
+- Filter by question attributes (with/without annexes)
+- Filter by user interaction (unseen, incorrectly answered)
+- Filter by flag color (green, yellow, red)
+- Option to show or hide correct answers
 
-### 3. Progress Tracking
-- Tracks user progress for each category
-- Displays completion percentages
-- Shows attempted vs. total questions ratio
+### 3. Subcategory Selection
+- Each category displays its subcategories
+- Users can select specific subcategories to study
+- Selections are passed to the Questions/ExamQuestions components
 
-### 4. Category Structure
-Each category contains:
-- Unique identifier (e.g., '010' for Air Law)
-- Title
-- Description
-- Associated image
-- List of subcategories with codes and names
-- Data centralized in `categoryData.js`
+### 4. Progress Tracking
+- Visual progress indicators
+- Numerical completion statistics (X/Y questions)
+- Data is dynamically updated from Firebase
 
-## Available Categories
+## Integration with Firebase/Firestore
 
-1. **Air Law (010)**
-   - International Law
-   - Airworthiness
-   - Personnel Licensing
-   - And more...
+The Categories component integrates with Firebase in several ways:
 
-2. **Airframe and Systems (021)**
-   - System Design
-   - Hydraulics
-   - Flight Controls
-   - And more...
+1. **Progress Data**: 
+   - Uses `analyticsService.getBasicStats()` to fetch user progress
+   - Data is structured by category ID in Firestore
+   - Format: `{ byCategory: { '010': { total, attempted, correct }, ... } }`
 
-3. **Instrumentation (022)**
-   - Sensors and Instruments
-   - Air Data Parameters
-   - Gyroscopic Instruments
-   - And more...
+2. **Question Data**:
+   - Questions are stored in Firestore with category and subcategory IDs
+   - Categories match standardized EASA ATPL(A) subjects (010-090)
+   - When a category is selected, relevant questions are retrieved
 
-[... and 9 more categories]
+## Important Notes
 
-## Key Components and Functions
+1. **Category ID System**:
+   - The application uses a standardized category ID system:
+   - "010": Air Law
+   - "021": Airframe and Systems
+   - "022": Instrumentation
+   - "031": Mass and Balance
+   - "032": Performance
+   - "033": Flight Planning
+   - "040": Human Performance
+   - "050": Meteorology
+   - "061": General Navigation
+   - "062": Radio Navigation
+   - "070": Operational Procedures
+   - "081": Principles of Flight
+   - "090": Communications
 
-### Main Categories Component
-The main `Categories` component now focuses on:
-- Orchestrating the overall page layout
-- Managing shared state
-- Handling navigation and progress tracking
-- Integrating the specialized components
-
-### FilterPanel Component
-- Encapsulates all filtering logic and UI
-- Manages question type selection
-- Handles all filter checkbox interactions
-- Can be reused in other parts of the application
-
-### ModeSelector Component
-- Manages the study/exam mode toggle
-- Provides clear visual feedback on current mode
-- Designed for potential reuse in other contexts
-
-### State Management
-```javascript
-// In Categories.js
-- loading: Tracks data loading state
-- error: Stores error messages
-- userProgress: Tracks user progress across categories
-- mode: Controls study/exam mode
-- selectedSubcategories: Manages selected subcategories
-- filters: Manages question filtering options
-```
-
-### Main Functions
-
-#### `fetchUserProgress()`
-- Asynchronously fetches user progress statistics
-- Updates progress state with completion percentages
-- Handles error states
-
-#### `handleCategoryStart(categoryId)`
-- Initiates navigation to questions page
-- Passes selected mode, filters, and subcategories
-
-#### `getCategoryProgress(categoryId)`
-- Calculates completion percentage for a category
-- Returns percentage (0-100)
-
-#### `handleSubcategoryChange(categoryId, subcategoryCode)`
-- Manages subcategory selection/deselection
-- Updates selected subcategories state
-
-## UI Components
-
-### Navigation Bar
-- Implemented using `<Navbar />` component
-- Provides consistent navigation across the application
-
-### Category Cards
-- Uses `<CategoryCard />` component
-- Displays category information
-- Shows progress statistics
-- Provides subcategory selection
-
-### Saved Tests Modal
-- Implemented via `<SavedTestsModal />` component
-- Manages saved test sessions
-- Provides access to previous work
-
-## Dependencies
-- React (useState, useEffect)
-- react-router-dom (useNavigate)
-- analyticsService (for progress tracking)
-- Various UI components (CategoryCard, SavedTestsModal, Navbar, FilterPanel, ModeSelector)
-
-## Best Practices
-1. **SOLID Principles**
-   - Single Responsibility: Each component has one job
-   - Open/Closed: Components can be extended without modification
-   - Interface Segregation: Components expose only what's needed
-   - Dependency Inversion: High-level components don't depend on details
-
-2. **DRY (Don't Repeat Yourself)**
-   - Common UI patterns extracted to reusable components
-   - Shared data centralized in dedicated files
-   - Utility functions designed for reuse
-
-3. **KISS (Keep It Simple, Stupid)**
-   - Components designed to be intuitive and straightforward
-   - Clear naming conventions
-   - Focused functionality
-
-4. **YAGNI (You Aren't Gonna Need It)**
-   - Only implemented what's currently needed
-   - Avoided speculative features
-   - Kept the codebase lean and maintainable
-
-5. **Performance**
-   - Implements efficient filtering mechanisms
-   - Uses async operations for data fetching
-   - Optimizes re-renders with proper state structure
-
-6. **User Experience**
-   - Provides clear visual feedback
-   - Implements intuitive navigation
-   - Shows loading states during operations
+2. **Navigation Pattern**:
+   - When a category is selected, the app navigates to:
+     - `/questions/:categoryId` for study mode
+     - `/exam-questions/:categoryId` for exam mode
+   - Navigation includes state data (filters, subcategories)
 
 ## Usage Example
-```javascript
-// Import the Categories component
-import Categories from './pages/Categories';
 
-// Use in a router or parent component
-<Categories />
+```javascript
+// Navigation to Questions with state
+navigate(`/questions/${categoryId}`, {
+  state: {
+    mode,
+    filters,
+    selectedSubcategories: selectedSubcategories[categoryId] || []
+  }
+});
 ```
 
-## Future Considerations
-1. Implement caching for better performance
-2. Add more detailed progress analytics
-3. Enhance filter combinations
-4. Add support for custom category groups
-5. Implement offline mode support
+## Maintenance Notes
+
+- When adding new categories, update `categoryData.js` following the established format
+- Ensure corresponding entries exist in Firestore and `examConfig.js`
+- The component dynamically handles new categories without code changes
+- All 13 EASA ATPL(A) standard categories (010-090) should be included

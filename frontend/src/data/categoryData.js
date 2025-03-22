@@ -187,6 +187,20 @@ const categories = [
       { code: '081-08', name: 'Propellers' }
     ]
   },
+  {
+    id: '090',
+    title: 'Communications',
+    description: 'Radio communication procedures and phraseology',
+    image: '/images/categories/communications.jpg',
+    subcategories: [
+      { code: '090-01', name: 'VFR Communications' },
+      { code: '090-02', name: 'IFR Communications' },
+      { code: '090-03', name: 'General Operating Procedures' },
+      { code: '090-04', name: 'Distress and Urgency Procedures' },
+      { code: '090-05', name: 'General Principles of VHF Propagation' },
+      { code: '090-06', name: 'Morse Code' }
+    ]
+  }
   // ... other categories with their subcategories
 ];
 
