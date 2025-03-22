@@ -8,79 +8,79 @@
 
 const examConfig = {
   // Air Law
-  "AL": {
+  "010": {
     questions: 44,
     timeInMinutes: 60,
     passingPercentage: 75
   },
-  // Aircraft General Knowledge
-  "AGK": {
+  // Aircraft General Knowledge (Airframe and Systems)
+  "021": {
     questions: 80,
     timeInMinutes: 120,
     passingPercentage: 75
   },
   // Instrumentation
-  "INST": {
+  "022": {
     questions: 60,
     timeInMinutes: 90,
     passingPercentage: 75
   },
   // Mass and Balance
-  "MB": {
+  "031": {
     questions: 25,
     timeInMinutes: 60,
     passingPercentage: 75
   },
   // Performance
-  "PERF": {
+  "032": {
     questions: 35,
     timeInMinutes: 120,
     passingPercentage: 75
   },
-  // Flight Planning and Monitoring
-  "FPM": {
+  // Flight Planning
+  "033": {
     questions: 43,
     timeInMinutes: 120,
     passingPercentage: 75
   },
   // Human Performance
-  "HP": {
+  "040": {
     questions: 48,
     timeInMinutes: 60,
     passingPercentage: 75
   },
   // Meteorology
-  "MET": {
+  "050": {
     questions: 84,
     timeInMinutes: 120,
     passingPercentage: 75
   },
   // General Navigation
-  "GNAV": {
+  "061": {
     questions: 60,
     timeInMinutes: 120,
     passingPercentage: 75
   },
   // Radio Navigation
-  "RNAV": {
+  "062": {
     questions: 66,
     timeInMinutes: 90,
     passingPercentage: 75
   },
   // Operational Procedures
-  "PROC": {
+  "070": {
     questions: 45,
     timeInMinutes: 75,
     passingPercentage: 75
   },
   // Principles of Flight
-  "POF": {
+  "081": {
     questions: 44,
     timeInMinutes: 60,
     passingPercentage: 75
   },
   // Communications
-  "COMM": {
+  "090": {
     questions: 34,
     timeInMinutes: 60,
     passingPercentage: 75
