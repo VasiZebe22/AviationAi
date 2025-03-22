@@ -231,6 +231,27 @@ const LineDrawingTool = ({
     };
   }, [imageRef, lines]); // eslint-disable-line react-hooks/exhaustive-deps
   
+  // Re-initialize canvas when tool becomes active
+  useEffect(() => {
+    if (lineDrawingActive || angleMeasurementActive) {
+      if (canvasRef.current && containerRef.current && imageRef.current) {
+        const rect = imageRef.current.getBoundingClientRect();
+        canvasRef.current.width = rect.width;
+        canvasRef.current.height = rect.height;
+        
+        // Ensure the canvas is properly sized and positioned
+        containerRef.current.style.position = 'absolute';
+        containerRef.current.style.top = '0';
+        containerRef.current.style.left = '0';
+        containerRef.current.style.width = `${rect.width}px`;
+        containerRef.current.style.height = `${rect.height}px`;
+        
+        // Redraw everything
+        drawLines();
+      }
+    }
+  }, [lineDrawingActive, angleMeasurementActive]); // eslint-disable-line react-hooks/exhaustive-deps
+  
   // Draw all lines on the canvas
   const drawLines = () => {
     if (!canvasRef.current) return;
@@ -742,8 +763,7 @@ const LineDrawingTool = ({
       
       <div
         ref={containerRef}
-        className="line-drawing-container absolute top-0 left-0 w-full h-full"
-        style={{ pointerEvents: (lineDrawingActive || angleMeasurementActive) ? 'auto' : 'none' }}
+        className={`line-drawing-container absolute top-0 left-0 w-full h-full ${(lineDrawingActive || angleMeasurementActive) ? 'pointer-events-auto' : 'pointer-events-none'}`}
       >
         <canvas
           ref={canvasRef}
