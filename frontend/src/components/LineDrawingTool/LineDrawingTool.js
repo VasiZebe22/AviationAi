@@ -100,6 +100,21 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
     return Math.sqrt(Math.pow(x - closestX, 2) + Math.pow(y - closestY, 2));
   };
   
+  // Check if a point is near an endpoint of a line
+  const isNearEndpoint = (point, line) => {
+    const { x, y } = point;
+    const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
+    const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
+    
+    if (distToStart < 10) {
+      return { isNear: true, point: { x: line.x1, y: line.y1 } };
+    } else if (distToEnd < 10) {
+      return { isNear: true, point: { x: line.x2, y: line.y2 } };
+    }
+    
+    return { isNear: false };
+  };
+  
   // Toggle between cm and inches
   const toggleUnit = () => {
     if (onUnitChange) {
@@ -165,7 +180,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
       drawAngle(ctx, lines[angle.lineIndex1], lines[angle.lineIndex2], angle.value);
     });
     
-    // Draw hovered endpoint with special highlight if shift is pressed
+    // Draw hovered endpoint with special highlight
     if (hoveredEndpoint) {
       ctx.fillStyle = '#00FF00'; // Bright green for the hovered endpoint
       ctx.beginPath();
@@ -278,41 +293,16 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
-    // Check if clicked near an existing line endpoint (for connecting lines with Shift)
-    let foundEndpoint = null;
-    let clickedLineIndex = -1;
-    
-    // First check for endpoints if we're in line drawing mode and holding shift
-    if (!angleMeasurementMode && e.shiftKey) {
-      clickedLineIndex = lines.findIndex(line => {
-        const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
-        const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
-        
-        // Store the endpoint coordinates if we're close to one
-        if (distToStart < 10) {
-          foundEndpoint = { x: line.x1, y: line.y1 };
-          return true;
-        } else if (distToEnd < 10) {
-          foundEndpoint = { x: line.x2, y: line.y2 };
-          return true;
-        }
-        return false;
-      });
-    }
-    
-    // If we didn't find an endpoint (or we're not looking for one), check if clicked on any line
-    if (clickedLineIndex < 0) {
-      const clickPoint = { x, y };
-      const threshold = angleMeasurementMode ? 10 : 5; // More generous threshold in angle mode
-      
-      clickedLineIndex = lines.findIndex(line => {
-        return distanceToLine(clickPoint, line) < threshold;
-      });
-    }
+    const clickPoint = { x, y };
     
     // Handle angle measurement mode differently
     if (angleMeasurementMode) {
+      // In angle mode, we just need to check if clicked on any line
+      const threshold = 10; // More generous threshold in angle mode
+      const clickedLineIndex = lines.findIndex(line => {
+        return distanceToLine(clickPoint, line) < threshold;
+      });
+      
       if (clickedLineIndex >= 0) {
         // Don't select a line that's already selected
         if (selectedLines.includes(clickedLineIndex)) {
@@ -359,8 +349,23 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
       return;
     }
     
-    // Normal line drawing mode
-    if (e.shiftKey && foundEndpoint) {
+    // Line drawing mode logic
+    
+    // First check if we clicked near an endpoint of any line
+    let foundEndpoint = null;
+    let foundEndpointLineIndex = -1;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const { isNear, point } = isNearEndpoint(clickPoint, lines[i]);
+      if (isNear) {
+        foundEndpoint = point;
+        foundEndpointLineIndex = i;
+        break;
+      }
+    }
+    
+    // If we clicked on an endpoint, start drawing from there
+    if (foundEndpoint) {
       setIsDrawing(true);
       setCurrentLine({
         x1: foundEndpoint.x,
@@ -369,11 +374,20 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
         y2: foundEndpoint.y
       });
       setActiveLineIndex(null);
-    } else if (clickedLineIndex >= 0) {
-      // Select this line (when not holding shift)
+      return;
+    }
+    
+    // If not on an endpoint, check if clicked on the body of a line
+    const threshold = 5; // Threshold for line body selection
+    const clickedLineIndex = lines.findIndex(line => {
+      return distanceToLine(clickPoint, line) < threshold;
+    });
+    
+    if (clickedLineIndex >= 0) {
+      // Select this line
       setActiveLineIndex(clickedLineIndex);
     } else {
-      // Start drawing a new line
+      // Start drawing a new line from scratch
       setIsDrawing(true);
       setCurrentLine({ x1: x, y1: y, x2: x, y2: y });
       setActiveLineIndex(null);
@@ -387,25 +401,21 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    const mousePoint = { x, y };
     
     // Update current line if drawing
     if (isDrawing && currentLine) {
       setCurrentLine({ ...currentLine, x2: x, y2: y });
     }
     
-    // Check for hovering over endpoints (for connecting lines)
-    if (!angleMeasurementMode && e.shiftKey) {
+    // Always check for hovering over endpoints to provide visual feedback
+    if (!angleMeasurementMode && !isDrawing) {
       let foundEndpoint = null;
       
       for (const line of lines) {
-        const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
-        const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
-        
-        if (distToStart < 10) {
-          foundEndpoint = { x: line.x1, y: line.y1 };
-          break;
-        } else if (distToEnd < 10) {
-          foundEndpoint = { x: line.x2, y: line.y2 };
+        const { isNear, point } = isNearEndpoint(mousePoint, line);
+        if (isNear) {
+          foundEndpoint = point;
           break;
         }
       }
@@ -551,7 +561,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
           ) : (
             <>
               <span>Click and drag to draw a line</span>
-              <span className="text-gray-400">Hold Shift + click on endpoint to connect lines</span>
+              <span className="text-gray-400">Click on an endpoint to continue from there</span>
             </>
           )}
         </div>
