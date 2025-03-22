@@ -3,20 +3,37 @@ import LineDrawingTool from './LineDrawingTool';
 
 /**
  * ImageWithMeasurement - A component that wraps an image with the line drawing tool
- * 
+ *
  * @param {Object} props
  * @param {string} props.src - The source URL of the image
  * @param {string} props.alt - Alt text for the image
  * @param {string} props.className - Additional CSS classes for the image
+ * @param {boolean} props.showMeasurementTool - Whether to show the measurement tool
+ * @param {function} props.onToggleMeasurementTool - Function to toggle measurement tool visibility
  */
-const ImageWithMeasurement = ({ src, alt, className }) => {
-  const [showMeasurementTool, setShowMeasurementTool] = useState(false);
+const ImageWithMeasurement = ({
+  src,
+  alt,
+  className,
+  showMeasurementTool = false,
+  onToggleMeasurementTool = null
+}) => {
+  // If no external control is provided, use internal state
+  const [internalShowTool, setInternalShowTool] = useState(false);
   const [unit, setUnit] = useState('cm');
   const imageRef = useRef(null);
   
+  // Determine if we should use internal or external state
+  const isControlled = onToggleMeasurementTool !== null;
+  const shouldShowTool = isControlled ? showMeasurementTool : internalShowTool;
+  
   // Toggle measurement tool visibility
   const toggleMeasurementTool = () => {
-    setShowMeasurementTool(prev => !prev);
+    if (isControlled) {
+      onToggleMeasurementTool();
+    } else {
+      setInternalShowTool(prev => !prev);
+    }
   };
   
   // Toggle between cm and inches
@@ -39,16 +56,8 @@ const ImageWithMeasurement = ({ src, alt, className }) => {
           }}
         />
         
-        {/* Measurement tool toggle button */}
-        <button
-          onClick={toggleMeasurementTool}
-          className="absolute top-2 right-2 bg-surface-dark/80 hover:bg-surface-dark text-white px-2 py-1 rounded text-xs z-20"
-        >
-          {showMeasurementTool ? 'Hide Measurement Tool' : 'Measure'}
-        </button>
-        
         {/* Line drawing tool */}
-        {showMeasurementTool && (
+        {shouldShowTool && (
           <LineDrawingTool
             imageRef={imageRef}
             unit={unit}
