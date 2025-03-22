@@ -93,7 +93,7 @@ const QuestionContent = ({
                     let buttonStyle = 'bg-surface-dark/50 text-gray-300 hover:bg-surface-dark';
                     if (isAnswered) {
                         if (isSelected) {
-                            buttonStyle = isCorrect ? 'bg-green-600/70 text-white' : 'bg-red-600/70 text-white';
+                            buttonStyle = 'bg-green-600/70 text-white';
                         } else if (isCorrect) {
                             buttonStyle = 'bg-green-600/70 text-white';
                         }
@@ -103,8 +103,7 @@ const QuestionContent = ({
                         <button
                             key={label}
                             onClick={() => handleAnswerSelect({ letter: label, text })}
-                            disabled={isAnswered}
-                            className={`w-full p-3 text-left rounded ${buttonStyle} ${isAnswered && !isSelected ? 'opacity-50' : ''}`}
+                            className={`w-full p-3 text-left rounded ${buttonStyle} ${isAnswered && !isSelected ? 'opacity-80' : ''}`}
                         >
                             <span className="font-medium">{label}:</span> {text}
                         </button>

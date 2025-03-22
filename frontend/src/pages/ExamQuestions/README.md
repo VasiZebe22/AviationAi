@@ -10,6 +10,9 @@ The ExamQuestions component simulates EASA ATPL(A) aviation exams with timed tes
 - Customized question counts and time limits based on official EASA subject requirements
 - Progress tracking with a question grid showing answered questions
 - Keyboard navigation support
+- User-friendly interface with green highlighting for selected answers
+- Ability to review and change answers before moving to the next question
+- Manual navigation between questions, giving users full control over their exam experience
 
 ## Component Structure
 

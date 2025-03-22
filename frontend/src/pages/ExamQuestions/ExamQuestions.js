@@ -132,14 +132,8 @@ const ExamQuestions = () => {
             [currentQuestionData.id]: selectedAnswer.letter
         }));
         
-        // Automatically move to next question
-        setCurrentQuestion(prev => {
-            if (prev < questions.length - 1) {
-                return prev + 1;
-            }
-            return prev;
-        });
-    }, [currentQuestionData, questions.length]);
+        // Removed automatic move to next question so users can see their selected answers
+    }, [currentQuestionData]);
     
     // Image error handler
     const handleImageError = useCallback((e) => {
