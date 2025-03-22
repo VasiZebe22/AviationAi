@@ -60,18 +60,82 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
     const magnitude1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
     const magnitude2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
     
-    // Calculate angle in radians
+    // Calculate angle in radians using dot product
     const cosTheta = dotProduct / (magnitude1 * magnitude2);
     
     // Convert to degrees (handle potential floating point errors)
     let angleInDegrees = Math.acos(Math.min(Math.max(cosTheta, -1), 1)) * (180 / Math.PI);
     
-    // Ensure we get the smaller angle (always <= 180 degrees)
-    if (angleInDegrees > 180) {
-      angleInDegrees = 360 - angleInDegrees;
+    // The angle from dot product is always the smaller angle (0-180)
+    // To determine if we should return the obtuse angle (>90) or acute angle (<90),
+    // we need to check the orientation of the vectors
+    
+    // Calculate cross product to determine orientation
+    const crossProduct = vector1.x * vector2.y - vector1.y * vector2.x;
+    
+    // Find the closest endpoints to determine the vertex
+    let endpoints = [
+      { x: line1.x1, y: line1.y1, line: 1, end: 'start' },
+      { x: line1.x2, y: line1.y2, line: 1, end: 'end' },
+      { x: line2.x1, y: line2.y1, line: 2, end: 'start' },
+      { x: line2.x2, y: line2.y2, line: 2, end: 'end' }
+    ];
+    
+    // Find the closest pair of endpoints
+    let minDistance = Infinity;
+    let closestPair = [0, 2]; // Default to first endpoints of each line
+    
+    for (let i = 0; i < 2; i++) {
+      for (let j = 2; j < 4; j++) {
+        const dist = Math.sqrt(
+          Math.pow(endpoints[i].x - endpoints[j].x, 2) + 
+          Math.pow(endpoints[i].y - endpoints[j].y, 2)
+        );
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestPair = [i, j];
+        }
+      }
     }
     
-    return angleInDegrees;
+    // Determine which endpoints are at the vertex and which are at the ends
+    const vertexEndpoints = [endpoints[closestPair[0]], endpoints[closestPair[1]]];
+    const outerEndpoints = endpoints.filter((_, index) => 
+      index !== closestPair[0] && index !== closestPair[1]
+    );
+    
+    // Create vectors from vertex to outer endpoints
+    const vertexPoint = {
+      x: (vertexEndpoints[0].x + vertexEndpoints[1].x) / 2,
+      y: (vertexEndpoints[0].y + vertexEndpoints[1].y) / 2
+    };
+    
+    const vectorFromVertex1 = {
+      x: outerEndpoints[0].x - vertexPoint.x,
+      y: outerEndpoints[0].y - vertexPoint.y
+    };
+    
+    const vectorFromVertex2 = {
+      x: outerEndpoints[1].x - vertexPoint.x,
+      y: outerEndpoints[1].y - vertexPoint.y
+    };
+    
+    // Calculate the angle between these vectors using atan2
+    const angle1 = Math.atan2(vectorFromVertex1.y, vectorFromVertex1.x);
+    const angle2 = Math.atan2(vectorFromVertex2.y, vectorFromVertex2.x);
+    
+    // Calculate the difference between angles
+    let angleDiff = Math.abs(angle1 - angle2);
+    
+    // Ensure we get the correct angle (between 0 and 180)
+    if (angleDiff > Math.PI) {
+      angleDiff = 2 * Math.PI - angleDiff;
+    }
+    
+    // Convert to degrees
+    const finalAngle = angleDiff * (180 / Math.PI);
+    
+    return finalAngle;
   };
   
   // Calculate distance from point to line segment
@@ -203,7 +267,59 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
     // Format the angle
     const formattedAngle = typeof angle === 'number' ? angle.toFixed(1) : angle;
     
-    // Find intersection point (for simplicity, using midpoints of both lines)
+    // Find the intersection point (vertex) of the two lines
+    // For simplicity, we'll use the closest endpoints of the two lines
+    let vertex;
+    let endpoints = [
+      { x: line1.x1, y: line1.y1 },
+      { x: line1.x2, y: line1.y2 },
+      { x: line2.x1, y: line2.y1 },
+      { x: line2.x2, y: line2.y2 }
+    ];
+    
+    // Find the pair of endpoints with the smallest distance
+    let minDistance = Infinity;
+    let closestPair = [0, 2]; // Default to first endpoints of each line
+    
+    for (let i = 0; i < 2; i++) {
+      for (let j = 2; j < 4; j++) {
+        const dist = Math.sqrt(
+          Math.pow(endpoints[i].x - endpoints[j].x, 2) + 
+          Math.pow(endpoints[i].y - endpoints[j].y, 2)
+        );
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestPair = [i, j];
+        }
+      }
+    }
+    
+    // If the endpoints are very close, use their average as the vertex
+    if (minDistance < 20) {
+      vertex = {
+        x: (endpoints[closestPair[0]].x + endpoints[closestPair[1]].x) / 2,
+        y: (endpoints[closestPair[0]].y + endpoints[closestPair[1]].y) / 2
+      };
+    } else {
+      // If endpoints aren't close, use the midpoint between the lines
+      const midpoint1 = {
+        x: (line1.x1 + line1.x2) / 2,
+        y: (line1.y1 + line1.y2) / 2
+      };
+      
+      const midpoint2 = {
+        x: (line2.x1 + line2.x2) / 2,
+        y: (line2.y1 + line2.y2) / 2
+      };
+      
+      vertex = {
+        x: (midpoint1.x + midpoint2.x) / 2,
+        y: (midpoint1.y + midpoint2.y) / 2
+      };
+    }
+    
+    // Calculate vectors from vertex to each line
+    // We'll use the midpoints of the lines for direction
     const midpoint1 = {
       x: (line1.x1 + line1.x2) / 2,
       y: (line1.y1 + line1.y2) / 2
@@ -214,28 +330,63 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
       y: (line2.y1 + line2.y2) / 2
     };
     
-    const centerX = (midpoint1.x + midpoint2.x) / 2;
-    const centerY = (midpoint1.y + midpoint2.y) / 2;
+    // Calculate vectors from vertex to midpoints
+    const vector1 = {
+      x: midpoint1.x - vertex.x,
+      y: midpoint1.y - vertex.y
+    };
     
-    // Draw angle arc
+    const vector2 = {
+      x: midpoint2.x - vertex.x,
+      y: midpoint2.y - vertex.y
+    };
+    
+    // Normalize vectors
+    const length1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
+    const length2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
+    
+    const normalizedVector1 = {
+      x: vector1.x / length1,
+      y: vector1.y / length1
+    };
+    
+    const normalizedVector2 = {
+      x: vector2.x / length2,
+      y: vector2.y / length2
+    };
+    
+    // Calculate start and end angles for the arc
+    const startAngle = Math.atan2(normalizedVector1.y, normalizedVector1.x);
+    const endAngle = Math.atan2(normalizedVector2.y, normalizedVector2.x);
+    
+    // Draw the angle arc
+    const radius = 20; // Smaller radius for the arc
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#FFCC00';
+    ctx.arc(vertex.x, vertex.y, radius, startAngle, endAngle, false);
+    ctx.strokeStyle = '#FFCC00'; // Yellow color
     ctx.lineWidth = 2;
     ctx.stroke();
     
-    // Draw angle text
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.font = '14px Arial';
+    // Calculate position for the text (slightly outside the arc)
+    const textRadius = radius * 1.5;
+    const textAngle = (startAngle + endAngle) / 2; // Midpoint angle
+    const textX = vertex.x + textRadius * Math.cos(textAngle);
+    const textY = vertex.y + textRadius * Math.sin(textAngle);
+    
+    // Draw angle text with a small background
+    ctx.font = 'bold 12px Arial';
     const text = `${formattedAngle}°`;
     const textWidth = ctx.measureText(text).width;
-    ctx.fillRect(centerX - textWidth/2 - 5, centerY - 10, textWidth + 10, 20);
+    
+    // Background for text
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillRect(textX - textWidth/2 - 3, textY - 8, textWidth + 6, 16);
     
     // Text
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = '#000000';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, centerX, centerY);
+    ctx.fillText(text, textX, textY);
   };
   
   // Draw a single line
