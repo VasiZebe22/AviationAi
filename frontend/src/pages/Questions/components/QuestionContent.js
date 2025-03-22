@@ -33,15 +33,15 @@ const QuestionContent = ({
                             className="absolute -left-12 top-2 bg-surface-dark/80 hover:bg-surface-dark text-white p-2 rounded z-20"
                             title={showMeasurementTool ? "Hide measurement tool" : "Show measurement tool"}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M3 5v14" />
-                                <path d="M21 5v14" />
-                                <path d="M3 5h18" />
-                                <path d="M3 19h18" />
-                                <path d="M9 5v4" />
-                                <path d="M15 5v4" />
-                                <path d="M9 15v4" />
-                                <path d="M15 15v4" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showMeasurementTool ? "white" : "#9CA3AF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M2 4v16" />
+                                <path d="M6 4v8" />
+                                <path d="M10 4v4" />
+                                <path d="M14 4v8" />
+                                <path d="M18 4v4" />
+                                <path d="M22 4v16" />
+                                <path d="M2 20h20" />
+                                <path d="M2 4h20" />
                             </svg>
                         </button>
                         <ImageWithMeasurement
