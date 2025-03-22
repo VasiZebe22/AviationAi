@@ -7,8 +7,19 @@ import React, { useState, useRef, useEffect } from 'react';
  * @param {string} props.imageRef - Reference to the image element
  * @param {string} props.unit - Unit of measurement ('cm' or 'in')
  * @param {boolean} props.angleMeasurementMode - Whether angle measurement mode is active
+ * @param {boolean} props.toolsVisible - Whether the tool controls should be visible
+ * @param {boolean} props.lineDrawingActive - Whether line drawing is active
+ * @param {boolean} props.angleMeasurementActive - Whether angle measurement is active
  */
-const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurementMode = false }) => {
+const LineDrawingTool = ({ 
+  imageRef, 
+  unit = 'cm', 
+  onUnitChange, 
+  angleMeasurementMode = false,
+  toolsVisible = true,
+  lineDrawingActive = false,
+  angleMeasurementActive = false
+}) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lines, setLines] = useState([]);
   const [currentLine, setCurrentLine] = useState(null);
@@ -441,6 +452,10 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
   const handleMouseDown = (e) => {
     if (!canvasRef.current) return;
     
+    // Only allow drawing when line drawing is active
+    // Allow interaction for angle measurement when angle measurement is active
+    if (!lineDrawingActive && !angleMeasurementActive) return;
+    
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -549,6 +564,9 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
   const handleMouseMove = (e) => {
     if (!canvasRef.current) return;
     
+    // Only allow interaction when appropriate tool is active
+    if (!lineDrawingActive && !angleMeasurementActive) return;
+    
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -579,6 +597,9 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
   
   // Handle mouse up - finish drawing the line
   const handleMouseUp = () => {
+    // Only allow interaction when appropriate tool is active
+    if (!lineDrawingActive && !angleMeasurementActive) return;
+    
     if (isDrawing && currentLine) {
       // Only add the line if it has some length
       const length = calculateDistance(
@@ -591,10 +612,9 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
       if (length > 0.1) { // Minimum length threshold
         setLines(prev => [...prev, currentLine]);
       }
+      setCurrentLine(null);
+      setIsDrawing(false);
     }
-    
-    setIsDrawing(false);
-    setCurrentLine(null);
   };
   
   // Handle clearing all lines
@@ -685,42 +705,45 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurement
   
   return (
     <div className="line-drawing-tool">
-      <div className="tool-controls bg-surface-dark/80 text-white p-2 rounded-lg flex items-center space-x-2 absolute top-0 left-0 z-20 m-2">
-        <button
-          onClick={handleClearLines}
-          className="px-2 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs"
-        >
-          {angleMeasurementMode ? "Clear Angles" : "Clear All"}
-        </button>
-        {activeLineIndex !== null && !angleMeasurementMode && (
+      {toolsVisible && (
+        <div className="tool-controls bg-surface-dark/80 text-white p-2 rounded-lg flex items-center space-x-2 absolute top-0 left-0 z-20 m-2">
           <button
-            onClick={handleDeleteLine}
-            className="px-2 py-1 bg-yellow-600/80 hover:bg-yellow-600 rounded text-xs"
+            onClick={handleClearLines}
+            className="px-2 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs"
           >
-            Delete Line
+            {angleMeasurementMode ? "Clear Angles" : "Clear Lines"}
           </button>
-        )}
-        <button
-          onClick={toggleUnit}
-          className="px-2 py-1 bg-blue-600/80 hover:bg-blue-600 rounded text-xs"
-        >
-          {unit === 'cm' ? 'Switch to inches' : 'Switch to cm'}
-        </button>
-        <div className="text-xs ml-2 flex flex-col">
-          {angleMeasurementMode ? (
-            <span>Click on two lines to measure the angle between them</span>
-          ) : (
-            <>
-              <span>Click and drag to draw a line</span>
-              <span className="text-gray-400">Click on an endpoint to continue from there</span>
-            </>
+          {activeLineIndex !== null && !angleMeasurementMode && (
+            <button
+              onClick={handleDeleteLine}
+              className="px-2 py-1 bg-yellow-600/80 hover:bg-yellow-600 rounded text-xs"
+            >
+              Delete Line
+            </button>
           )}
+          <button
+            onClick={toggleUnit}
+            className="px-2 py-1 bg-blue-600/80 hover:bg-blue-600 rounded text-xs"
+          >
+            {unit === 'cm' ? 'Switch to inches' : 'Switch to cm'}
+          </button>
+          <div className="text-xs ml-2 flex flex-col">
+            {angleMeasurementMode ? (
+              <span>Click on two lines to measure the angle between them</span>
+            ) : (
+              <>
+                <span>Click and drag to draw a line</span>
+                <span className="text-gray-400">Click on an endpoint to continue from there</span>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       
       <div
         ref={containerRef}
         className="line-drawing-container absolute top-0 left-0 w-full h-full"
+        style={{ pointerEvents: (lineDrawingActive || angleMeasurementActive) ? 'auto' : 'none' }}
       >
         <canvas
           ref={canvasRef}

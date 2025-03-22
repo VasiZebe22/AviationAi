@@ -72,15 +72,16 @@ const ImageWithMeasurement = ({
           }}
         />
         
-        {/* Line drawing tool */}
-        {(shouldShowTool || shouldShowAngleTool) && (
-          <LineDrawingTool
-            imageRef={imageRef}
-            unit={unit}
-            onUnitChange={toggleUnit}
-            angleMeasurementMode={shouldShowAngleTool}
-          />
-        )}
+        {/* Line drawing tool - Always render it but with visibility flags */}
+        <LineDrawingTool
+          imageRef={imageRef}
+          unit={unit}
+          onUnitChange={toggleUnit}
+          angleMeasurementMode={shouldShowAngleTool}
+          toolsVisible={shouldShowTool || shouldShowAngleTool}
+          lineDrawingActive={shouldShowTool}
+          angleMeasurementActive={shouldShowAngleTool}
+        />
       </div>
     </div>
   );
