@@ -6,13 +6,17 @@ import React, { useState, useRef, useEffect } from 'react';
  * @param {Object} props
  * @param {string} props.imageRef - Reference to the image element
  * @param {string} props.unit - Unit of measurement ('cm' or 'in')
+ * @param {boolean} props.angleMeasurementMode - Whether angle measurement mode is active
  */
-const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
+const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange, angleMeasurementMode = false }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lines, setLines] = useState([]);
   const [currentLine, setCurrentLine] = useState(null);
   const [activeLineIndex, setActiveLineIndex] = useState(null);
   const [hoveredEndpoint, setHoveredEndpoint] = useState(null);
+  const [selectedLines, setSelectedLines] = useState([]);
+  // Store angle measurements persistently
+  const [anglesMeasured, setAnglesMeasured] = useState([]);
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   
@@ -34,6 +38,66 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
   const calculateDistance = (x1, y1, x2, y2) => {
     const pixelDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     return pixelToUnit(pixelDistance);
+  };
+  
+  // Calculate angle between two lines
+  const calculateAngle = (line1, line2) => {
+    // Calculate vectors for both lines
+    const vector1 = {
+      x: line1.x2 - line1.x1,
+      y: line1.y2 - line1.y1
+    };
+    
+    const vector2 = {
+      x: line2.x2 - line2.x1,
+      y: line2.y2 - line2.y1
+    };
+    
+    // Calculate dot product
+    const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
+    
+    // Calculate magnitudes
+    const magnitude1 = Math.sqrt(vector1.x * vector1.x + vector1.y * vector1.y);
+    const magnitude2 = Math.sqrt(vector2.x * vector2.x + vector2.y * vector2.y);
+    
+    // Calculate angle in radians
+    const cosTheta = dotProduct / (magnitude1 * magnitude2);
+    
+    // Convert to degrees (handle potential floating point errors)
+    let angleInDegrees = Math.acos(Math.min(Math.max(cosTheta, -1), 1)) * (180 / Math.PI);
+    
+    // Ensure we get the smaller angle (always <= 180 degrees)
+    if (angleInDegrees > 180) {
+      angleInDegrees = 360 - angleInDegrees;
+    }
+    
+    return angleInDegrees;
+  };
+  
+  // Calculate distance from point to line segment
+  const distanceToLine = (point, line) => {
+    const { x, y } = point;
+    const { x1, y1, x2, y2 } = line;
+    
+    // Calculate the length of the line segment
+    const lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    
+    // If line length is zero, return distance to the point
+    if (lineLength === 0) return Math.sqrt(Math.pow(x - x1, 2) + Math.pow(y - y1, 2));
+    
+    // Calculate the projection of the point onto the line
+    const t = ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / (lineLength * lineLength);
+    
+    // If t is outside [0,1], the closest point is an endpoint
+    if (t < 0) return Math.sqrt(Math.pow(x - x1, 2) + Math.pow(y - y1, 2));
+    if (t > 1) return Math.sqrt(Math.pow(x - x2, 2) + Math.pow(y - y2, 2));
+    
+    // Calculate the closest point on the line
+    const closestX = x1 + t * (x2 - x1);
+    const closestY = y1 + t * (y2 - y1);
+    
+    // Return the distance to the closest point
+    return Math.sqrt(Math.pow(x - closestX, 2) + Math.pow(y - closestY, 2));
   };
   
   // Toggle between cm and inches
@@ -86,13 +150,20 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     
     // Always draw all saved lines first to ensure they're visible
     lines.forEach((line, index) => {
-      drawLine(ctx, line, index === activeLineIndex);
+      const isSelected = selectedLines.includes(index);
+      const isActive = index === activeLineIndex;
+      drawLine(ctx, line, isActive, isSelected);
     });
     
     // Draw current line being created
     if (currentLine) {
-      drawLine(ctx, currentLine, true);
+      drawLine(ctx, currentLine, true, false);
     }
+    
+    // Draw all saved angle measurements
+    anglesMeasured.forEach(angle => {
+      drawAngle(ctx, lines[angle.lineIndex1], lines[angle.lineIndex2], angle.value);
+    });
     
     // Draw hovered endpoint with special highlight if shift is pressed
     if (hoveredEndpoint) {
@@ -110,13 +181,63 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     }
   };
   
+  // Draw angle between two lines
+  const drawAngle = (ctx, line1, line2, angle) => {
+    if (!line1 || !line2) return;
+    
+    // Format the angle
+    const formattedAngle = typeof angle === 'number' ? angle.toFixed(1) : angle;
+    
+    // Find intersection point (for simplicity, using midpoints of both lines)
+    const midpoint1 = {
+      x: (line1.x1 + line1.x2) / 2,
+      y: (line1.y1 + line1.y2) / 2
+    };
+    
+    const midpoint2 = {
+      x: (line2.x1 + line2.x2) / 2,
+      y: (line2.y1 + line2.y2) / 2
+    };
+    
+    const centerX = (midpoint1.x + midpoint2.x) / 2;
+    const centerY = (midpoint1.y + midpoint2.y) / 2;
+    
+    // Draw angle arc
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#FFCC00';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw angle text
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.font = '14px Arial';
+    const text = `${formattedAngle}°`;
+    const textWidth = ctx.measureText(text).width;
+    ctx.fillRect(centerX - textWidth/2 - 5, centerY - 10, textWidth + 10, 20);
+    
+    // Text
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, centerX, centerY);
+  };
+  
   // Draw a single line
-  const drawLine = (ctx, line, isActive) => {
+  const drawLine = (ctx, line, isActive, isSelected) => {
     const { x1, y1, x2, y2 } = line;
     
     // Line style
-    ctx.lineWidth = isActive ? 3 : 2;
-    ctx.strokeStyle = isActive ? '#00BFFF' : '#FF0000'; // Changed to red
+    ctx.lineWidth = isActive || isSelected ? 3 : 2;
+    
+    // Different colors based on state
+    if (isSelected) {
+      ctx.strokeStyle = '#FFCC00'; // Yellow for selected lines in angle mode
+    } else if (isActive) {
+      ctx.strokeStyle = '#00BFFF'; // Blue for active line
+    } else {
+      ctx.strokeStyle = '#FF0000'; // Red for normal lines
+    }
     
     // Draw the line
     ctx.beginPath();
@@ -125,7 +246,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     ctx.stroke();
     
     // Draw endpoints
-    ctx.fillStyle = isActive ? '#00BFFF' : '#FF0000'; // Changed to red
+    ctx.fillStyle = isSelected ? '#FFCC00' : (isActive ? '#00BFFF' : '#FF0000'); // Yellow for selected, blue for active, red for normal
     ctx.beginPath();
     ctx.arc(x1, y1, 5, 0, 2 * Math.PI);
     ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
@@ -150,7 +271,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     ctx.fillText(text, midX, midY);
   };
   
-  // Handle mouse down - start drawing a line
+  // Handle mouse down - start drawing a line or select a line
   const handleMouseDown = (e) => {
     if (!canvasRef.current) return;
     
@@ -158,24 +279,87 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Check if clicked near an existing line endpoint
+    // Check if clicked near an existing line endpoint (for connecting lines with Shift)
     let foundEndpoint = null;
-    const clickedLineIndex = lines.findIndex(line => {
-      const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
-      const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
-      
-      // Store the endpoint coordinates if we're close to one
-      if (distToStart < 10) {
-        foundEndpoint = { x: line.x1, y: line.y1 };
-        return true;
-      } else if (distToEnd < 10) {
-        foundEndpoint = { x: line.x2, y: line.y2 };
-        return true;
-      }
-      return false;
-    });
+    let clickedLineIndex = -1;
     
-    // If shift key is pressed and we found an endpoint, start a new line from that endpoint
+    // First check for endpoints if we're in line drawing mode and holding shift
+    if (!angleMeasurementMode && e.shiftKey) {
+      clickedLineIndex = lines.findIndex(line => {
+        const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
+        const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
+        
+        // Store the endpoint coordinates if we're close to one
+        if (distToStart < 10) {
+          foundEndpoint = { x: line.x1, y: line.y1 };
+          return true;
+        } else if (distToEnd < 10) {
+          foundEndpoint = { x: line.x2, y: line.y2 };
+          return true;
+        }
+        return false;
+      });
+    }
+    
+    // If we didn't find an endpoint (or we're not looking for one), check if clicked on any line
+    if (clickedLineIndex < 0) {
+      const clickPoint = { x, y };
+      const threshold = angleMeasurementMode ? 10 : 5; // More generous threshold in angle mode
+      
+      clickedLineIndex = lines.findIndex(line => {
+        return distanceToLine(clickPoint, line) < threshold;
+      });
+    }
+    
+    // Handle angle measurement mode differently
+    if (angleMeasurementMode) {
+      if (clickedLineIndex >= 0) {
+        // Don't select a line that's already selected
+        if (selectedLines.includes(clickedLineIndex)) {
+          return;
+        }
+        
+        // Add to selection (but keep only up to 2 lines)
+        const newSelectedLines = [...selectedLines];
+        if (newSelectedLines.length >= 2) {
+          newSelectedLines.shift(); // Remove the oldest selection
+        }
+        newSelectedLines.push(clickedLineIndex);
+        setSelectedLines(newSelectedLines);
+        
+        // If we now have exactly 2 selected lines, save the angle measurement
+        if (newSelectedLines.length === 2) {
+          const angle = calculateAngle(lines[newSelectedLines[0]], lines[newSelectedLines[1]]);
+          
+          // Check if this angle is already measured
+          const alreadyMeasured = anglesMeasured.some(
+            a => (a.lineIndex1 === newSelectedLines[0] && a.lineIndex2 === newSelectedLines[1]) ||
+                 (a.lineIndex1 === newSelectedLines[1] && a.lineIndex2 === newSelectedLines[0])
+          );
+          
+          if (!alreadyMeasured) {
+            setAnglesMeasured(prev => [
+              ...prev,
+              {
+                lineIndex1: newSelectedLines[0],
+                lineIndex2: newSelectedLines[1],
+                value: angle
+              }
+            ]);
+          }
+          
+          // Clear selection after saving the angle
+          setTimeout(() => {
+            setSelectedLines([]);
+          }, 300);
+        }
+        
+        setActiveLineIndex(null);
+      }
+      return;
+    }
+    
+    // Normal line drawing mode
     if (e.shiftKey && foundEndpoint) {
       setIsDrawing(true);
       setCurrentLine({
@@ -196,7 +380,7 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     }
   };
   
-  // Handle mouse move - update the current line and check for endpoint hovering
+  // Handle mouse move - update current line or check for hovering over endpoints
   const handleMouseMove = (e) => {
     if (!canvasRef.current) return;
     
@@ -204,18 +388,15 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // If drawing, update the current line
+    // Update current line if drawing
     if (isDrawing && currentLine) {
-      setCurrentLine(prev => ({ ...prev, x2: x, y2: y }));
-      // We'll let the useEffect handle the redraw
-      return;
+      setCurrentLine({ ...currentLine, x2: x, y2: y });
     }
     
-    // Only check for endpoints if we're not currently drawing
-    // and if the shift key is pressed (optimization)
-    if (!isDrawing && e.shiftKey) {
-      // Check if hovering over any endpoint
+    // Check for hovering over endpoints (for connecting lines)
+    if (!angleMeasurementMode && e.shiftKey) {
       let foundEndpoint = null;
+      
       for (const line of lines) {
         const distToStart = Math.sqrt(Math.pow(line.x1 - x, 2) + Math.pow(line.y1 - y, 2));
         const distToEnd = Math.sqrt(Math.pow(line.x2 - x, 2) + Math.pow(line.y2 - y, 2));
@@ -229,17 +410,8 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
         }
       }
       
-      // Only update state if it's different to avoid unnecessary rerenders
-      const newHoveredEndpoint = foundEndpoint ? foundEndpoint : null;
-      if (!hoveredEndpoint && newHoveredEndpoint ||
-          hoveredEndpoint && !newHoveredEndpoint ||
-          (hoveredEndpoint && newHoveredEndpoint &&
-           (hoveredEndpoint.x !== newHoveredEndpoint.x ||
-            hoveredEndpoint.y !== newHoveredEndpoint.y))) {
-        setHoveredEndpoint(newHoveredEndpoint);
-      }
-    } else if (hoveredEndpoint && !e.shiftKey) {
-      // Clear hovered endpoint if shift is not pressed
+      setHoveredEndpoint(foundEndpoint);
+    } else {
       setHoveredEndpoint(null);
     }
   };
@@ -266,23 +438,63 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
   
   // Handle clearing all lines
   const handleClearLines = () => {
-    setLines([]);
-    setActiveLineIndex(null);
+    if (angleMeasurementMode) {
+      // In angle mode, only clear angle measurements
+      setSelectedLines([]);
+      setAnglesMeasured([]);
+    } else {
+      // In line mode, clear everything
+      setLines([]);
+      setActiveLineIndex(null);
+      setSelectedLines([]);
+      setAnglesMeasured([]);
+    }
     drawLines();
   };
   
   // Handle deleting the active line
   const handleDeleteLine = () => {
     if (activeLineIndex !== null) {
-      setLines(prev => prev.filter((_, index) => index !== activeLineIndex));
+      // When deleting a line, also remove any angle measurements that use this line
+      setAnglesMeasured(prev => 
+        prev.filter(angle => 
+          angle.lineIndex1 !== activeLineIndex && angle.lineIndex2 !== activeLineIndex
+        )
+      );
+      
+      // Remove the line
+      setLines(prev => {
+        const newLines = prev.filter((_, index) => index !== activeLineIndex);
+        
+        // Update indices in anglesMeasured to account for the removed line
+        setAnglesMeasured(angles => 
+          angles.map(angle => ({
+            lineIndex1: angle.lineIndex1 > activeLineIndex ? angle.lineIndex1 - 1 : angle.lineIndex1,
+            lineIndex2: angle.lineIndex2 > activeLineIndex ? angle.lineIndex2 - 1 : angle.lineIndex2,
+            value: angle.value
+          }))
+        );
+        
+        return newLines;
+      });
+      
       setActiveLineIndex(null);
+      // Also remove from selected lines if present
+      setSelectedLines(prev => prev.filter(index => index !== activeLineIndex));
     }
   };
   
   // Update canvas when lines change
   useEffect(() => {
     drawLines();
-  }, [lines, currentLine, activeLineIndex, hoveredEndpoint]);
+  }, [lines, currentLine, activeLineIndex, hoveredEndpoint, selectedLines, angleMeasurementMode, anglesMeasured]);
+  
+  // Reset selected lines when angle measurement mode changes
+  useEffect(() => {
+    if (!angleMeasurementMode) {
+      setSelectedLines([]);
+    }
+  }, [angleMeasurementMode]);
   
   // Add keyboard event listeners for shift key
   useEffect(() => {
@@ -317,9 +529,9 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
           onClick={handleClearLines}
           className="px-2 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs"
         >
-          Clear All
+          {angleMeasurementMode ? "Clear Angles" : "Clear All"}
         </button>
-        {activeLineIndex !== null && (
+        {activeLineIndex !== null && !angleMeasurementMode && (
           <button
             onClick={handleDeleteLine}
             className="px-2 py-1 bg-yellow-600/80 hover:bg-yellow-600 rounded text-xs"
@@ -334,8 +546,14 @@ const LineDrawingTool = ({ imageRef, unit = 'cm', onUnitChange }) => {
           {unit === 'cm' ? 'Switch to inches' : 'Switch to cm'}
         </button>
         <div className="text-xs ml-2 flex flex-col">
-          <span>Click and drag to draw a line</span>
-          <span className="text-gray-400">Hold Shift + click on endpoint to connect lines</span>
+          {angleMeasurementMode ? (
+            <span>Click on two lines to measure the angle between them</span>
+          ) : (
+            <>
+              <span>Click and drag to draw a line</span>
+              <span className="text-gray-400">Hold Shift + click on endpoint to connect lines</span>
+            </>
+          )}
         </div>
       </div>
       

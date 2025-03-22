@@ -9,23 +9,30 @@ import LineDrawingTool from './LineDrawingTool';
  * @param {string} props.alt - Alt text for the image
  * @param {string} props.className - Additional CSS classes for the image
  * @param {boolean} props.showMeasurementTool - Whether to show the measurement tool
+ * @param {boolean} props.showAngleTool - Whether to show the angle measurement tool
  * @param {function} props.onToggleMeasurementTool - Function to toggle measurement tool visibility
+ * @param {function} props.onToggleAngleTool - Function to toggle angle tool visibility
  */
 const ImageWithMeasurement = ({
   src,
   alt,
   className,
   showMeasurementTool = false,
-  onToggleMeasurementTool = null
+  showAngleTool = false,
+  onToggleMeasurementTool = null,
+  onToggleAngleTool = null
 }) => {
   // If no external control is provided, use internal state
   const [internalShowTool, setInternalShowTool] = useState(false);
+  const [internalShowAngleTool, setInternalShowAngleTool] = useState(false);
   const [unit, setUnit] = useState('cm');
   const imageRef = useRef(null);
   
   // Determine if we should use internal or external state
   const isControlled = onToggleMeasurementTool !== null;
+  const isAngleControlled = onToggleAngleTool !== null;
   const shouldShowTool = isControlled ? showMeasurementTool : internalShowTool;
+  const shouldShowAngleTool = isAngleControlled ? showAngleTool : internalShowAngleTool;
   
   // Toggle measurement tool visibility
   const toggleMeasurementTool = () => {
@@ -33,6 +40,15 @@ const ImageWithMeasurement = ({
       onToggleMeasurementTool();
     } else {
       setInternalShowTool(prev => !prev);
+    }
+  };
+  
+  // Toggle angle tool visibility
+  const toggleAngleTool = () => {
+    if (isAngleControlled) {
+      onToggleAngleTool();
+    } else {
+      setInternalShowAngleTool(prev => !prev);
     }
   };
   
@@ -57,11 +73,12 @@ const ImageWithMeasurement = ({
         />
         
         {/* Line drawing tool */}
-        {shouldShowTool && (
+        {(shouldShowTool || shouldShowAngleTool) && (
           <LineDrawingTool
             imageRef={imageRef}
             unit={unit}
             onUnitChange={toggleUnit}
+            angleMeasurementMode={shouldShowAngleTool}
           />
         )}
       </div>

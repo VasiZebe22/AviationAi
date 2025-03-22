@@ -13,12 +13,26 @@ const QuestionContent = ({
     isAnswerCorrect
 }) => {
     const [showMeasurementTool, setShowMeasurementTool] = useState(false);
+    const [showAngleTool, setShowAngleTool] = useState(false);
     
     if (!questionData) return null;
 
     // Toggle measurement tool visibility
     const toggleMeasurementTool = () => {
         setShowMeasurementTool(prev => !prev);
+        // If turning on measurement tool, turn off angle tool
+        if (!showMeasurementTool) {
+            setShowAngleTool(false);
+        }
+    };
+
+    // Toggle angle tool visibility
+    const toggleAngleTool = () => {
+        setShowAngleTool(prev => !prev);
+        // If turning on angle tool, turn off measurement tool
+        if (!showAngleTool) {
+            setShowMeasurementTool(false);
+        }
     };
 
     return (
@@ -44,12 +58,28 @@ const QuestionContent = ({
                                 <path d="M2 4h20" />
                             </svg>
                         </button>
+                        
+                        {/* Angle measurement icon button */}
+                        <button
+                            onClick={toggleAngleTool}
+                            className="absolute -left-12 top-14 bg-surface-dark/80 hover:bg-surface-dark text-white p-2 rounded z-20"
+                            title={showAngleTool ? "Hide angle measurement tool" : "Show angle measurement tool"}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={showAngleTool ? "white" : "#9CA3AF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 22L4 12L14 12" />
+                                <path d="M4 12L18 5" />
+                                <path d="M9 12C9 12 7 10.5 7 8.5C7 6.5 9 5 9 5" />
+                            </svg>
+                        </button>
+                        
                         <ImageWithMeasurement
                             src={questionImageUrl}
                             alt="Question illustration"
                             className="max-w-full h-auto rounded-lg"
                             showMeasurementTool={showMeasurementTool}
+                            showAngleTool={showAngleTool}
                             onToggleMeasurementTool={toggleMeasurementTool}
+                            onToggleAngleTool={toggleAngleTool}
                         />
                     </div>
                 )}
