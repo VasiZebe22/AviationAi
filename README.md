@@ -23,6 +23,13 @@ AviationAI is a comprehensive training platform designed for pilots preparing fo
 - Results analysis with correct/incorrect answers
 - Category-specific question counts and time limits
 
+### Measurement Tools (New)
+- Line drawing tool for measuring distances on diagrams and charts
+- Angle measurement tool for calculating angles between lines
+- Persistent measurements that remain visible when switching between tools
+- Unit conversion between centimeters and inches
+- Interactive selection of lines by clicking anywhere on them, not just endpoints
+
 ### Additional Features
 - User authentication and progress tracking
 - Performance analytics
@@ -97,7 +104,11 @@ The application follows the official EASA ATPL(A) exam structure:
 | Communications (090) | 34 | 60 |
 
 ## Recent Updates
-- **March 2025**: Added Exam Mode with official EASA specifications
+- **March 2025**: 
+  - Added Exam Mode with official EASA specifications
+  - Implemented measurement tools (line drawing and angle calculation)
+  - Improved UI interactions with persistent measurements
+  - Enhanced user experience with Tailwind CSS styling
 - **January 2024**: 
   - Changed port configuration (Backend: 3000, Frontend: 3001)
   - Security improvements (removed sensitive logs, added input validation)

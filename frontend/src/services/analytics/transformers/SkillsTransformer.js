@@ -45,7 +45,10 @@ export class SkillsTransformer {
                     correctCount: 0,
                     totalTime: 0,
                     recentSuccess: 0,
-                    lastAttempted: null
+                    lastAttempted: null,
+                    // Add properties for application calculation
+                    complexAttempts: 0,
+                    complexCorrect: 0
                 };
             }
 
@@ -56,15 +59,28 @@ export class SkillsTransformer {
             // Update basic stats
             if (item.attemptHistory && item.attemptHistory.length > 0) {
                 console.log(`Found ${item.attemptHistory.length} attempts for ${categoryCode}`);
+                
+                // Process complex questions for application metric
+                const complexQuestionThreshold = 45; // seconds
+                
                 item.attemptHistory.forEach(attempt => {
                     stats.attempts++;
                     if (attempt.isCorrect) stats.correctCount++;
                     stats.totalTime += attempt.answerTime || 0;
+                    
+                    // Track complex questions for application metric
+                    if ((attempt.answerTime || 0) > complexQuestionThreshold) {
+                        stats.complexAttempts++;
+                        if (attempt.isCorrect) stats.complexCorrect++;
+                    }
                 });
+                
                 console.log(`Category ${categoryCode} stats:`, {
                     attempts: stats.attempts,
                     correctCount: stats.correctCount,
-                    totalTime: stats.totalTime
+                    totalTime: stats.totalTime,
+                    complexAttempts: stats.complexAttempts,
+                    complexCorrect: stats.complexCorrect
                 });
             }
 
@@ -88,9 +104,9 @@ export class SkillsTransformer {
 
         // Calculate skill scores
         const skillsBreakdown = Object.values(categoryStats).map(stats => {
-            // Accuracy component (40% weight)
+            // Accuracy component (35% weight)
             const accuracy = stats.attempts > 0 ? (stats.correctCount / stats.attempts) * 100 : 0;
-            const accuracyScore = accuracy * 0.4;
+            const accuracyScore = accuracy * 0.35;
 
             // Speed component (15% weight)
             const avgTime = stats.attempts > 0 ? stats.totalTime / stats.attempts : 0;
@@ -105,8 +121,8 @@ export class SkillsTransformer {
                 score: speedScore.toFixed(2)
             });
 
-            // Consistency component (30% weight)
-            const consistencyScore = (stats.recentSuccess / Math.max(1, stats.attempts)) * 100 * 0.3;
+            // Consistency component (25% weight)
+            const consistencyScore = (stats.recentSuccess / Math.max(1, stats.attempts)) * 100 * 0.25;
 
             // Retention component (15% weight)
             // More gradual decay over time with a 45-day baseline
@@ -125,15 +141,28 @@ export class SkillsTransformer {
                 score: retentionScore.toFixed(2)
             });
 
+            // Application component (10% weight)
+            // This measures how well users apply knowledge to scenario-based questions
+            const applicationScore = stats.complexAttempts > 0 ? 
+                (stats.complexCorrect / stats.complexAttempts) * 100 * 0.10 : 
+                (accuracy * 0.10); // Fall back to accuracy if no complex questions
+
+            console.log(`Application calculation for ${stats.name}:`, {
+                complexAttempts: stats.complexAttempts,
+                complexCorrect: stats.complexCorrect,
+                score: applicationScore.toFixed(2)
+            });
+
             console.log(`Calculating components for ${stats.name}:`, {
                 accuracy: `${accuracy.toFixed(2)}% (weighted: ${accuracyScore.toFixed(2)})`,
                 speed: `${(avgTime).toFixed(2)}s (weighted: ${speedScore.toFixed(2)})`,
                 consistency: `${((stats.recentSuccess / Math.max(1, stats.attempts)) * 100).toFixed(2)}% (weighted: ${consistencyScore.toFixed(2)})`,
-                retention: `${daysSinceLastAttempt.toFixed(2)} days (weighted: ${retentionScore.toFixed(2)})`
+                retention: `${daysSinceLastAttempt.toFixed(2)} days (weighted: ${retentionScore.toFixed(2)})`,
+                application: `${(stats.complexAttempts > 0 ? (stats.complexCorrect / stats.complexAttempts) * 100 : accuracy).toFixed(2)}% (weighted: ${applicationScore.toFixed(2)})`
             });
 
             // Total skill score
-            const skillScore = accuracyScore + speedScore + consistencyScore + retentionScore;
+            const skillScore = accuracyScore + speedScore + consistencyScore + retentionScore + applicationScore;
 
             const result = {
                 name: stats.name,
@@ -146,7 +175,8 @@ export class SkillsTransformer {
                     accuracy: accuracyScore,
                     speed: speedScore,
                     consistency: consistencyScore,
-                    retention: retentionScore
+                    retention: retentionScore,
+                    application: applicationScore
                 }
             };
 

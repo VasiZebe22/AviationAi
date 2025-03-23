@@ -157,6 +157,10 @@ const Dashboard = () => {
               />
               <SkillsAnalysisChart 
                 progressData={progressData} 
+                selectedCategory={{
+                  value: learningOverviewCategory,
+                  setter: setLearningOverviewCategory
+                }}
                 isLoading={isRefreshing}
               />
               <StudyTimeChart 
