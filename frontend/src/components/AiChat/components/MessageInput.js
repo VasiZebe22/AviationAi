@@ -18,10 +18,10 @@ const MessageInput = ({
   messageInput,
   setMessageInput,
   handleSubmit,
-  isLoading,
-  isStarred,
+  isLoading = false,
+  isStarred = false,
   toggleStar,
-  showBookmarkedMessagesOnly,
+  showBookmarkedMessagesOnly = false,
   toggleBookmarkedMessagesFilter
 }) => {
   const inputRef = useRef(null);
@@ -130,12 +130,6 @@ MessageInput.propTypes = {
   toggleStar: PropTypes.func.isRequired,
   showBookmarkedMessagesOnly: PropTypes.bool,
   toggleBookmarkedMessagesFilter: PropTypes.func.isRequired
-};
-
-MessageInput.defaultProps = {
-  isLoading: false,
-  isStarred: false,
-  showBookmarkedMessagesOnly: false
 };
 
 export default MessageInput;

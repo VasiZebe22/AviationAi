@@ -22,12 +22,12 @@ const TypingCursor = () => (
  * @param {string} props.chatId - ID of the current chat
  * @param {Function} props.onToggleBookmark - Function to toggle bookmark status
  */
-const MessageList = ({ 
-  messages, 
-  isTyping, 
-  displayedContent, 
-  chatId, 
-  onToggleBookmark 
+const MessageList = ({
+  messages = [],
+  isTyping = false,
+  displayedContent = '',
+  chatId,
+  onToggleBookmark
 }) => {
   const { formatTimestamp, formatMarkdown, formatMessage } = useMessageFormatting();
   const messagesEndRef = useRef(null);
@@ -173,12 +173,6 @@ MessageList.propTypes = {
   displayedContent: PropTypes.string,
   chatId: PropTypes.string,
   onToggleBookmark: PropTypes.func.isRequired
-};
-
-MessageList.defaultProps = {
-  isTyping: false,
-  displayedContent: '',
-  messages: []
 };
 
 export default MessageList;

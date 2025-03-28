@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
  * @param {string} props.type - Type of loading indicator to display
  * @param {string} props.message - Optional message to display with the loading indicator
  */
-const LoadingIndicator = ({ type, message }) => {
+const LoadingIndicator = ({ type = 'default', message }) => {
   // Full-screen initializing spinner
   if (type === 'initializing') {
     return (
@@ -66,10 +66,6 @@ const LoadingIndicator = ({ type, message }) => {
 LoadingIndicator.propTypes = {
   type: PropTypes.oneOf(['initializing', 'typing', 'inline', 'button', 'default']),
   message: PropTypes.string
-};
-
-LoadingIndicator.defaultProps = {
-  type: 'default'
 };
 
 export default LoadingIndicator;

@@ -17,9 +17,9 @@ import { ChatListItem } from './';
  * @param {React.ReactNode} props.children - Optional children to render at the bottom of the sidebar
  */
 const ChatList = ({
-  chats,
+  chats = [],
   currentChatId,
-  showStarredOnly,
+  showStarredOnly = false,
   onChatSelect,
   onNewChat,
   onEditChat,
@@ -257,11 +257,6 @@ ChatList.propTypes = {
   onDeleteChat: PropTypes.func.isRequired,
   onToggleStarredFilter: PropTypes.func.isRequired,
   children: PropTypes.node
-};
-
-ChatList.defaultProps = {
-  showStarredOnly: false,
-  chats: []
 };
 
 export default ChatList;

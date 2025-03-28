@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
  * @param {string} props.messageType - Type of message ('user' or 'assistant')
  * @param {string} props.chatId - ID of the current chat
  */
-const BookmarkButton = ({ message, isBookmarked, onToggle, messageType, chatId }) => {
+const BookmarkButton = ({ message, isBookmarked = false, onToggle, messageType, chatId }) => {
   const [localBookmarked, setLocalBookmarked] = useState(isBookmarked);
   const [isInitialRender, setIsInitialRender] = useState(true);
 
@@ -71,10 +71,6 @@ BookmarkButton.propTypes = {
   onToggle: PropTypes.func.isRequired,
   messageType: PropTypes.oneOf(['user', 'assistant']).isRequired,
   chatId: PropTypes.string
-};
-
-BookmarkButton.defaultProps = {
-  isBookmarked: false
 };
 
 export default BookmarkButton;
