@@ -90,11 +90,16 @@ const QuestionContent = ({
                     const isSelected = answeredQuestions[questionData.id] === label;
                     const isCorrect = isAnswerCorrect(questionData, label);
 
+                    const isExamMode = window.location.pathname.includes('/exam');
                     let buttonStyle = 'bg-surface-dark/50 text-gray-300 hover:bg-surface-dark';
                     if (isAnswered) {
                         if (isSelected) {
-                            buttonStyle = 'bg-green-600/70 text-white';
-                        } else if (isCorrect) {
+                            buttonStyle = isExamMode
+                                ? 'bg-green-600/70 text-white'
+                                : (isCorrect
+                                    ? 'bg-green-600/70 text-white'
+                                    : 'bg-red-600/70 text-white');
+                        } else if (isCorrect && !isExamMode) {
                             buttonStyle = 'bg-green-600/70 text-white';
                         }
                     }

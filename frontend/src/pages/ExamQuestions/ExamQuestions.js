@@ -477,7 +477,7 @@ const ExamQuestions = () => {
                                 getQuestionOptions={getQuestionOptions}
                                 handleAnswerSelect={handleAnswerSelect}
                                 answeredQuestions={answeredQuestions}
-                                isAnswerCorrect={(question, answer) => false} // Hide correctness in exam mode
+                                isAnswerCorrect={(question, answer) => answeredQuestions[question.id] === answer}
                             />
                         )}
                     </div>
