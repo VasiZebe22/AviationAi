@@ -69,7 +69,7 @@ const createQuestionsIndexes = async () => {
     }
 };
 
-createQuestionsIndexes();
+// createQuestionsIndexes();
 
 // Generate a unique session ID
 const generateSessionId = () => {
