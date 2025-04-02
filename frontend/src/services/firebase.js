@@ -19,7 +19,7 @@ import {
     orderBy, 
     getDocs
 } from 'firebase/firestore';
-import { getDatabase, ref, set, onValue, remove } from 'firebase/database';
+import { getDatabase, ref, set, onValue, remove, get } from 'firebase/database';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage';
 
 // Firebase configuration
@@ -30,7 +30,9 @@ const firebaseConfig = {
     storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.REACT_APP_FIREBASE_APP_ID,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+    // Add the Database URL - REQUIRED for Realtime Database operations
+    databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL
 };
 
 // Initialize Firebase
@@ -77,7 +79,8 @@ const generateSessionId = () => {
 };
 
 // Create a new session
-const createSession = async (userId) => {
+// Export createSession so AuthContext can use it
+export const createSession = async (userId) => {
     const sessionId = generateSessionId();
     const sessionRef = ref(firebaseDatabase, `sessions/${userId}`);
     
@@ -87,7 +90,6 @@ const createSession = async (userId) => {
         lastActive: Date.now(),
         userAgent: navigator.userAgent
     });
-    
     return sessionId;
 };
 
@@ -95,9 +97,9 @@ const createSession = async (userId) => {
 const monitorSession = (userId, currentSessionId, onSessionInvalid) => {
     const sessionRef = ref(firebaseDatabase, `sessions/${userId}`);
     
+    // Log when the listener is attached and what sessionId it expects
     return onValue(sessionRef, (snapshot) => {
         const sessionData = snapshot.val();
-        
         // If session data doesn't exist or session ID doesn't match
         if (!sessionData || sessionData.sessionId !== currentSessionId) {
             // Call the callback to handle session invalidation
@@ -112,30 +114,39 @@ const removeSession = async (userId) => {
     await remove(sessionRef);
 };
 
+// Fetch the current sessionId for a user from the database
+export const fetchSessionId = async (userId) => {
+    if (!userId) return null;
+    const sessionRef = ref(firebaseDatabase, `sessions/${userId}`);
+    try {
+        const snapshot = await get(sessionRef);
+        if (snapshot.exists()) {
+            const sessionData = snapshot.val();
+            return sessionData?.sessionId || null;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error(`Error fetching session data for userId ${userId}:`, error); // Keep error log, remove DEBUG tag
+        return null;
+    }
+};
+
 // Authentication functions
+// Modified signIn: Only performs auth, returns userCredential. Session creation moved to AuthContext.
 export const signIn = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        
-        // Wait for auth state to be fully updated
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Create a new session
-        const sessionId = await createSession(userCredential.user.uid);
-        
-        // For legacy accounts, consider them verified
+        // console.log(`signIn: Firebase auth successful for userId ${userCredential.user.uid}`); // Log removed
+
+        // For legacy accounts, consider them verified immediately
         const creationTime = new Date(userCredential.user.metadata.creationTime);
         const cutoffDate = new Date('2024-12-29');
-        
         if (creationTime < cutoffDate) {
-            const idToken = await userCredential.user.getIdToken();
-            return { 
-                user: userCredential.user, 
-                token: idToken,
-                sessionId 
-            };
+             // No need to return token/session here, onAuthChange handles it
+            return userCredential;
         }
-        
+
         // For new accounts, check email verification
         if (!userCredential.user.emailVerified) {
             try {
@@ -143,19 +154,16 @@ export const signIn = async (email, password) => {
             } catch (verificationError) {
                 console.error('Error sending verification email:', verificationError);
             }
-            
-            // Remove session and sign out if email is not verified
-            await removeSession(userCredential.user.uid);
+            // Sign out immediately if email not verified, let onAuthChange handle null user
+            // We don't need to remove session here as it wasn't created yet by this function
             await signOut(auth);
             throw new Error('Please verify your email address before signing in. A new verification link has been sent to your email.');
         }
+
+        // If verified or legacy, just return the credential.
+        // The onAuthChange listener will pick up the user state.
+        return userCredential;
         
-        const idToken = await userCredential.user.getIdToken();
-        return { 
-            user: userCredential.user, 
-            token: idToken,
-            sessionId 
-        };
     } catch (error) {
         // Handle specific Firebase auth errors
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -278,6 +286,6 @@ export const onAuthChange = (callback) => {
 };
 
 // Export session management functions
-export { monitorSession, removeSession };
+export { monitorSession, removeSession }; // Removed duplicate fetchSessionId export
 
 export { auth, db, firebaseDatabase, storage };

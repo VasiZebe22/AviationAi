@@ -8,7 +8,9 @@ import {
   onAuthChange, 
   resendVerificationEmail,
   isLegacyUser,
-  monitorSession
+  monitorSession,
+  // fetchSessionId // No longer needed here
+  createSession // Import createSession
 } from '../services/firebase';
 
 const AuthContext = createContext();
@@ -24,29 +26,44 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   // Handle session invalidation
-  const handleSessionInvalid = useCallback(() => {
-    // Only show toast and navigate if we actually had a user
+  // Modify handleSessionInvalid to accept the unsubscribe function
+  const handleSessionInvalid = useCallback((unsubscribeListener) => {
+    // const currentSessionIdBeforeClear = sessionId; // Removed log variable
+    // console.log(`[RE-DEBUG] handleSessionInvalid: Called. User: ${currentUser?.user?.uid}, SessionId before clear: ${currentSessionIdBeforeClear}`); // Removed log
+    
+    // Immediately unsubscribe the listener that triggered this invalidation
+    // Immediately unsubscribe the listener that triggered this invalidation
+    if (unsubscribeListener) {
+        unsubscribeListener();
+    } else {
+        // This case shouldn't happen with the current logic, but keep warn just in case
+        console.warn(`handleSessionInvalid: No unsubscribe function provided.`);
+    }
+
+    // Only show toast and navigate if we actually had a user (prevents issues if called multiple times)
     if (currentUser) {
       toast.error('Your session has expired. Please log in again.');
       setCurrentUser(null);
       setSessionId(null);
       navigate('/login');
     }
-  }, [navigate, currentUser]);
+  }, [navigate, currentUser, sessionId]); // Keep sessionId dependency for logging consistency
 
   useEffect(() => {
     let mounted = true;
     let sessionUnsubscribe = null;
     
-    const unsubscribe = onAuthChange((userInfo) => {
+    // onAuthChange now only handles setting the currentUser state based on Firebase auth state
+    const unsubscribe = onAuthChange((userInfo) => { // Removed async
       if (!mounted) return;
-      
+
       // Allow legacy accounts or verified accounts
       if (userInfo?.user && (isLegacyUser(userInfo.user) || userInfo.user.emailVerified)) {
         setCurrentUser(userInfo);
+        // SessionId state is now handled by the login function
       } else {
         setCurrentUser(null);
-        setSessionId(null);
+        setSessionId(null); // Ensure sessionId is cleared on logout/invalid user
       }
       setLoading(false);
     });
@@ -62,31 +79,66 @@ export function AuthProvider({ children }) {
 
   // Set up session monitoring when user or sessionId changes
   useEffect(() => {
+    // Define sessionUnsubscribe *outside* the if block so cleanup can access it
+    // let sessionUnsubscribe = null; // REMOVED Redundant declaration
+
+    const userId = currentUser?.user?.uid;
+    
+    // Define sessionUnsubscribe *outside* the if block so cleanup can access it
     let sessionUnsubscribe = null;
 
-    if (currentUser?.user?.uid && sessionId) {
+    if (userId && sessionId) {
+      
+      // Create a wrapper callback that includes the unsubscribe function
+      const onInvalidCallback = () => {
+          // Pass the specific unsubscribe function for *this* listener instance
+          handleSessionInvalid(sessionUnsubscribe);
+      };
+
+      // Attach the listener and store its specific unsubscribe function
       sessionUnsubscribe = monitorSession(
-        currentUser.user.uid,
+        userId,
         sessionId,
-        handleSessionInvalid
+        onInvalidCallback // Use the wrapper callback
       );
     }
 
+    // Return the cleanup function
     return () => {
+      const cleanupUserId = userId;
+      const cleanupSessionId = sessionId;
+      // Standard cleanup
       if (sessionUnsubscribe) {
         sessionUnsubscribe();
+      } else {
       }
     };
   }, [currentUser?.user?.uid, sessionId, handleSessionInvalid]);
 
+  // Modified login function: Calls signIn, then createSession, then sets state
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const result = await signIn(email, password);
-      setSessionId(result.sessionId);
-      return result;
+      // 1. Authenticate with Firebase
+      const userCredential = await signIn(email, password);
+      // If signIn throws (e.g., wrong password, unverified email), it will be caught below
+
+      // 2. Create session in Realtime Database
+      const newSessionId = await createSession(userCredential.user.uid);
+
+      // 3. Set session ID state (currentUser will be set by onAuthChange listener)
+      setSessionId(newSessionId);
+
+      // Return something indicating success, maybe user info if needed immediately,
+      // though relying on onAuthChange is cleaner
+      return { user: userCredential.user, sessionId: newSessionId };
+
     } catch (error) {
-      throw error;
+      console.error(`AuthContext login failed:`, error); // Keep error log
+      // Clear potentially inconsistent state if login fails midway
+      setCurrentUser(null);
+      setSessionId(null);
+      throw error; // Re-throw for the UI component to handle
     } finally {
       setLoading(false);
     }
