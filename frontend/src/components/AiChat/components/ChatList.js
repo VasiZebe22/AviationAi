@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { ChatListItem } from './';
 
@@ -51,29 +51,23 @@ const ChatList = ({
     };
 
     chatList.forEach(chat => {
+      // Determine the most relevant date for grouping, prioritizing newer timestamps
+      const dateSource = chat.lastUpdated || chat.updatedAt || chat.createdAt || chat.clientCreatedAt;
       let chatDate;
-      
-      // For new chats without any dates, put them in today's group
-      if (!chat.createdAt && !chat.updatedAt) {
+
+      if (!dateSource) {
+        // If no date source exists, treat as today
         groups.today.push(chat);
         return;
       }
 
-      if (chat.createdAt?.toDate) {
-        chatDate = chat.createdAt.toDate();
-      } else if (chat.createdAt instanceof Date) {
-        chatDate = chat.createdAt;
-      } else if (chat.createdAt) {
-        chatDate = new Date(chat.createdAt);
-      } else if (chat.updatedAt?.toDate) {
-        chatDate = chat.updatedAt.toDate();
-      } else if (chat.updatedAt instanceof Date) {
-        chatDate = chat.updatedAt;
-      } else if (chat.updatedAt) {
-        chatDate = new Date(chat.updatedAt);
-      } else {
-        groups.today.push(chat);
-        return;
+      // Convert the source to a Date object
+      if (dateSource.toDate) { // Firestore Timestamp
+        chatDate = dateSource.toDate();
+      } else if (dateSource instanceof Date) { // Already a Date object
+        chatDate = dateSource;
+      } else { // Assume ISO string
+        chatDate = new Date(dateSource);
       }
 
       // Handle invalid dates
@@ -120,7 +114,8 @@ const ChatList = ({
   );
 
   // Group chats by date
-  const groupedChats = groupChatsByDate(filteredChats);
+  // Memoize the grouped chats calculation
+  const groupedChats = useMemo(() => groupChatsByDate(filteredChats), [filteredChats]);
 
   return (
     <div className="w-64 bg-dark-lighter flex flex-col">

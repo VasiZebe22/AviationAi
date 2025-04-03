@@ -155,14 +155,10 @@ const useMessageHandling = ({
         // Then update Firestore
         await firestoreChats.updateChatMessages(chatId, finalHistory);
         
-        // Update chat in savedChats
+        // Update history will automatically update both currentChat and savedChats
         dispatch({
-          type: actions.SET_CHATS,
-          payload: state.savedChats.map(chat => 
-            chat.id === (newChatId || state.currentChat.id)
-              ? { ...chat, messages: finalHistory, lastUpdated: new Date().toISOString() }
-              : chat
-          )
+          type: actions.SET_HISTORY,
+          payload: finalHistory
         });
         
         console.log('AI response saved successfully');

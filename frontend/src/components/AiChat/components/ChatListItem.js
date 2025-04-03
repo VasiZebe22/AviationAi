@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useMessageFormatting } from '../hooks';
 
@@ -23,21 +23,23 @@ const ChatListItem = ({
   const [newTitle, setNewTitle] = useState(chat.title || 'New Chat');
   const { formatTimestamp } = useMessageFormatting();
 
-  // Get formatted date for the chat
-  const getChatDate = () => {
+  // Memoize the formatted date for the chat
+  const formattedDate = useMemo(() => {
+    console.log('Calculating date for chat:', chat?.id);
     // Try to get the date in order of preference:
     // 1. Server timestamp (createdAt)
     // 2. Client timestamp (clientCreatedAt)
     // 3. Current time for brand new chats
-    const chatDate = 
-      (chat?.createdAt?.toDate?.()) || // Server timestamp
-      (chat?.createdAt instanceof Date ? chat.createdAt : null) || // Client timestamp
-      (chat?.createdAt) || // Fallback to server timestamp string
-      (chat?.clientCreatedAt instanceof Date ? chat.clientCreatedAt : null) || // Fallback to client timestamp
-      (currentChatId === null ? new Date() : null); // Last resort for new chats
+    const chatDateSource =
+      chat?.updatedAt || // Prioritize updatedAt
+      chat?.createdAt || // Then createdAt
+      chat?.clientCreatedAt; // Finally client timestamp
+
+    // Use the identified source, falling back to current time for new chats
+    const chatDate = chatDateSource || (currentChatId === null ? new Date() : null);
     
     return chatDate ? formatTimestamp(chatDate, chat) : 'Date not available';
-  };
+  }, [chat?.updatedAt, chat?.createdAt, chat?.clientCreatedAt, currentChatId, chat?.id]);
 
   const handleEditStart = (e) => {
     e.stopPropagation();
@@ -101,7 +103,7 @@ const ChatListItem = ({
           </div>
         )}
         <p className="text-xs text-gray-400 mt-1">
-          {getChatDate()}
+          {formattedDate}
         </p>
       </div>
       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">

@@ -91,8 +91,20 @@ export const chatReducer = (state, action) => {
         history: action.payload,
         currentChat: state.currentChat ? {
           ...state.currentChat,
-          messages: action.payload
-        } : null
+          messages: action.payload,
+          lastUpdated: new Date().toISOString()
+        } : null,
+        savedChats: state.currentChat?.id ?
+          state.savedChats.map(chat =>
+            chat.id === state.currentChat.id
+              ? {
+                  ...chat,
+                  messages: action.payload,
+                  lastUpdated: new Date().toISOString()
+                }
+              : chat
+          )
+          : state.savedChats
       };
     case SET_LOADING:
       return {
