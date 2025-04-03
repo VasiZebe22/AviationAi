@@ -181,7 +181,7 @@ function App() {
                 <AuthProvider>
                     <ToastProvider>
                         <AppRoutes />
-                        <ToastContainer />
+                        {/* ToastContainer is now rendered inside AppRoutes */}
                     </ToastProvider>
                 </AuthProvider>
             </Router>

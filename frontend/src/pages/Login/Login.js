@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
+import { toast } from 'react-toastify'; // Import react-toastify directly
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { showToast } = useToast();
+  // Remove useToast hook
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,16 +20,35 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (error) {
-      let errorMessage = 'Failed to log in';
-      if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address';
-      } else if (error.code === 'auth/wrong-password') {
-        errorMessage = 'Incorrect password';
-      } else if (error.code === 'auth/user-not-found') {
-        errorMessage = 'No account found with this email';
+      // console.log('Login.js caught error:', error); // Remove debug log
+      let message = 'Failed to log in. Please try again.'; // Default message
+      let type = 'error'; // Default type
+
+      // Check for the specific verification error message first
+      if (error.message && error.message.startsWith('Please verify your email address')) {
+        message = 'Please verify your email address. Check your inbox for the verification link.';
+        type = 'warning'; // Use 'warning' type for verification notice
+      } else {
+        // Handle other specific Firebase auth errors
+        if (error.code === 'auth/invalid-email') {
+          message = 'Invalid email format.';
+        } else if (error.code === 'auth/wrong-password') {
+          message = 'Incorrect password.';
+        } else if (error.code === 'auth/user-not-found') {
+          message = 'No account found with this email.';
+        } else if (error.code === 'auth/too-many-requests') {
+          message = 'Access temporarily disabled due to too many failed login attempts. Please try again later.';
+        }
+        // Type remains 'error' for these cases
       }
-      showToast('error', errorMessage);
+      // Call react-toastify directly
+      if (type === 'warning') {
+        toast.warning(message);
+      } else {
+        toast.error(message);
+      }
     } finally {
+      setLoading(false);
       setLoading(false);
     }
   };

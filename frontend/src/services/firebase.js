@@ -149,14 +149,15 @@ export const signIn = async (email, password) => {
 
         // For new accounts, check email verification
         if (!userCredential.user.emailVerified) {
-            try {
-                await sendEmailVerification(userCredential.user);
-            } catch (verificationError) {
-                console.error('Error sending verification email:', verificationError);
-            }
+            // Verification email is sent during signup. Do not resend on login attempt.
+            // try {
+            //     await sendEmailVerification(userCredential.user); // REMOVED
+            // } catch (verificationError) {
+            //     console.error('Error sending verification email:', verificationError); // REMOVED
+            // }
             // Sign out immediately if email not verified, let onAuthChange handle null user
             // We don't need to remove session here as it wasn't created yet by this function
-            await signOut(auth);
+            await signOut(auth); // Restore sign out
             throw new Error('Please verify your email address before signing in. A new verification link has been sent to your email.');
         }
 

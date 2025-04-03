@@ -57,13 +57,19 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthChange((userInfo) => { // Removed async
       if (!mounted) return;
 
-      // Allow legacy accounts or verified accounts
-      if (userInfo?.user && (isLegacyUser(userInfo.user) || userInfo.user.emailVerified)) {
-        setCurrentUser(userInfo);
-        // SessionId state is now handled by the login function
+      if (userInfo?.user) {
+        // User object exists. Check if they are valid (legacy or verified).
+        if (isLegacyUser(userInfo.user) || userInfo.user.emailVerified) {
+          // Valid user, set current user
+          setCurrentUser(userInfo);
+          // SessionId state is handled by the login function
+        }
+        // If user exists but is not verified/legacy, do nothing here.
+        // The signOut in firebase.js's signIn function will trigger another onAuthChange with userInfo=null shortly.
       } else {
+        // User object is null (either initial state or after explicit signOut)
         setCurrentUser(null);
-        setSessionId(null); // Ensure sessionId is cleared on logout/invalid user
+        setSessionId(null); // Clear session ID when user is definitively null
       }
       setLoading(false);
     });
@@ -135,10 +141,13 @@ export function AuthProvider({ children }) {
 
     } catch (error) {
       console.error(`AuthContext login failed:`, error); // Keep error log
-      // Clear potentially inconsistent state if login fails midway
-      setCurrentUser(null);
-      setSessionId(null);
-      throw error; // Re-throw for the UI component to handle
+      // Only clear state for actual login failures, not for verification required error
+      if (!(error.message && error.message.startsWith('Please verify your email address'))) {
+        // Clear potentially inconsistent state if login fails midway for other reasons
+        setCurrentUser(null);
+        setSessionId(null);
+      }
+      throw error; // Re-throw for the UI component to handle regardless
     } finally {
       setLoading(false);
     }
